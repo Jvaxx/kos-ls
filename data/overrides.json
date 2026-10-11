@@ -1,0 +1,571 @@
+{
+  "$comment": "Hand-maintained corrections of the kOS database, deep-merged last by tools/kos-db. Objects merge, other values replace, null removes. Only for what neither the kOS C# nor its documentation states correctly.",
+  "functions": {
+    "body": {
+      "returns": "Body",
+      "params": [
+        {
+          "name": "name",
+          "type": "String",
+          "doc": "name of the body, e.g. `\"Mun\"`"
+        }
+      ],
+      "doc": "The celestial body of the given name.\n\n```kerboscript\nSET MUN_ORBIT TO BODY(\"Mun\"):ORBIT.\n```"
+    },
+    "createOrbit": {
+      "returns": "Orbit",
+      "params": [
+        {
+          "name": "inc|pos",
+          "type": "Scalar | Vector",
+          "doc": "inclination in degrees, or the position relative to the center of the body"
+        },
+        {
+          "name": "e|vel",
+          "type": "Scalar | Vector",
+          "doc": "eccentricity, or the velocity"
+        },
+        {
+          "name": "sma|body",
+          "type": "Body | Scalar",
+          "doc": "semi-major axis, or the body to orbit around"
+        },
+        {
+          "name": "lan|ut",
+          "type": "Scalar",
+          "doc": "longitude of ascending node in degrees, or the universal time"
+        },
+        {
+          "name": "argPe",
+          "type": "Scalar",
+          "optional": true,
+          "doc": "argument of periapsis"
+        },
+        {
+          "name": "mEp",
+          "type": "Scalar",
+          "optional": true,
+          "doc": "mean anomaly at epoch, in degrees"
+        },
+        {
+          "name": "t",
+          "type": "Scalar",
+          "optional": true,
+          "doc": "epoch"
+        },
+        {
+          "name": "body",
+          "type": "Body",
+          "optional": true,
+          "doc": "body to orbit around"
+        }
+      ],
+      "doc": "Creates an orbit from its elements, `CREATEORBIT(inc, e, sma, lan, argPe, mEp, t, body)`, or from a state vector, `CREATEORBIT(pos, vel, body, ut)`.\n\n```kerboscript\nSET myOrbit TO CREATEORBIT(-0, 0, 270000, 0, 0, 0, 0, Mun).\nSET myOrbit TO CREATEORBIT(V(2295.5, 0, 0), V(0, 0, 70000 + Kerbin:RADIUS), Kerbin, 0).\n```",
+      "url": "structures/orbits/orbit.html#function:CREATEORBIT"
+    },
+    "angleDiff": {
+      "params": [
+        {
+          "name": "a",
+          "type": "Scalar",
+          "doc": "first angle, in degrees"
+        },
+        {
+          "name": "b",
+          "type": "Scalar",
+          "doc": "second angle, in degrees"
+        }
+      ],
+      "doc": "The signed difference between two angles, from `a` to `b`, in degrees, in the range [-180, 180]."
+    },
+    "print": {
+      "params": [
+        {
+          "name": "value",
+          "type": "Structure"
+        }
+      ],
+      "doc": "Prints a value to the terminal. Usually written as the `PRINT` statement: `PRINT \"Hello\".`",
+      "url": "commands/terminalgui.html#print"
+    },
+    "printAt": {
+      "params": [
+        {
+          "name": "value",
+          "type": "Structure"
+        },
+        {
+          "name": "col",
+          "type": "Scalar"
+        },
+        {
+          "name": "line",
+          "type": "Scalar"
+        }
+      ],
+      "doc": "Prints a value at a column and line of the terminal. Usually written as the statement `PRINT value AT (col, line).`",
+      "url": "commands/terminalgui.html#print"
+    },
+    "hudtext": {
+      "params": [
+        {
+          "name": "message",
+          "type": "String",
+          "doc": "the message to show"
+        },
+        {
+          "name": "delaySeconds",
+          "type": "Scalar",
+          "doc": "how long the message stays on screen"
+        },
+        {
+          "name": "style",
+          "type": "Scalar",
+          "doc": "where to show it: 1 upper left, 2 upper center, 3 upper right, 4 lower center"
+        },
+        {
+          "name": "size",
+          "type": "Scalar",
+          "doc": "font size"
+        },
+        {
+          "name": "colour",
+          "type": "RGBA",
+          "doc": "colour of the text"
+        },
+        {
+          "name": "doEcho",
+          "type": "Boolean",
+          "doc": "also echo the message to the terminal as `HUD: message`"
+        }
+      ]
+    },
+    "clearScreen": {
+      "doc": "Clears the terminal. Usually written as the `CLEARSCREEN.` statement.",
+      "url": "commands/terminalgui.html#clearscreen"
+    },
+    "add": {
+      "params": [
+        {
+          "name": "node",
+          "type": "Node"
+        }
+      ],
+      "doc": "Adds a maneuver node to the flight plan. Usually written as the `ADD node.` statement.",
+      "url": "structures/vessels/node.html"
+    },
+    "remove": {
+      "params": [
+        {
+          "name": "node",
+          "type": "Node"
+        }
+      ],
+      "doc": "Removes a maneuver node from the flight plan. Usually written as the `REMOVE node.` statement.",
+      "url": "structures/vessels/node.html"
+    },
+    "logFile": {
+      "params": [
+        {
+          "name": "text",
+          "type": "String"
+        },
+        {
+          "name": "path",
+          "type": "String"
+        }
+      ],
+      "doc": "Appends text to a file. Usually written as the `LOG text TO path.` statement.",
+      "url": "commands/files.html#log"
+    },
+    "reboot": {
+      "doc": "Restarts the CPU, running the boot file again. Usually written as the `REBOOT.` statement."
+    },
+    "shutdown": {
+      "doc": "Turns the CPU off. Usually written as the `SHUTDOWN.` statement."
+    },
+    "constant": {
+      "doc": "The `Constant` structure of physical and mathematical constants. Kept for compatibility: use the bound variable `CONSTANT` instead.",
+      "url": "math/basic.html#constants"
+    },
+    "buildList": {
+      "params": [
+        {
+          "name": "listType",
+          "type": "String",
+          "doc": "what to list, as in `LIST listType IN variable.`"
+        }
+      ],
+      "doc": "The list that the statement `LIST listType IN variable.` would build, e.g. `BUILDLIST(\"engines\")`.",
+      "url": "commands/list.html"
+    },
+    "open": {
+      "returns": "Boolean | VolumeDirectory | VolumeFile"
+    },
+    "positionAt": {
+      "params": [
+        {
+          "name": "orbitable",
+          "type": "Orbitable"
+        },
+        {
+          "name": "time",
+          "type": "Scalar | TimeStamp",
+          "doc": "universal time, in seconds or as a `TimeStamp`"
+        }
+      ]
+    },
+    "velocityAt": {
+      "params": [
+        {
+          "name": "orbitable",
+          "type": "Orbitable"
+        },
+        {
+          "name": "time",
+          "type": "Scalar | TimeStamp",
+          "doc": "universal time, in seconds or as a `TimeStamp`"
+        }
+      ]
+    },
+    "orbitAt": {
+      "params": [
+        {
+          "name": "orbitable",
+          "type": "Orbitable"
+        },
+        {
+          "name": "time",
+          "type": "Scalar | TimeStamp",
+          "doc": "universal time, in seconds or as a `TimeStamp`"
+        }
+      ]
+    },
+    "node": {
+      "params": [
+        {
+          "name": "time",
+          "type": "Scalar | TimeStamp",
+          "doc": "universal time of the node, in seconds or as a `TimeStamp`"
+        },
+        {
+          "name": "radial",
+          "type": "Scalar",
+          "doc": "radial out delta-v, in m/s"
+        },
+        {
+          "name": "normal",
+          "type": "Scalar",
+          "doc": "normal delta-v, in m/s"
+        },
+        {
+          "name": "prograde",
+          "type": "Scalar",
+          "doc": "prograde delta-v, in m/s"
+        }
+      ]
+    }
+  },
+  "variables": {
+    "stage": {
+      "type": "Stage",
+      "doc": "The `Stage` structure of the current stage of the CPU vessel, used to count resources in the current stage. Not to be confused with the `STAGE.` command, which activates the next stage.",
+      "url": "bindings.html#stage"
+    },
+    "opcodesLeft": {
+      "type": "Scalar",
+      "doc": "The number of instructions the CPU can still run in the current physics tick before it must wait for the next one."
+    },
+    "steering": {
+      "type": "Direction | String | Vector",
+      "doc": "Where the cooked steering points the ship: a `Direction`, a `Vector`, or the string `\"kill\"` to stop the rotation. Usually set with `LOCK STEERING TO expression.`",
+      "url": "commands/flight/cooked.html#lock-steering"
+    },
+    "wheelSteering": {
+      "type": "GeoCoordinates | Scalar | Vessel",
+      "url": "commands/flight/cooked.html#lock-wheelsteering"
+    },
+    "throttle": {
+      "url": "commands/flight/cooked.html#lock-throttle"
+    },
+    "wheelThrottle": {
+      "url": "commands/flight/cooked.html#lock-wheelthrottle"
+    },
+    "activeShip": {
+      "doc": "The vessel that is currently under the player's control, which can differ from `SHIP`, the vessel of the CPU running the script."
+    },
+    "angularVelocity": {
+      "doc": "Shortcut for `SHIP:ANGULARVEL`."
+    },
+    "obt": {
+      "doc": "Shortcut for `SHIP:OBT`, the current orbit of the ship.",
+      "url": "structures/orbits/orbit.html"
+    },
+    "orbit": {
+      "doc": "Shortcut for `SHIP:ORBIT`, the current orbit of the ship.",
+      "url": "structures/orbits/orbit.html"
+    },
+    "status": {
+      "doc": "Shortcut for `SHIP:STATUS`: `LANDED`, `SPLASHED`, `PRELAUNCH`, `FLYING`, `SUB_ORBITAL`, `ORBITING`, `ESCAPING` or `DOCKED`."
+    },
+    "sensor": {
+      "doc": "Shortcut for `SHIP:SENSORS`."
+    },
+    "sessionTime": {
+      "doc": "The number of seconds since the CPU was turned on, as a real number."
+    },
+    "steeringManager": {
+      "doc": "The `SteeringManager` of the CPU vessel, which tunes how the cooked steering controls the ship.",
+      "url": "structures/misc/steeringmanager.html"
+    },
+    "version": {
+      "doc": "The version of kOS running the script.",
+      "url": "structures/misc/version.html"
+    },
+    "constant": {
+      "doc": "Physical and mathematical constants: `CONSTANT:PI`, `CONSTANT:E`, `CONSTANT:G`...",
+      "url": "math/basic.html#constants"
+    },
+    "ag1": {
+      "doc": "Action group 1. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "ag2": {
+      "doc": "Action group 2. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "ag3": {
+      "doc": "Action group 3. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "ag4": {
+      "doc": "Action group 4. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "ag5": {
+      "doc": "Action group 5. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "ag6": {
+      "doc": "Action group 6. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "ag7": {
+      "doc": "Action group 7. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "ag8": {
+      "doc": "Action group 8. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "ag9": {
+      "doc": "Action group 9. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "ag10": {
+      "doc": "Action group 10. Set it, or use `ON`, `OFF` and `TOGGLE`, to trigger the group."
+    },
+    "black": {
+      "doc": "The predefined colour black, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "blue": {
+      "doc": "The predefined colour blue, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "cyan": {
+      "doc": "The predefined colour cyan, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "gray": {
+      "doc": "The predefined colour gray, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "green": {
+      "doc": "The predefined colour green, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "grey": {
+      "doc": "The predefined colour grey, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "magenta": {
+      "doc": "The predefined colour magenta, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "purple": {
+      "doc": "The predefined colour purple, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "red": {
+      "doc": "The predefined colour red, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "white": {
+      "doc": "The predefined colour white, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    },
+    "yellow": {
+      "doc": "The predefined colour yellow, an `RGBA`.",
+      "url": "structures/misc/colors.html"
+    }
+  },
+  "structures": {
+    "Addons": {
+      "doc": "The addons kOS can talk to, each a suffix of `ADDONS`: `ADDONS:RT` (RemoteTech), `ADDONS:TR` (Trajectories), `ADDONS:KAC` (Kerbal Alarm Clock), `ADDONS:AGX` (Action Groups Extended). Other mods can add their own.",
+      "url": "addons.html",
+      "suffixes": {
+        "available": {
+          "params": [
+            {
+              "name": "name",
+              "type": "String",
+              "doc": "addon name, e.g. `\"RT\"`"
+            }
+          ],
+          "doc": "Whether the addon of that name is installed and usable."
+        },
+        "hasAddon": {
+          "params": [
+            {
+              "name": "name",
+              "type": "String",
+              "doc": "addon name, e.g. `\"RT\"`"
+            }
+          ],
+          "doc": "Whether kOS knows an addon of that name."
+        },
+        "agx": {
+          "doc": "The Action Groups Extended addon.",
+          "url": "addons/AGX.html"
+        },
+        "kac": {
+          "doc": "The Kerbal Alarm Clock addon.",
+          "url": "addons/KAC.html"
+        },
+        "rt": {
+          "doc": "The RemoteTech addon.",
+          "url": "addons/RemoteTech.html"
+        },
+        "tr": {
+          "doc": "The Trajectories addon.",
+          "url": "addons/Trajectories.html"
+        }
+      }
+    },
+    "Volume": {
+      "suffixes": {
+        "open": {
+          "type": "Boolean | VolumeDirectory | VolumeFile"
+        }
+      }
+    },
+    "Vessel": {
+      "suffixes": {
+        "liquidFuel": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of liquid fuel on the vessel. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "oxidizer": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of oxidizer on the vessel. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "solidFuel": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of solid fuel on the vessel. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "monoPropellant": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of monopropellant on the vessel. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "xenonGas": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of xenon gas on the vessel. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "electricCharge": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of electric charge on the vessel. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "intakeAir": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of intake air on the vessel. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "ore": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of ore on the vessel. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "ablator": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of ablator on the vessel. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        }
+      }
+    },
+    "Stage": {
+      "suffixes": {
+        "liquidFuel": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of liquid fuel in the current stage. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "oxidizer": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of oxidizer in the current stage. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "solidFuel": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of solid fuel in the current stage. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "monoPropellant": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of monopropellant in the current stage. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "xenonGas": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of xenon gas in the current stage. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "electricCharge": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of electric charge in the current stage. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "intakeAir": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of intake air in the current stage. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "ore": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of ore in the current stage. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        },
+        "ablator": {
+          "access": "get",
+          "type": "Scalar",
+          "doc": "The amount of ablator in the current stage. kOS reads any resource this way, by its name without spaces, including the resources of mods.",
+          "url": "bindings.html#resource-types"
+        }
+      }
+    }
+  }
+}
