@@ -1,5 +1,6 @@
 import { parseWorkspaceConfiguration } from '../../src/config/workspaceConfigParser';
-import { TextDocument, Range, Position } from 'vscode-languageserver';
+import { Range, Position } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { LintRule } from '../../src/config/models/lintRules';
 import {

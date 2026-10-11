@@ -12,7 +12,6 @@ import { AnalysisService } from '../../src/services/analysisService';
 import { mockLogger, mockTracer } from '../../src/models/logger';
 import {
   Connection,
-  TextDocument,
   ReferencesRequest,
   ReferenceParams,
   Position,
@@ -35,6 +34,7 @@ import {
   WorkspaceEdit,
   TextEdit,
 } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { serverName } from '../../src/utilities/constants';
 import { join } from 'path';
 

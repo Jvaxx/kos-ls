@@ -1,5 +1,5 @@
 import { URI } from 'vscode-uri';
-import { TextDocument } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { createMockDocumentService } from '../utilities/mockServices';
 import { AnalysisService } from '../../src/services/analysisService';
 import { mockLogger, mockTracer } from '../../src/models/logger';

@@ -1,6 +1,7 @@
 import { SymbolTable } from './analysis/models/symbolTable';
 import { IScript } from './parser/types';
-import { Diagnostic, TextDocument } from 'vscode-languageserver';
+import { Diagnostic } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DirectiveContainer } from './directives/directiveContainer';
 import { Comment, Token } from './models/token';
 

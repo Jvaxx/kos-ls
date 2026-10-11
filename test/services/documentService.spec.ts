@@ -6,7 +6,6 @@ import { URI } from 'vscode-uri';
 import { DocumentService } from '../../src/services/documentService';
 import { mockLogger, mockTracer } from '../../src/models/logger';
 import {
-  TextDocument,
   Range,
   Position,
   Location,
@@ -18,6 +17,7 @@ import {
   DidChangeTextDocumentParams,
   DidCloseTextDocumentParams,
 } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { empty } from '../../src/utilities/typeGuards';
 import { zip } from '../../src/utilities/arrayUtils';
 import { ResolverService } from '../../src/services/resolverService';
@@ -285,7 +285,6 @@ describe('document service', () => {
 
       expect(loadedDoc).toBeDefined();
       if (!empty(loadedDoc)) {
-        expect(TextDocument.is(loadedDoc)).toBe(true);
         expect(loadedDoc.getText()).toBe(doc);
       }
 
@@ -469,7 +468,6 @@ describe('document service', () => {
 
       expect(loadedDoc).toBeDefined();
       if (!empty(loadedDoc)) {
-        expect(TextDocument.is(loadedDoc)).toBe(true);
         expect(loadedDoc.getText()).toBe(doc);
       }
 
