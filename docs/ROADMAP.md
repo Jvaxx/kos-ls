@@ -40,22 +40,21 @@ npm release (1.1.5) with the upstream source (1.1.7):
   configs). Node >= 22, TypeScript target ES2022.
 - `tools/lsp-probe.js`: headless client to reproduce diagnostics.
 
-## Phase 1: correct project model
+## Phase 1: correct project model (done)
 
-- Fix the startup race: analyse nothing until the workspace configuration
-  is known, then reanalyse every open document.
-- Read `ksconfig.json` from disk at startup and on change (watch), not only
-  when it is open in the editor.
-- `preload` in `ksconfig.json`: files whose globals are visible in every
-  file of the workspace (the library a boot file loads at runtime).
-- `volumes` in `ksconfig.json`: map kOS volumes to directories, e.g.
-  `"1:": "src"` when flight copies of `src/` are put on the ship's disk.
-  Today only `0:` is understood and other volumes are guessed.
-- Exit cleanly when the client goes away; no logging on stdout.
-- `completionCase` honoured.
-- Integration tests: the probe becomes a test helper that runs the real
-  server on fixture workspaces and asserts on published diagnostics,
-  hovers and completions.
+- Startup race fixed: `initialize` reads `ksconfig.json` before
+  answering, `initialized` analyses the workspace.
+- `ksconfig.json` read from disk at startup and on change (file
+  watching), not only when open in the editor (#167).
+- `volumes`, `preload` and `exclude` in `ksconfig.json`; kOS paths
+  resolved per volume.
+- Analysis in one queue; changes mark connected files dirty, requests
+  reanalyse them first, diagnostics republished 200 ms after a change.
+- The server exits when the client goes away (EPIPE loop fixed).
+- `completionCase` applies to suffixes (#220); settings are read from the
+  `kos-ls` section (`kos-vscode` as fallback; `kos-language-server` was
+  never read) and normalized.
+- `test/integration`: a harness driving a real server in-process.
 
 ## Phase 2: a generated kOS database
 
