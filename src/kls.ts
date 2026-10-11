@@ -19,6 +19,9 @@ import {
   FoldingRange,
   CancellationToken,
   TextDocument,
+  DocumentFormattingParams,
+  DocumentRangeFormattingParams,
+  TextEdit,
 } from 'vscode-languageserver';
 import { ClientConfiguration } from './types';
 import { KsSymbolKind, SymbolTracker, KsBaseSymbol } from './analysis/types';
@@ -49,6 +52,9 @@ import {
 } from './utilities/serverUtils';
 import { symbolDocs, signatureInformation } from './utilities/documentation';
 import { typeInlayHints } from './utilities/inlayHints';
+import { formatText, formatRange, FormatResult } from './formatter/formatter';
+import { findFormatOptions } from './formatter/config';
+import { FormatOptions } from './formatter/options';
 import { cleanDiagnostic } from './utilities/clean';
 import { TypeKind } from './typeChecker/types';
 import { FoldableService } from './services/foldableService';
@@ -248,6 +254,10 @@ export class KLS {
     this.connection.onSignatureHelp(this.onSignatureHelp.bind(this));
     this.connection.onFoldingRanges(this.onFoldingRange.bind(this));
     this.connection.languages.inlayHint.on(this.onInlayHint.bind(this));
+    this.connection.onDocumentFormatting(this.onFormatting.bind(this));
+    this.connection.onDocumentRangeFormatting(
+      this.onRangeFormatting.bind(this),
+    );
 
     this.documentService.listen();
     this.symbolService.listen();
@@ -356,6 +366,8 @@ export class KLS {
         definitionProvider: true,
         foldingRangeProvider: true,
         inlayHintProvider: true,
+        documentFormattingProvider: true,
+        documentRangeFormattingProvider: true,
       },
     };
   }
@@ -556,6 +568,61 @@ export class KLS {
     }
 
     return typeInlayHints(documentInfo.lexicalInfo.script.stmts, params.range);
+  }
+
+  /**
+   * This handler formats a whole document. The options come from the
+   * nearest `.kos-format` or `ksconfig.json` `format` section, not from the
+   * editor, so the result is the same as `kos-ls format`.
+   * @param params the document
+   */
+  private onFormatting(params: DocumentFormattingParams): Maybe<TextEdit[]> {
+    return this.format(params.textDocument.uri, (text, options) =>
+      formatText(text, options),
+    );
+  }
+
+  /**
+   * This handler formats the lines of a range of a document
+   * @param params the document and range
+   */
+  private onRangeFormatting(
+    params: DocumentRangeFormattingParams,
+  ): Maybe<TextEdit[]> {
+    return this.format(params.textDocument.uri, (text, options) =>
+      formatRange(text, params.range, options),
+    );
+  }
+
+  /**
+   * Format an open document with the options found for it
+   * @param uri uri of the document
+   * @param run the formatting to run
+   */
+  private format(
+    uri: string,
+    run: (text: string, options: Partial<FormatOptions>) => FormatResult,
+  ): Maybe<TextEdit[]> {
+    const document = this.documentService.getDocument(uri);
+    if (empty(document)) {
+      return undefined;
+    }
+
+    const parsed = URI.parse(uri);
+    const found =
+      parsed.scheme === 'file'
+        ? findFormatOptions(parsed.fsPath)
+        : { options: {}, errors: [] };
+    for (const error of found.errors) {
+      this.logger.warn(`${found.file}: ${error}`);
+    }
+
+    const result = run(document.getText(), found.options);
+    if ('error' in result) {
+      this.logger.warn(`Not formatting ${parsed.fsPath}: ${result.error}`);
+      return undefined;
+    }
+    return result.edits;
   }
 
   /**

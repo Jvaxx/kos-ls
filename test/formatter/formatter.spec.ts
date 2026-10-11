@@ -80,6 +80,12 @@ describe('Formatter on every fixture', () => {
       }
       const document = TextDocument.create('file:///a.ks', 'kos', 1, source);
       expect(TextDocument.applyEdits(document, result.edits)).toBe(once);
+
+      // edits neither overlap nor touch
+      for (let i = 1; i < result.edits.length; i += 1) {
+        const end = document.offsetAt(result.edits[i - 1].range.end);
+        expect(document.offsetAt(result.edits[i].range.start)).toBeGreaterThan(end);
+      }
     },
   );
 });
@@ -264,6 +270,18 @@ describe('Formatter rules', () => {
     const document = TextDocument.create('file:///a.ks', 'kos', 1, source);
     expect(TextDocument.applyEdits(document, result.edits)).toBe(
       'print  1.\nprint 2.\nprint  3.\n',
+    );
+
+    // whole lines, up to a line start excluded
+    const lines = formatRange(source, {
+      start: { line: 0, character: 4 },
+      end: { line: 2, character: 0 },
+    });
+    if ('error' in lines) {
+      throw new Error(lines.error);
+    }
+    expect(TextDocument.applyEdits(document, lines.edits)).toBe(
+      'print 1.\nprint 2.\nprint  3.\n',
     );
   });
 });

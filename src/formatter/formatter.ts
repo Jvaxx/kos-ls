@@ -36,12 +36,15 @@ export function formatText(
   source: string,
   options?: Partial<FormatOptions>,
 ): FormatResult {
-  return format(source, resolveOptions(options));
+  const result = format(source, resolveOptions(options));
+  return 'error' in result
+    ? result
+    : { text: result.text, edits: merge(result.edits) };
 }
 
 /**
  * Edits formatting the lines of a range: the source is formatted as a whole
- * and only the edits touching the range are kept
+ * and only the edits touching the lines of the range are kept
  * @param source the source
  * @param range range to format
  * @param options formatter options, defaults for those not given
@@ -51,17 +54,46 @@ export function formatRange(
   range: Range,
   options?: Partial<FormatOptions>,
 ): FormatResult {
-  const result = formatText(source, options);
+  const result = format(source, resolveOptions(options));
   if ('error' in result) {
     return result;
   }
 
-  const before = (a: Position, b: Position) =>
-    a.line < b.line || (a.line === b.line && a.character <= b.character);
+  // whole lines; a range ending at the start of a line stops before it
+  const start: Position = { line: range.start.line, character: 0 };
+  const endLine =
+    range.end.character === 0 && range.end.line > range.start.line
+      ? range.end.line - 1
+      : range.end.line;
+  const end: Position = { line: endLine, character: Number.MAX_SAFE_INTEGER };
+
   const edits = result.edits.filter(
-    edit => before(edit.range.start, range.end) && before(range.start, edit.range.end),
+    edit => before(edit.range.start, end) && before(start, edit.range.end),
   );
-  return { text: result.text, edits };
+  return { text: result.text, edits: merge(edits) };
+}
+
+const before = (a: Position, b: Position): boolean =>
+  a.line < b.line || (a.line === b.line && a.character <= b.character);
+
+/**
+ * Merge edits that touch, so that no two edits start at the same place
+ * @param edits edits in source order, not overlapping
+ */
+function merge(edits: TextEdit[]): TextEdit[] {
+  const merged: TextEdit[] = [];
+  for (const edit of edits) {
+    const last = merged[merged.length - 1];
+    if (last !== undefined && before(edit.range.start, last.range.end)) {
+      merged[merged.length - 1] = TextEdit.replace(
+        { start: last.range.start, end: edit.range.end },
+        last.newText + edit.newText,
+      );
+    } else {
+      merged.push(edit);
+    }
+  }
+  return merged;
 }
 
 interface BlockInfo {

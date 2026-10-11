@@ -1,4 +1,4 @@
-import { parseTree, Node } from 'jsonc-parser';
+import { parseTree, Node, getNodeValue } from 'jsonc-parser';
 import { WorkspaceConfiguration } from './models/workspaceConfiguration';
 import { LintRule, lintRules } from './models/lintRules';
 import { empty } from '../utilities/typeGuards';
@@ -10,13 +10,22 @@ import {
   Range,
 } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+import { validateOptions } from '../formatter/options';
 import { Fallible, DiagnosticUri } from '../types';
 import {
   createDiagnostic,
   CONFIG_DIAGNOSTICS,
 } from '../utilities/diagnosticsUtils';
 
-const VALID_PROPERTIES = ['archive', 'bodies', 'linting', 'volumes', 'preload', 'exclude'];
+const VALID_PROPERTIES = [
+  'archive',
+  'bodies',
+  'linting',
+  'volumes',
+  'preload',
+  'exclude',
+  'format',
+];
 
 /**
  * Parse the configuration from the provided text document
@@ -86,6 +95,20 @@ export function parseWorkspaceConfiguration(
                 );
                 exclude = excludeResult.values;
                 diagnostics.push(...excludeResult.diagnostics);
+                break;
+              case 'format':
+                // read by the formatter, from the file on disk
+                for (const error of validateOptions(getNodeValue(value))
+                  .errors) {
+                  diagnostics.push(
+                    createConfigDiagnostic(
+                      nodeRange(value, text),
+                      uri,
+                      error,
+                      CONFIG_DIAGNOSTICS.INVALID_VALUE,
+                    ),
+                  );
+                }
                 break;
               case 'linting':
                 const lintResult = parseLintRules(value, text, uri);

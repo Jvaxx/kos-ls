@@ -9,6 +9,7 @@ import {
   InlayHint,
   PublishDiagnosticsParams,
   SignatureHelp,
+  TextEdit,
 } from 'vscode-languageserver/node';
 import {
   createMessageConnection,
@@ -252,6 +253,26 @@ export class TestClient {
     return this.connection.sendRequest('textDocument/inlayHint', {
       textDocument: { uri: this.uri(path) },
       range,
+    });
+  }
+
+  async formatting(path: string): Promise<TextEdit[] | null> {
+    await this.settle();
+    return this.connection.sendRequest('textDocument/formatting', {
+      textDocument: { uri: this.uri(path) },
+      options: { tabSize: 8, insertSpaces: false },
+    });
+  }
+
+  async rangeFormatting(
+    path: string,
+    range: { start: { line: number; character: number }; end: { line: number; character: number } },
+  ): Promise<TextEdit[] | null> {
+    await this.settle();
+    return this.connection.sendRequest('textDocument/rangeFormatting', {
+      textDocument: { uri: this.uri(path) },
+      range,
+      options: { tabSize: 8, insertSpaces: false },
     });
   }
 

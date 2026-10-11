@@ -353,4 +353,23 @@ describe('WorkspaceConfigParser kos-ls properties', () => {
     expect(a.equal(b)).toBe(false);
     expect(a.equal(a.merge(a))).toBe(true);
   });
+
+  describe('when parsing the format section', () => {
+    test('valid options give no diagnostics', () => {
+      const document = makeDocument('{ "format": { "IndentWidth": 2 } }');
+      expect(parseWorkspaceConfiguration(document).diagnostics).toHaveLength(0);
+    });
+
+    test('bad options are reported on the section', () => {
+      const document = makeDocument(
+        '{ "format": { "IndentWidth": "two", "Foo": 1 } }',
+      );
+      const { diagnostics } = parseWorkspaceConfiguration(document);
+      expect(diagnostics.map(d => d.message)).toEqual([
+        'IndentWidth must be a whole number, not two.',
+        'Unknown format option Foo.',
+      ]);
+      expect(diagnostics[0].range.start.character).toBe(12);
+    });
+  });
 });
