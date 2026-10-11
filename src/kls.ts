@@ -10,6 +10,8 @@ import {
   DidChangeConfigurationNotification,
   DidChangeWatchedFilesNotification,
   CompletionParams,
+  InlayHint,
+  InlayHintParams,
   CompletionItem,
   TextDocumentPositionParams,
   SignatureHelp,
@@ -46,6 +48,7 @@ import {
   CompletionDocs,
 } from './utilities/serverUtils';
 import { symbolDocs, signatureInformation } from './utilities/documentation';
+import { typeInlayHints } from './utilities/inlayHints';
 import { cleanDiagnostic } from './utilities/clean';
 import { TypeKind } from './typeChecker/types';
 import { FoldableService } from './services/foldableService';
@@ -244,6 +247,7 @@ export class KLS {
     this.connection.onCompletionResolve(this.onCompletionResolve.bind(this));
     this.connection.onSignatureHelp(this.onSignatureHelp.bind(this));
     this.connection.onFoldingRanges(this.onFoldingRange.bind(this));
+    this.connection.languages.inlayHint.on(this.onInlayHint.bind(this));
 
     this.documentService.listen();
     this.symbolService.listen();
@@ -351,6 +355,7 @@ export class KLS {
         workspaceSymbolProvider: true,
         definitionProvider: true,
         foldingRangeProvider: true,
+        inlayHintProvider: true,
       },
     };
   }
@@ -526,6 +531,31 @@ export class KLS {
       activeParameter: variadic ? Math.min(index, count - 1) : index,
       activeSignature: 0,
     };
+  }
+
+  /**
+   * This handler provides inlay hints: the types inferred for the
+   * variables, locks and loop elements declared in the requested range
+   * @param params the document and range
+   * @param cancellation request cancellation token
+   */
+  private async onInlayHint(
+    params: InlayHintParams,
+    cancellation: CancellationToken,
+  ): Promise<Maybe<InlayHint[]>> {
+    // exit if cancel requested
+    if (cancellation.isCancellationRequested) {
+      return undefined;
+    }
+
+    const documentInfo = await this.analysisService.loadInfo(
+      params.textDocument.uri,
+    );
+    if (empty(documentInfo)) {
+      return undefined;
+    }
+
+    return typeInlayHints(documentInfo.lexicalInfo.script.stmts, params.range);
   }
 
   /**

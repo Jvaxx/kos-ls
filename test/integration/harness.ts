@@ -6,6 +6,7 @@ import {
   createConnection,
   Diagnostic,
   Hover,
+  InlayHint,
   PublishDiagnosticsParams,
   SignatureHelp,
 } from 'vscode-languageserver/node';
@@ -240,6 +241,17 @@ export class TestClient {
     return this.connection.sendRequest('textDocument/signatureHelp', {
       textDocument: { uri: this.uri(path) },
       position: { line, character },
+    });
+  }
+
+  async inlayHints(
+    path: string,
+    range: { start: { line: number; character: number }; end: { line: number; character: number } },
+  ): Promise<InlayHint[] | null> {
+    await this.settle();
+    return this.connection.sendRequest('textDocument/inlayHint', {
+      textDocument: { uri: this.uri(path) },
+      range,
     });
   }
 

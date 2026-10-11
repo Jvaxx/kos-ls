@@ -222,3 +222,38 @@ describe('types in doc comment tags', () => {
     expect(await client.messages(file)).toEqual([]);
   });
 });
+
+describe('inlay hints', () => {
+  let client: TestClient;
+
+  beforeEach(async () => {
+    client = await TestClient.start(root);
+  });
+
+  afterEach(async () => {
+    await client?.stop();
+  });
+
+  test('the inferred types of declared names in the range', async () => {
+    client.open(
+      file,
+      [
+        'local v is ship.',
+        'local u is v:unknownsuffix.',
+        'lock alt to ship:altitude.',
+        'for p in ship:parts { print p. }',
+        'local far is 1.',
+      ].join('\n'),
+    );
+
+    const hints = await client.inlayHints(file, {
+      start: { line: 0, character: 0 },
+      end: { line: 3, character: 40 },
+    });
+    expect(hints?.map((h) => [h.position, h.label])).toEqual([
+      [{ line: 0, character: 7 }, ': Vessel'],
+      [{ line: 2, character: 8 }, ': Scalar'],
+      [{ line: 3, character: 5 }, ': Part'],
+    ]);
+  });
+});
