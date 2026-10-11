@@ -44,6 +44,31 @@ function complicated {
 }
 `;
 
+const variadicFunctions = `
+function looping {
+  parameter count.
+  from { local i is 0. } until i = count step { set i to i + 1. } do {
+    parameter next.
+  }
+}
+
+function branching {
+  parameter withName.
+  if withName {
+    parameter name.
+  }
+}
+
+function nested {
+  parameter a.
+  for x in a {
+    local function inner {
+      parameter b.
+    }
+  }
+}
+`;
+
 describe('Function Scan', () => {
   test('empty function', () => {
     const parseResult = parseSource(emptyFunction);
@@ -113,7 +138,20 @@ describe('Function Scan', () => {
         expect(scanResult.return).toBe(true);
         expect(scanResult.requiredParameters).toBe(3);
         expect(scanResult.optionalParameters).toBe(1);
+        expect(scanResult.variadic).toBe(false);
       }
     }
+  });
+
+  test('function reading parameters in a loop or branch', () => {
+    const parseResult = parseSource(variadicFunctions);
+    noParseErrors(parseResult);
+
+    const funcScanner = new FunctionScan();
+    const results = parseResult.parse.script.stmts.map(stmt =>
+      stmt instanceof Decl.Func ? funcScanner.scan(stmt.block) : undefined,
+    );
+
+    expect(results.map(result => result?.variadic)).toEqual([true, true, false]);
   });
 });
