@@ -1,5 +1,5 @@
 import { TokenType } from '../models/tokentypes';
-import { Token } from '../models/token';
+import { Token, Comment } from '../models/token';
 import { DirectiveTokens } from '../directives/types';
 import { DiagnosticUri } from '../types';
 
@@ -9,6 +9,12 @@ export interface Tokenized {
   tokens: Token[];
   diagnostics: DiagnosticUri[];
   directiveTokens: DirectiveTokens[];
+
+  /**
+   * Comments after the last token. Every other comment is in the
+   * `leadingComments` of the token that follows it.
+   */
+  trailingComments: Comment[];
 }
 
 /**

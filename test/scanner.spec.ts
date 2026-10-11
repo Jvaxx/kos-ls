@@ -362,3 +362,62 @@ describe('when scanning directives', () => {
     });
   });
 });
+
+describe('When scanning comments', () => {
+  test('a comment is attached to the next token', () => {
+    const { tokens, trailingComments } = scan(
+      '// first\r\n  // second\nprint 1. // after\n',
+    );
+
+    expect(tokens.map((t) => t.type)).toEqual([
+      TokenType.print,
+      TokenType.integer,
+      TokenType.period,
+    ]);
+    expect(tokens[0].leadingComments).toEqual([
+      {
+        text: '// first',
+        range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+      },
+      {
+        text: '// second',
+        range: { start: { line: 1, character: 2 }, end: { line: 1, character: 11 } },
+      },
+    ]);
+    expect(tokens[1].leadingComments).toBeUndefined();
+    expect(trailingComments.map((c) => c.text)).toEqual(['// after']);
+  });
+
+  test('a directive is kept as a comment too', () => {
+    const { tokens, directiveTokens } = scan('// #region a\nprint 1.');
+
+    expect(directiveTokens).toHaveLength(1);
+    expect(tokens[0].leadingComments!.map((c) => c.text)).toEqual([
+      '// #region a',
+    ]);
+  });
+
+  test('comments of the fixtures sit at their ranges', () => {
+    walkDir(testDir, (filePath) => {
+      if (!basename(filePath).endsWith('.ks')) {
+        return;
+      }
+
+      const source = readFileSync(filePath, 'utf8');
+      const { tokens, trailingComments } = scan(source);
+      const comments = [
+        ...tokens.flatMap((t) => t.leadingComments ?? []),
+        ...trailingComments,
+      ];
+
+      // each comment's text is at its range in the source
+      const lines = source.split('\n');
+      for (const { text, range } of comments) {
+        expect(text.startsWith('//')).toBe(true);
+        expect(
+          lines[range.start.line].slice(range.start.character, range.end.character),
+        ).toBe(text);
+      }
+    });
+  });
+});

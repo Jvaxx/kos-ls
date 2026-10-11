@@ -9,12 +9,12 @@ import {
   ScanDiagnostic,
   Tokenized,
 } from './types';
-import { Token } from '../models/token';
+import { Token, Comment } from '../models/token';
 import { empty } from '../utilities/typeGuards';
 import { mockLogger, mockTracer, logException } from '../models/logger';
 import { DiagnosticSeverity } from 'vscode-languageserver';
 import { DIAGNOSTICS, createDiagnosticUri } from '../utilities/diagnosticsUtils';
-import { MutableMarker } from './models/marker';
+import { MutableMarker, Marker } from './models/marker';
 import { DirectiveTokens } from '../directives/types';
 import { DiagnosticUri } from '../types';
 
@@ -68,6 +68,11 @@ export class Scanner {
   private readonly whiteSpaceResult: ScanWhitespace;
 
   /**
+   * comments seen since the last token
+   */
+  private comments: Comment[];
+
+  /**
    * Scanner constructor
    * @param source source string
    * @param uri source uri
@@ -88,6 +93,7 @@ export class Scanner {
     this.current = 0;
     this.startPosition = new MutableMarker(0, 0);
     this.currentPosition = new MutableMarker(0, 0);
+    this.comments = [];
 
     this.whiteSpaceResult = {
       result: null,
@@ -121,6 +127,10 @@ export class Scanner {
         const result = this.scanToken();
         switch (result.kind) {
           case ScanKind.Token:
+            if (this.comments.length > 0) {
+              result.result.leadingComments = this.comments;
+              this.comments = [];
+            }
             tokens.push(result.result);
             break;
           case ScanKind.Diagnostic:
@@ -145,7 +155,10 @@ export class Scanner {
         this.logger.warn(`Scanning encounter ${diagnostics.length} errors`);
       }
 
-      return { tokens, diagnostics: diagnostics, directiveTokens: directiveTokens };
+      const trailingComments = this.comments;
+      this.comments = [];
+
+      return { tokens, diagnostics, directiveTokens, trailingComments };
     } catch (err) {
       this.logger.error('Error occurred in scanner');
       logException(this.logger, this.tracer, err, LogLevel.error);
@@ -154,6 +167,7 @@ export class Scanner {
         tokens: [],
         diagnostics: [],
         directiveTokens: [],
+        trailingComments: [],
       };
     }
   }
@@ -238,9 +252,29 @@ export class Scanner {
   }
 
   /**
-   * Extract a comment or a region
+   * Extract a comment or a directive, keeping the comment as trivia
    */
   private comment(): ScanWhitespace | ScanDirective {
+    const start = this.start;
+    const startPosition = this.startPosition.toImmutable();
+    const result = this.commentContent();
+
+    // a comment is one line, so its end is found from its length
+    const text = this.source.substring(start, this.current).replace(/\r$/, '');
+    this.comments.push({
+      text,
+      range: {
+        start: startPosition,
+        end: new Marker(startPosition.line, startPosition.character + text.length),
+      },
+    });
+    return result;
+  }
+
+  /**
+   * Scan the rest of a comment line, returning a directive if it is one
+   */
+  private commentContent(): ScanWhitespace | ScanDirective {
     // check could contain a directive
     this.advanceWhitespace();
     if (!(this.peek() === '#' && this.isAlpha(this.peekNext()))) {

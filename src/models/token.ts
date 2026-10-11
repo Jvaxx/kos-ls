@@ -4,6 +4,22 @@ import { TokenBase } from './types';
 import { SymbolTracker } from '../analysis/types';
 
 /**
+ * A `//` comment kept by the scanner. It is trivia: the parser never sees
+ * it, but it stays attached to the token that follows it.
+ */
+export interface Comment {
+  /**
+   * The whole comment, `//` included, without the line break
+   */
+  readonly text: string;
+
+  /**
+   * Where the comment is in the source
+   */
+  readonly range: Range;
+}
+
+/**
  * Represents  an atomic unit of the kerboscript language
  */
 export class Token<T extends TokenType = TokenType> implements TokenBase<T> {
@@ -18,6 +34,11 @@ export class Token<T extends TokenType = TokenType> implements TokenBase<T> {
    * What symbol tracker is this token tied too
    */
   public tracker: Maybe<SymbolTracker>;
+
+  /**
+   * Comments between the previous token and this one, in source order
+   */
+  public leadingComments: Maybe<Comment[]>;
 
   constructor(
     type: T,
@@ -34,6 +55,7 @@ export class Token<T extends TokenType = TokenType> implements TokenBase<T> {
     this.end = end;
     this.uri = uri;
     this.tracker = undefined;
+    this.leadingComments = undefined;
   }
 
   /**
