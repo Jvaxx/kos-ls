@@ -38,6 +38,7 @@ import { DIAGNOSTICS, createDiagnosticUri } from './diagnosticsUtils';
 import { mapper } from './mapper';
 import { rangeAfter, rangeContainsPos } from './positionUtils';
 import { empty } from './typeGuards';
+import { presentName } from './stringUtils';
 
 /**
  * Get the connection primitives based on the request connection type
@@ -55,17 +56,24 @@ export const getConnectionPrimitives = (
   } else {
     reader = new StreamMessageReader(process.stdin);
     writer = new StreamMessageWriter(process.stdout);
+
+    // the client is gone when it closes our stdin or stops reading our
+    // stdout; without this, a failed write is logged, the log write fails
+    // too, and the orphaned process spins forever
+    process.stdin.on('end', () => process.exit(0));
+    process.stdout.on('error', () => process.exit(0));
   }
 
-  writer.onError(([error, message, code]) => {
-    console.log(error);
-    console.log(message);
-    console.log(code);
+  // stdout carries the protocol: errors go to stderr
+  writer.onError(([error]) => {
+    console.error('[kos-ls] write error:', error);
+    process.exit(0);
   });
-
+  writer.onClose(() => process.exit(0));
   reader.onError((error) => {
-    console.log(error);
+    console.error('[kos-ls] read error:', error);
   });
+  reader.onClose(() => process.exit(0));
 
   return {
     reader,
@@ -225,14 +233,20 @@ export const suffixCompletionItems = async (
   // get all suffixes on the predicted type
   const suffixes = [...type.assignmentType().suffixes().values()];
 
-  // generate completions
-  return suffixes.map((suffix) => ({
-    kind: empty(suffix.callSignature())
-      ? CompletionItemKind.Property
-      : CompletionItemKind.Method,
-    label: suffix.name,
-    detail: `${suffix.name}: ${suffix.toString()}`,
-  }));
+  // generate completions, in the requested case
+  return suffixes.map((suffix) => {
+    const label = presentName(
+      analyzer.completionCase,
+      suffix.displayName ?? suffix.name,
+    );
+    return {
+      kind: empty(suffix.callSignature())
+        ? CompletionItemKind.Property
+        : CompletionItemKind.Method,
+      label,
+      detail: `${label}: ${suffix.toString()}`,
+    };
+  });
 };
 
 const resolveSuffixTermType = (

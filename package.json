@@ -37,6 +37,7 @@
   "scripts": {
     "build": "tsc -p ./tsconfig.json",
     "bundle": "webpack --config ./webpack.config.js --mode production",
+    "pretest": "tsc -p ./tsconfig.json",
     "test": "jest --config jest.config.js",
     "bench": "zakzak -c ./zakzak.config.json",
     "probe": "node tools/lsp-probe.js",
