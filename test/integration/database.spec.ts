@@ -136,4 +136,28 @@ describe('kOS database', () => {
       '3:11 Call expected 2 parameters but was called with 3 arguments',
     ]);
   });
+
+  test('values may be of a derived structure or of any type given', async () => {
+    client.open(
+      file,
+      [
+        '@lazyglobal off.',
+        'local port is ship:partstagged("port")[0].',
+        'port:undock.',
+        'for m in ship:modulesnamed("ModuleScienceExperiment") { m:deploy. }',
+        'local selected is 0.',
+        'pick().',
+        'print selected:position.',
+        'function pick { set selected to ship:parts[0]. }',
+        'print positionat(target, time:seconds + 60).',
+        'local items is list(1).',
+        'print items#0 + 1.',
+        'set items to readjson("1:/x.json").',
+        'print items["key"].',
+      ].join('\n'),
+    );
+
+    expect(await client.messages(file)).toEqual([]);
+  });
 });
+

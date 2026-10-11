@@ -93,9 +93,9 @@ export interface EnvironmentPath {
  */
 export interface KsSet extends Location {
   /**
-   * What is the type of the set
+   * What is the type of the set, undefined until it is type checked
    */
-  type: IType;
+  type?: IType;
 }
 
 /**

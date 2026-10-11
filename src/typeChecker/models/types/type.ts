@@ -41,6 +41,11 @@ export class Type implements IType {
   public dynamic?: boolean;
 
   /**
+   * The types derived from this one, see IParametricType.derived
+   */
+  public derived?: IType[];
+
+  /**
    * What is the access level of this type
    */
   public readonly access: Access;
@@ -161,6 +166,9 @@ export class Type implements IType {
     }
 
     this.superType = typeMap.type;
+    if (this.superType instanceof Type) {
+      (this.superType.derived ??= []).push(this);
+    }
   }
 
   /**

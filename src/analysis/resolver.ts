@@ -841,7 +841,7 @@ export class Resolver
   public visitDelete(stmt: Stmt.Delete): Diagnostics {
     const deprecated = createDiagnostic(
       stmt,
-      'Copy is deprecated as of 1.0.0',
+      'Delete is deprecated as of 1.0.0',
       DiagnosticSeverity.Warning,
       DIAGNOSTICS.DELETE_DEPRECATED,
     );

@@ -18,6 +18,7 @@ import {
   OperatorKind,
   IType,
   ICallSignature,
+  IIndexer,
 } from './types';
 import { mockLogger, mockTracer, logException } from '../models/logger';
 import { Script } from '../models/script';
@@ -47,10 +48,10 @@ import {
 import {
   callableError,
   delegateCreation,
-  arrayIndexer,
   // functionError,
   indexerError,
   suffixError,
+  derivedSuffix,
 } from './utilities/typeHelpers';
 import { delegateType } from './ksTypes/primitives/delegate';
 import { KsSymbolKind, TrackerKind, SymbolTracker } from '../analysis/types';
@@ -65,6 +66,7 @@ import { Operator } from './models/types/operator';
 import { VariadicType } from './models/types/variadicType';
 import { Type } from './models/types/type';
 import { CallSignature } from './models/types/callSignature';
+import { UnionType } from './models/types/unionType';
 
 type Diagnostics = Diagnostic[];
 
@@ -133,6 +135,10 @@ export class TypeChecker
       for (const decl of new FunctionDeclarations().find(this.script.stmts)) {
         this.declareFunctionType(decl);
       }
+      // the first pass types the sets of variables, so that the second
+      // knows them before their location: a variable may be set in a
+      // function declared below its use
+      this.checkStmts(this.script.stmts);
       const typeErrors = this.checkStmts(this.script.stmts);
 
       this.logger.info(`Type Checking finished for ${file}`);
@@ -1251,7 +1257,8 @@ export class TypeChecker
     const errors: Diagnostics = [];
 
     suffixTerm.index.tracker = type.tracker();
-    builder.nodes.push(arrayIndexer);
+    // the element, as with brackets
+    builder.nodes.push(type.indexer()?.assignmentType() ?? structureType);
 
     // TODO confirm indexable types
     // Only lists are indexable with '#'
@@ -1329,7 +1336,15 @@ export class TypeChecker
     const errors = indexResult.errors;
     const type = builder.current();
 
-    const indexer = type.indexer();
+    // of a union, the indexer of a member that takes this index: a variable
+    // may hold a List or a Lexicon
+    const accepts = (indexer: IIndexer) =>
+      indexer.callSignature()?.params()[0].canCoerceFrom(indexResult.type);
+    const indexers =
+      type instanceof UnionType
+        ? type.types.map(member => member.indexer()).filter(notEmpty)
+        : [];
+    const indexer = indexers.find(accepts) ?? type.indexer();
 
     // we either need to have an indexer or be the any type
     if (empty(indexer)) {
@@ -1360,7 +1375,7 @@ export class TypeChecker
     builder.nodes.push(indexer.assignmentType());
 
     // check that index can be coerced into requested type
-    if (!callSignature.params()[0].canCoerceFrom(indexResult.type)) {
+    if (!type.anyType && !callSignature.params()[0].canCoerceFrom(indexResult.type)) {
       errors.push(
         createDiagnostic(
           suffixTerm.index,
@@ -1460,7 +1475,9 @@ export class TypeChecker
     // if we're a trailer check for suffixes
     if (builder.isTrailer()) {
       const type = builder.current();
-      const suffix = type.getSuffix(suffixTerm.token.lookup);
+      const suffix =
+        type.getSuffix(suffixTerm.token.lookup) ??
+        (type.anyType ? undefined : derivedSuffix(type, suffixTerm.token.lookup));
 
       // an unknown type (Structure) or one whose suffixes are added at
       // runtime (lexicon keys) can have any suffix
@@ -1594,11 +1611,18 @@ export class TypeChecker
 
     const assignmentType = source.assignmentType();
 
-    if (target && !target.canCoerceFrom(assignmentType)) {
+    // a union value may be any of its members at runtime (TARGET is a
+    // Vessel, a Body or a Part): one that converts is enough
+    const members =
+      assignmentType instanceof UnionType
+        ? assignmentType.types
+        : [assignmentType];
+
+    if (target && !members.some(member => target.canCoerceFrom(member))) {
       errors.push(
         createDiagnostic(
           range,
-          `${source.name} cannot be converted to a ${target.name}`,
+          `${assignmentType.toString()} cannot be converted to a ${target.toString()}`,
           DiagnosticSeverity.Hint,
           DIAGNOSTICS.TYPE_WRONG,
         ),

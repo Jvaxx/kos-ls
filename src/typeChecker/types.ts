@@ -196,6 +196,13 @@ export interface IParametricType extends ITypeMappable<IType> {
   dynamic?: boolean;
 
   /**
+   * The types derived from this one. A value may be of a derived type at
+   * runtime: kOS gives a Part the most specific structure (Engine,
+   * DockingPort...)
+   */
+  derived?: IType[];
+
+  /**
    * What access does this type possess
    */
   readonly access: Access;

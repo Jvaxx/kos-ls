@@ -71,22 +71,22 @@ export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
       return this.declared.type;
     }
 
-    // Will need to do better this sort of handles the case of
-    // local x is 0. set x to x + 1.
+    // the last set before the location. Sets not type checked yet are
+    // left out: in `set x to x + 1.` x has the type it had before
     const ranges = this.sets.filter(
-      set => set.uri === loc.uri && set.type !== structureType,
+      set => set.uri === loc.uri && !empty(set.type),
     );
-    // the last set before the location
     const found = binaryPreviousKey(ranges, loc.range.start, x => x.range);
     const current = (found && found.type) || this.declared.type;
     if (empty(current)) {
       return current;
     }
 
-    // with the other types it is given anywhere, as kOS types at runtime
+    // with the other types it is given anywhere, as kOS types at runtime.
+    // Given an unknown value (Structure), it may be anything
     const others: IType[] = [];
     for (const type of [this.declared.type, ...this.sets.map(set => set.type)]) {
-      if (!empty(type) && type !== structureType && type !== current) {
+      if (!empty(type) && type !== current) {
         others.push(type);
       }
     }
@@ -118,7 +118,8 @@ export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
  * @param loc location to create the set
  * @param type type of this set
  */
-export const createSymbolSet = (
-  loc: Location,
-  type: IType = structureType,
-): KsSet => ({ type, uri: loc.uri, range: loc.range });
+export const createSymbolSet = (loc: Location, type?: IType): KsSet => ({
+  type,
+  uri: loc.uri,
+  range: loc.range,
+});
