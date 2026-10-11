@@ -270,6 +270,26 @@ export const binaryRightKey = <T>(
 };
 
 /**
+ * Binary search for the last item at or before a position, with provided
+ * function to generate a range
+ * @param ranges sorted collection of items that can generate a range
+ * @param pos query position
+ * @param key key function to generate a range
+ */
+export const binaryPreviousKey = <T>(
+  ranges: T[],
+  pos: Position,
+  key: (range: T) => Range,
+): Maybe<T> => {
+  if (ranges.length === 0 || rangeAfter(key(ranges[0]), pos)) {
+    return undefined;
+  }
+  const index = binarySearchKeyIndex(ranges, pos, key);
+
+  return Array.isArray(index) ? ranges[index[0]] : ranges[index];
+};
+
+/**
  * Binary search left with provided function to generate a range
  * @param ranges sorted collection of items that can generate a range
  * @param pos query position

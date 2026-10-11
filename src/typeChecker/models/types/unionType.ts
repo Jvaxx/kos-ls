@@ -72,7 +72,7 @@ export class UnionType implements IType {
       throw new Error('Union must be the same type');
     }
 
-    const sortedTypes = types.sort((a, b) => {
+    const sortedTypes = this.keepsOrder() ? [...types] : types.sort((a, b) => {
       if (a.name < b.name) {
         return -1;
       }
@@ -95,6 +95,13 @@ export class UnionType implements IType {
     };
     this.kind = sortedTypes[0].kind;
     this.typeTracker = new TypeTracker(new KsSuffix(this.name), this);
+  }
+
+  /**
+   * Whether the members keep their order (see FlowUnionType)
+   */
+  protected keepsOrder(): boolean {
+    return false;
   }
 
   /**
@@ -121,7 +128,8 @@ export class UnionType implements IType {
       return true;
     }
 
-    return false;
+    // a union of subtypes is a subtype: `Vessel or Boolean` is a Structure
+    return this.types.every(member => member.isSubtypeOf(type));
   }
 
   /**
@@ -215,24 +223,13 @@ export class UnionType implements IType {
    * Get all suffixes present in all members of the union type
    */
   public suffixes(): Map<string, IType> {
+    // the suffixes of every member, as getSuffix finds them
     const suffixes = new Map<string, IType>();
-    for (const [name, suffix] of this.types[0].suffixes()) {
-      let allContain = true;
-
-      for (const type of this.types) {
-        const unionSuffix = type.suffixes().get(name);
-        if (empty(unionSuffix) || unionSuffix !== suffix) {
-          allContain = false;
-          break;
+    for (const type of this.types) {
+      for (const [name, suffix] of type.suffixes()) {
+        if (!suffixes.has(name)) {
+          suffixes.set(name, suffix);
         }
-
-        if (!allContain) {
-          break;
-        }
-      }
-
-      if (allContain) {
-        suffixes.set(name, suffix);
       }
     }
 
@@ -245,7 +242,7 @@ export class UnionType implements IType {
    * @param name name of the suffix
    */
   public hasSuffix(name: string): boolean {
-    return this.types.every(type => type.hasSuffix(name));
+    return this.types.some(type => type.hasSuffix(name));
   }
 
   /**
@@ -254,22 +251,36 @@ export class UnionType implements IType {
    * @param name name of the suffix
    */
   public getSuffix(name: string): Maybe<IType> {
-    const suffix = this.types[0].getSuffix(name);
-    if (empty(suffix)) {
-      return suffix;
+    // the suffix of the members that have it: kOS checks at runtime, and
+    // scripts test the type first (`open(path)` is a file, a directory
+    // or false)
+    for (const type of this.types) {
+      const suffix = type.getSuffix(name);
+      if (!empty(suffix)) {
+        return suffix;
+      }
     }
 
-    return this.types.slice(1).every(type => type.getSuffix(name) === suffix)
-      ? suffix
-      : undefined;
+    return undefined;
   }
 
   /**
    * Get an operator for the other type
-   * @param _ The operator kind
-   * @param __ the type of the other type
+   * @param kind The operator kind
+   * @param other the type of the other type
    */
-  public getOperator(_: OperatorKind, __?: IType): Maybe<Operator<IType>> {
+  public getOperator(
+    kind: OperatorKind,
+    other?: IType,
+  ): Maybe<Operator<IType>> {
+    // the operator of the first member that has one: kOS checks at runtime
+    for (const type of this.types) {
+      const operator = type.getOperator(kind, other);
+      if (!empty(operator)) {
+        return operator;
+      }
+    }
+
     return undefined;
   }
 

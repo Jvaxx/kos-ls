@@ -7,10 +7,15 @@ import {
 } from '../types';
 import { structureType } from '../../typeChecker/ksTypes/primitives/structure';
 import { Location } from 'vscode-languageserver';
-import { binaryRightKey, locationEqual } from '../../utilities/positionUtils';
+import {
+  binaryPreviousKey,
+  binaryRightKey,
+  locationEqual,
+} from '../../utilities/positionUtils';
 import { builtIn } from '../../utilities/constants';
 import { IType } from '../../typeChecker/types';
 import { empty } from '../../utilities/typeGuards';
+import { flowType } from '../../typeChecker/models/types/flowUnionType';
 
 export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
   implements SymbolTrackerBase {
@@ -71,9 +76,21 @@ export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
     const ranges = this.sets.filter(
       set => set.uri === loc.uri && set.type !== structureType,
     );
-    const found = binaryRightKey(ranges, loc.range.start, x => x.range);
+    // the last set before the location
+    const found = binaryPreviousKey(ranges, loc.range.start, x => x.range);
+    const current = (found && found.type) || this.declared.type;
+    if (empty(current)) {
+      return current;
+    }
 
-    return (found && found.type) || this.declared.type;
+    // with the other types it is given anywhere, as kOS types at runtime
+    const others: IType[] = [];
+    for (const type of [this.declared.type, ...this.sets.map(set => set.type)]) {
+      if (!empty(type) && type !== structureType && type !== current) {
+        others.push(type);
+      }
+    }
+    return others.length === 0 ? current : flowType(current, others);
   }
 
   /**

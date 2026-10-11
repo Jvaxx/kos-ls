@@ -383,11 +383,20 @@ describe('Union Type', () => {
     const unionType = new UnionType(false, stringType, partType);
     const unionSuffixes = unionType.suffixes();
 
+    // the suffixes of every member: kOS checks them at runtime
     for (const [name, suffix] of structureType.suffixes()) {
       expect(unionSuffixes.get(name)).toBe(suffix);
     }
+    expect(unionSuffixes.get('length')).toBe(stringType.getSuffix('length'));
+    expect(unionSuffixes.get('mass')).toBe(partType.getSuffix('mass'));
 
-    expect(unionSuffixes.size).toBe(structureType.suffixes().size);
+    const names = new Set([
+      ...stringType.suffixes().keys(),
+      ...partType.suffixes().keys(),
+    ]);
+    expect(unionSuffixes.size).toBe(names.size);
+    expect(unionType.hasSuffix('mass')).toBe(true);
+    expect(unionType.hasSuffix('other')).toBe(false);
   });
 });
 

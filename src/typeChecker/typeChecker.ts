@@ -436,7 +436,7 @@ export class TypeChecker
         if (tracker.declared.symbol.name === atom.token) {
           tracker.declareType(exprResult.type.assignmentType());
         } else {
-          tracker.setType(atom.token, exprResult.type);
+          tracker.setType(atom.token, exprResult.type.assignmentType());
         }
       } else {
         errors.push(
@@ -783,9 +783,14 @@ export class TypeChecker
       );
     }
 
+    // the statement declares the variable when it did not exist
     const { tracker } = target;
     if (this.isBasicTracker(tracker)) {
-      tracker.setType(target, listType.apply(finalType));
+      if (tracker.declared.symbol.name === target) {
+        tracker.declareType(listType.apply(finalType));
+      } else {
+        tracker.setType(target, listType.apply(finalType));
+      }
     }
 
     return errors;
@@ -1293,7 +1298,8 @@ export class TypeChecker
 
     // we either need to have an indexer or be the any type
     if (empty(indexer)) {
-      builder.nodes.push(indexerError);
+      // the value of the index: unknown
+      builder.nodes.push(indexerError.assignmentType());
 
       if (!type.anyType) {
         errors.push(
@@ -1420,6 +1426,14 @@ export class TypeChecker
     if (builder.isTrailer()) {
       const type = builder.current();
       const suffix = type.getSuffix(suffixTerm.token.lookup);
+
+      // an unknown type (Structure) or one whose suffixes are added at
+      // runtime (lexicon keys) can have any suffix
+      if (empty(suffix) && (type.anyType || type.dynamic)) {
+        suffixTerm.token.tracker = structureType.tracker();
+        builder.nodes.push(structureType);
+        return [];
+      }
 
       // may need to pass something in about if we're in get set context
       if (empty(suffix)) {
