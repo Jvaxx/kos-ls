@@ -16,7 +16,7 @@ import {
   CONFIG_DIAGNOSTICS,
 } from '../utilities/diagnosticsUtils';
 
-const VALID_PROPERTIES = ['archive', 'bodies', 'linting'];
+const VALID_PROPERTIES = ['archive', 'bodies', 'linting', 'volumes', 'preload', 'exclude'];
 
 /**
  * Parse the configuration from the provided text document
@@ -31,6 +31,9 @@ export function parseWorkspaceConfiguration(
   let rootVolumePath: Maybe<string> = undefined;
   let bodies: Maybe<string[]> = undefined;
   let lintRules = new Map<string, LintRule>();
+  let volumes: Maybe<Map<string, string>> = undefined;
+  let preload: Maybe<string[]> = undefined;
+  let exclude: Maybe<string[]> = undefined;
   const diagnostics: DiagnosticUri[] = [];
   const uri = document.uri;
 
@@ -58,6 +61,31 @@ export function parseWorkspaceConfiguration(
                 const bodiesResult = parseBodies(value, text, uri);
                 bodies = bodiesResult.bodies;
                 diagnostics.push(...bodiesResult.diagnostics);
+                break;
+              case 'volumes':
+                const volumesResult = parseVolumes(value, text, uri);
+                volumes = volumesResult.volumes;
+                diagnostics.push(...volumesResult.diagnostics);
+                break;
+              case 'preload':
+                const preloadResult = parseStringArray(
+                  value,
+                  text,
+                  uri,
+                  'Expected an array of file paths for preload.',
+                );
+                preload = preloadResult.values;
+                diagnostics.push(...preloadResult.diagnostics);
+                break;
+              case 'exclude':
+                const excludeResult = parseStringArray(
+                  value,
+                  text,
+                  uri,
+                  'Expected an array of file or directory paths for exclude.',
+                );
+                exclude = excludeResult.values;
+                diagnostics.push(...excludeResult.diagnostics);
                 break;
               case 'linting':
                 const lintResult = parseLintRules(value, text, uri);
@@ -98,9 +126,116 @@ export function parseWorkspaceConfiguration(
       rootVolumePath,
       bodies,
       lintRules,
+      volumes,
+      preload,
+      exclude,
     ),
     diagnostics,
   };
+}
+
+/**
+ * Parse the volume directories: an object from volume number or name to
+ * a directory, e.g. `{ "1": "src" }`. Volume 0 is the archive.
+ * @param node representing the volumes section of the configuration
+ * @param text `ksconfig.json` text
+ * @param uri uri of the `ksconfig.json` file
+ */
+function parseVolumes(
+  node: Node,
+  text: string,
+  uri: string,
+): Fallible<{ volumes: Maybe<Map<string, string>> }> {
+  const diagnostics: DiagnosticUri[] = [];
+  if (node.type !== 'object') {
+    diagnostics.push(
+      createConfigDiagnostic(
+        nodeRange(node, text),
+        uri,
+        'Expected an object from volume to directory for volumes, e.g. { "1": "src" }.',
+        CONFIG_DIAGNOSTICS.INVALID_VALUE,
+      ),
+    );
+    return { diagnostics, volumes: undefined };
+  }
+
+  const volumes = new Map<string, string>();
+  for (const prop of node.children ?? []) {
+    const [key, value] = prop.children ?? [];
+    if (empty(key) || empty(value)) {
+      continue;
+    }
+
+    const volume = String(key.value).toLowerCase().replace(/:$/, '');
+    if (!/^[a-z0-9_]+$/.test(volume)) {
+      diagnostics.push(
+        createConfigDiagnostic(
+          nodeRange(key, text),
+          uri,
+          `${key.value} is not a volume number or name.`,
+          CONFIG_DIAGNOSTICS.INVALID_PROPERTY,
+        ),
+      );
+    } else if (value.type !== 'string') {
+      diagnostics.push(
+        createConfigDiagnostic(
+          nodeRange(value, text),
+          uri,
+          'Expected a directory path for the volume.',
+          CONFIG_DIAGNOSTICS.INVALID_VALUE,
+        ),
+      );
+    } else {
+      volumes.set(volume, value.value);
+    }
+  }
+
+  return { diagnostics, volumes };
+}
+
+/**
+ * Parse an array of strings
+ * @param node json node
+ * @param text `ksconfig.json` text
+ * @param uri uri of the `ksconfig.json` file
+ * @param message diagnostic message for a wrong value
+ */
+function parseStringArray(
+  node: Node,
+  text: string,
+  uri: string,
+  message: string,
+): Fallible<{ values: Maybe<string[]> }> {
+  const diagnostics: DiagnosticUri[] = [];
+  if (node.type !== 'array') {
+    diagnostics.push(
+      createConfigDiagnostic(
+        nodeRange(node, text),
+        uri,
+        message,
+        CONFIG_DIAGNOSTICS.INVALID_VALUE,
+      ),
+    );
+    return { diagnostics, values: undefined };
+  }
+
+  const values: string[] = [];
+  for (const item of node.children ?? []) {
+    if (item.type === 'string') {
+      values.push(item.value);
+    } else {
+      diagnostics.push(
+        createConfigDiagnostic(
+          nodeRange(item, text),
+          uri,
+          message,
+          CONFIG_DIAGNOSTICS.INVALID_VALUE,
+        ),
+      );
+    }
+  }
+
+  return { diagnostics, values };
 }
 
 /**

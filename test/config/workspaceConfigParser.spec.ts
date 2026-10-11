@@ -294,3 +294,63 @@ describe('WorkspaceConfigParser', () => {
     });
   });
 });
+
+describe('WorkspaceConfigParser kos-ls properties', () => {
+  test('parses volumes, preload and exclude', () => {
+    const { config, diagnostics } = parseWorkspaceConfiguration(
+      makeDocument(
+        '{ "volumes": { "1": "src", "Probe:": "../probe" },' +
+          ' "preload": ["src/lib/std.ks"], "exclude": ["bin", "boot"] }',
+      ),
+    );
+
+    expect(diagnostics).toHaveLength(0);
+    expect(config.volumes).toEqual(
+      new Map([
+        ['1', 'src'],
+        ['probe', '../probe'],
+      ]),
+    );
+    expect(config.volumeUris().get('1')?.fsPath).toBe('/example/src');
+    expect(config.volumeUris().get('probe')?.fsPath).toBe('/probe');
+    expect(config.preloadUris().map((uri) => uri.fsPath)).toEqual([
+      '/example/src/lib/std.ks',
+    ]);
+    expect(config.isExcluded(URI.file('/example/bin/mission/a.ks'))).toBe(
+      true,
+    );
+    expect(config.isExcluded(URI.file('/example/boot'))).toBe(true);
+    expect(config.isExcluded(URI.file('/example/binary/a.ks'))).toBe(false);
+    expect(config.isExcluded(URI.file('/example/src/a.ks'))).toBe(false);
+  });
+
+  test('reports invalid values', () => {
+    const { config, diagnostics } = parseWorkspaceConfiguration(
+      makeDocument(
+        '{ "volumes": { "1": 2, "a b": "x" }, "preload": "std.ks",' +
+          ' "exclude": [1] }',
+      ),
+    );
+
+    expect(diagnostics.map((d) => d.message)).toEqual([
+      'Expected a directory path for the volume.',
+      'a b is not a volume number or name.',
+      'Expected an array of file paths for preload.',
+      'Expected an array of file or directory paths for exclude.',
+    ]);
+    expect(config.volumes).toEqual(new Map());
+    expect(config.preload).toBeUndefined();
+    expect(config.exclude).toEqual([]);
+  });
+
+  test('equality sees changes in maps', () => {
+    const a = parseWorkspaceConfiguration(
+      makeDocument('{ "volumes": { "1": "src" } }'),
+    ).config;
+    const b = parseWorkspaceConfiguration(
+      makeDocument('{ "volumes": { "1": "bin" } }'),
+    ).config;
+    expect(a.equal(b)).toBe(false);
+    expect(a.equal(a.merge(a))).toBe(true);
+  });
+});

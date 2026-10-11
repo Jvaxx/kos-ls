@@ -1,121 +1,120 @@
 import { ResolverService } from '../../src/services/resolverService';
 import { Location } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
-import { join } from 'path';
-import { empty } from '../../src/utilities/typeGuards';
+
+const range = {
+  start: { line: 0, character: 0 },
+  end: { line: 0, character: 1 },
+};
+
+const at = (path: string): Location => ({
+  range,
+  uri: URI.file(path).toString(),
+});
+
+/**
+ * A resolver for an archive at /arch, where only the given files exist
+ * @param files existing files
+ */
+const resolver = (...files: string[]) => {
+  const existing = new Set(files);
+  const service = new ResolverService(undefined, (uri) =>
+    existing.has(uri.fsPath),
+  );
+  service.rootVolume = URI.file('/arch');
+  return service;
+};
+
+const resolved = (service: ResolverService, caller: string, path: string) =>
+  service.resolve(at(caller), path)?.fsPath;
 
 describe('resolver service', () => {
-  test('path resolver', () => {
-    const pathResolver = new ResolverService();
-    const range = {
-      start: {
-        line: 0,
-        character: 0,
-      },
-      end: {
-        line: 0,
-        character: 1,
-      },
-    };
-
-    const otherFileLocation: Location = {
-      range,
-      uri: 'file:///root/example/otherFile.ks',
-    };
-
-    const otherDirLocation: Location = {
-      range,
-      uri: 'file:///root/example/up/upFile.ks',
-    };
-
-    const relative1 = ['relative', 'path', 'file.ks'].join('/');
-    const relative2 = ['..', 'relative', 'path', 'file.ks'].join('/');
-    const absolute = ['0:', 'relative', 'path', 'file.ks'].join('/');
-    const weird = ['0:relative', 'path', 'file.ks'].join('/');
-
-    expect(pathResolver.resolve(otherFileLocation, relative1)).toBeUndefined();
-    expect(pathResolver.resolve(otherDirLocation, relative2)).toBeUndefined();
-    expect(pathResolver.resolve(otherFileLocation, absolute)).toBeUndefined();
-    expect(pathResolver.resolve(otherFileLocation, weird)).toBeUndefined();
-
-    pathResolver.rootVolume = URI.file(join('root', 'example'));
-
-    const resolvedUri = 'file:///root/example/relative/path/file.ks';
-
-    const relativeResolved1 = pathResolver.resolve(
-      otherFileLocation,
-      relative1,
-    );
-    expect(undefined).not.toBe(relativeResolved1);
-    if (!empty(relativeResolved1)) {
-      expect(relativeResolved1.toString()).toBe(resolvedUri);
-    }
-
-    const relativeResolved2 = pathResolver.resolve(otherDirLocation, relative2);
-    expect(undefined).not.toBe(relativeResolved2);
-    if (!empty(relativeResolved2)) {
-      expect(relativeResolved2.toString()).toBe(resolvedUri);
-    }
-
-    const absoluteResolved = pathResolver.resolve(otherFileLocation, absolute);
-    expect(undefined).not.toBe(absoluteResolved);
-    if (!empty(absoluteResolved)) {
-      expect(absoluteResolved.toString()).toBe(resolvedUri);
-    }
-
-    const weirdResolved = pathResolver.resolve(otherFileLocation, weird);
-    expect(undefined).not.toBe(weirdResolved);
-    if (!empty(weirdResolved)) {
-      expect(weirdResolved.toString()).toBe(resolvedUri);
-    }
+  test('is not ready without an archive', () => {
+    const service = new ResolverService();
+    expect(service.ready()).toBe(false);
+    expect(service.resolvePath(at('/arch/a.ks'), '0:/b.ks')).toEqual({
+      kind: 'notReady',
+    });
   });
 
-  test('path resolver boot', () => {
-    const pathResolver = new ResolverService();
-    const range = {
-      start: {
-        line: 0,
-        character: 0,
-      },
-      end: {
-        line: 0,
-        character: 1,
-      },
-    };
+  test('resolves archive paths', () => {
+    const service = resolver();
+    expect(resolved(service, '/arch/x/a.ks', '0:/lib/b.ks')).toBe(
+      '/arch/lib/b.ks',
+    );
+    expect(resolved(service, '/arch/x/a.ks', '0:lib/b')).toBe('/arch/lib/b');
+    expect(resolved(service, '/arch/x/a.ks', 'Archive:/lib/b.ks')).toBe(
+      '/arch/lib/b.ks',
+    );
+  });
 
-    const bootFileLocation: Location = {
-      range,
-      uri: 'file:///root/example/boot/otherFile.ks',
-    };
+  test('resolves mapped volumes', () => {
+    const service = resolver();
+    service.volumes.set('1', URI.file('/arch/src'));
+    service.volumes.set('probe', URI.file('/elsewhere'));
 
-    const relative1 = ['relative', 'path', 'file.ks'].join('/');
-    const absolute = ['0:', 'relative', 'path', 'file.ks'].join('/');
-    const weird = ['0:relative', 'path', 'file.ks'].join('/');
+    expect(resolved(service, '/arch/boot/a.ks', '1:/lib/std.ks')).toBe(
+      '/arch/src/lib/std.ks',
+    );
+    expect(resolved(service, '/arch/boot/a.ks', 'PROBE:/x.ks')).toBe(
+      '/elsewhere/x.ks',
+    );
+  });
 
-    expect(pathResolver.resolve(bootFileLocation, relative1)).toBeUndefined();
-    expect(pathResolver.resolve(bootFileLocation, absolute)).toBeUndefined();
-    expect(pathResolver.resolve(bootFileLocation, weird)).toBeUndefined();
+  test('reports unmapped volumes', () => {
+    expect(resolver().resolvePath(at('/arch/a.ks'), '1:/lib/std.ks')).toEqual({
+      kind: 'unmappedVolume',
+      volume: '1',
+    });
+  });
 
-    pathResolver.rootVolume = URI.file(join('root', 'example'));
+  describe('paths without a volume', () => {
+    test('prefer the caller directory', () => {
+      const service = resolver('/arch/x/b.ks', '/arch/b.ks');
+      expect(resolved(service, '/arch/x/a.ks', 'b.ks')).toBe('/arch/x/b.ks');
+      expect(resolved(service, '/arch/x/y/a.ks', '../b.ks')).toBe(
+        '/arch/x/b.ks',
+      );
+    });
 
-    const resolvedUri = 'file:///root/example/relative/path/file.ks';
+    test('fall back to the root of the caller volume', () => {
+      const service = resolver('/arch/src/lib/b.ks', '/arch/lib/b.ks');
+      service.volumes.set('1', URI.file('/arch/src'));
+      expect(resolved(service, '/arch/src/boot/a.ks', 'lib/b.ks')).toBe(
+        '/arch/src/lib/b.ks',
+      );
+    });
 
-    const relativeResolved1 = pathResolver.resolve(bootFileLocation, relative1);
-    expect(relativeResolved1).toBeDefined();
-    if (!empty(relativeResolved1)) {
-      expect(relativeResolved1.toString()).toBe(resolvedUri);
-    }
+    test('fall back to the archive', () => {
+      const service = resolver('/arch/lib/b.ks');
+      service.volumes.set('1', URI.file('/arch/src'));
+      expect(resolved(service, '/arch/src/boot/a.ks', 'lib/b.ks')).toBe(
+        '/arch/lib/b.ks',
+      );
+    });
 
-    const absoluteResolved = pathResolver.resolve(bootFileLocation, absolute);
-    expect(absoluteResolved).toBeDefined();
-    if (!empty(absoluteResolved)) {
-      expect(absoluteResolved.toString()).toBe(resolvedUri);
-    }
+    test('find files without their extension', () => {
+      const service = new ResolverService(undefined, (uri) =>
+        uri.fsPath.endsWith('/arch/lib/b'),
+      );
+      service.rootVolume = URI.file('/arch');
+      expect(resolved(service, '/arch/boot/a.ks', 'lib/b')).toBe(
+        '/arch/lib/b',
+      );
+    });
 
-    const weirdResolved = pathResolver.resolve(bootFileLocation, weird);
-    expect(weirdResolved).toBeDefined();
-    if (!empty(weirdResolved)) {
-      expect(weirdResolved.toString()).toBe(resolvedUri);
-    }
+    test('designate the caller directory when nothing exists', () => {
+      expect(resolved(resolver(), '/arch/boot/a.ks', 'lib/b.ks')).toBe(
+        '/arch/boot/lib/b.ks',
+      );
+    });
+
+    test('starting with a slash are on the caller volume', () => {
+      const service = resolver();
+      service.volumes.set('1', URI.file('/arch/src'));
+      expect(resolved(service, '/arch/src/boot/a.ks', '/lib/b.ks')).toBe(
+        '/arch/src/lib/b.ks',
+      );
+    });
   });
 });

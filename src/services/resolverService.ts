@@ -1,23 +1,68 @@
-import { relative, join, dirname } from 'path';
+import { existsSync } from 'fs';
+import { join, dirname, relative, isAbsolute } from 'path';
 import { Location } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+import { normalizeExtensions } from '../utilities/pathUtils';
 import { empty } from '../utilities/typeGuards';
+
+/**
+ * The result of resolving a kOS path
+ */
+export type Resolution =
+  /** the path designates this file (which may not exist) */
+  | { kind: 'file'; uri: URI }
+  /** the path is on a volume with no directory configured */
+  | { kind: 'unmappedVolume'; volume: string }
+  /** the resolver has no archive directory yet */
+  | { kind: 'notReady' };
+
+/**
+ * Names that designate the archive, volume 0
+ */
+const archiveNames = new Set(['0', 'archive']);
+
+/**
+ * Does a file exist for this uri, as kOS would find it (`.ksm` and missing
+ * extensions are normalized to `.ks`)
+ * @param uri file uri
+ */
+const fileExists = (uri: URI): boolean => {
+  if (existsSync(uri.fsPath)) {
+    return true;
+  }
+
+  const normalized = normalizeExtensions(uri);
+  return !empty(normalized) && existsSync(URI.parse(normalized).fsPath);
+};
 
 /**
  * Class to resolve run statements or calls to file paths
  */
 export class ResolverService {
   /**
-   * The path corresponding to root of volume 0 of the kos directory
+   * The directory of volume 0, the archive
    */
   public rootVolume?: URI;
 
   /**
+   * The directories of other volumes, by lower case number or name
+   */
+  public volumes: Map<string, URI>;
+
+  /**
+   * Checks whether a file exists, to choose between candidate locations
+   */
+  private readonly exists: (uri: URI) => boolean;
+
+  /**
    * Create an instance of that path resolve.
    * @param rootVolume the uri associated with volume 0
+   * @param exists file existence check
    */
-  constructor(rootVolume?: string) {
+  constructor(rootVolume?: string, exists: (uri: URI) => boolean = fileExists) {
     this.rootVolume = !empty(rootVolume) ? URI.parse(rootVolume) : undefined;
+    this.volumes = new Map();
+    this.exists = exists;
   }
 
   /**
@@ -33,54 +78,96 @@ export class ResolverService {
    * @param rawPath path provided in a run statement
    */
   public resolve(caller: Location, rawPath: string): Maybe<URI> {
-    if (empty(this.rootVolume)) {
-      return undefined;
-    }
-
-    // get relative run path from file
-    const uri = URI.parse(caller.uri);
-
-    // currently only support file scheme
-    if (uri.scheme !== 'file') {
-      return undefined;
-    }
-
-    const relativePath = relative(
-      this.rootVolume.toString(),
-      dirname(caller.uri),
-    );
-
-    // check if the scripts reads from volume 0 "disk"
-    // TODO no idea what to do for ship volumes
-    const [possibleVolume, ...remaining] = rawPath.split('/');
-    if (possibleVolume.startsWith('0:')) {
-      // if of style 0:first\remaining...
-      if (possibleVolume.length > 2) {
-        const first = possibleVolume.slice(2);
-
-        return this.toUri(first, ...remaining);
-      }
-
-      // else of style 0:\remaining...
-      return this.toUri(...remaining);
-    }
-
-    if (relativePath === 'boot') {
-      return this.toUri(possibleVolume, ...remaining);
-    }
-
-    // if no volume do a relative lookup
-    return this.toUri(relativePath, possibleVolume, ...remaining);
+    const resolution = this.resolvePath(caller, rawPath);
+    return resolution.kind === 'file' ? resolution.uri : undefined;
   }
 
   /**
-   * Creates a load data payload from a caller and path segments
-   * @param caller call location
-   * @param pathSegments path segments
+   * Resolve a kOS path, `[volume:]path`, used in a file
+   *
+   * A path with a volume is resolved in that volume's directory. A path
+   * without one is relative to the current directory at runtime, which
+   * is not known statically: the first existing file is taken among the
+   * caller's directory, the root of the caller's volume and the archive.
+   * @param caller location of caller
+   * @param rawPath path provided in a run statement
    */
-  private toUri(...pathSegments: string[]): Maybe<URI> {
-    if (empty(this.rootVolume)) return undefined;
+  public resolvePath(caller: Location, rawPath: string): Resolution {
+    if (empty(this.rootVolume)) {
+      return { kind: 'notReady' };
+    }
 
-    return URI.file(join(this.rootVolume.fsPath, ...pathSegments));
+    const callerUri = URI.parse(caller.uri);
+    if (callerUri.scheme !== 'file') {
+      return { kind: 'notReady' };
+    }
+
+    const match = /^([A-Za-z0-9_]+):(.*)$/.exec(rawPath);
+    if (match !== null) {
+      const volume = match[1].toLowerCase();
+      const root = this.volumeRoot(volume);
+      if (empty(root)) {
+        return { kind: 'unmappedVolume', volume };
+      }
+
+      return { kind: 'file', uri: this.join(root, match[2]) };
+    }
+
+    const callerRoot = this.callerVolumeRoot(callerUri);
+
+    // an absolute path is relative to the current volume's root
+    if (rawPath.startsWith('/')) {
+      return { kind: 'file', uri: this.join(callerRoot, rawPath) };
+    }
+
+    const candidates = [
+      this.join(URI.file(dirname(callerUri.fsPath)), rawPath),
+      this.join(callerRoot, rawPath),
+      this.join(this.rootVolume, rawPath),
+    ];
+    const found = candidates.find((candidate) => this.exists(candidate));
+    return { kind: 'file', uri: found ?? candidates[0] };
+  }
+
+  /**
+   * The directory of a volume
+   * @param volume lower case volume number or name
+   */
+  private volumeRoot(volume: string): Maybe<URI> {
+    return archiveNames.has(volume) ? this.rootVolume : this.volumes.get(volume);
+  }
+
+  /**
+   * The root of the volume a file is on: the innermost volume directory
+   * that contains it, else the archive
+   * @param uri file uri
+   */
+  private callerVolumeRoot(uri: URI): URI {
+    let best = this.rootVolume!;
+    let bestDepth = -1;
+
+    for (const root of [this.rootVolume!, ...this.volumes.values()]) {
+      const path = relative(root.fsPath, uri.fsPath);
+      if (path.startsWith('..') || isAbsolute(path)) {
+        continue;
+      }
+
+      const depth = root.fsPath.split(/[\\/]/).length;
+      if (depth > bestDepth) {
+        best = root;
+        bestDepth = depth;
+      }
+    }
+
+    return best;
+  }
+
+  /**
+   * Join a kOS path to a directory
+   * @param root directory
+   * @param path kOS path, '/' separated
+   */
+  private join(root: URI, path: string): URI {
+    return URI.file(join(root.fsPath, ...path.split('/')));
   }
 }
