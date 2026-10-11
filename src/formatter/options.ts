@@ -9,9 +9,16 @@ export type BraceStyle = 'Attach' | 'Stroustrup' | 'Allman';
 
 /**
  * How keywords are written: kOS is case-insensitive, so changing the case of
- * a keyword never changes the meaning
+ * a keyword never changes the meaning. `Lower` writes `runPath` and
+ * `runOncePath` as the kOS documentation does.
  */
 export type KeywordCase = 'Lower' | 'Upper' | 'Preserve';
+
+/**
+ * Where a long expression breaks around a binary operator: `None` after it
+ * (`a +` / `b`), `All` before it (`a` / `+ b`)
+ */
+export type BinaryOperatorBreak = 'None' | 'All';
 
 /**
  * Formatter options, named like their clang-format counterparts
@@ -36,6 +43,11 @@ export interface FormatOptions {
    * Brace placement of statement blocks
    */
   BreakBeforeBraces: BraceStyle;
+
+  /**
+   * Line breaks before or after binary operators
+   */
+  BreakBeforeBinaryOperators: BinaryOperatorBreak;
 
   /**
    * Case of keywords
@@ -66,6 +78,7 @@ export const defaultFormatOptions: FormatOptions = {
   ContinuationIndentWidth: 4,
   ColumnLimit: 80,
   BreakBeforeBraces: 'Attach',
+  BreakBeforeBinaryOperators: 'None',
   KeywordCase: 'Lower',
   MaxEmptyLinesToKeep: 1,
   SpacesBeforeTrailingComments: 1,
@@ -79,6 +92,7 @@ const optionKinds: { [K in keyof FormatOptions]: OptionKind } = {
   ContinuationIndentWidth: 'count',
   ColumnLimit: 'count',
   BreakBeforeBraces: ['Attach', 'Stroustrup', 'Allman'],
+  BreakBeforeBinaryOperators: ['None', 'All'],
   KeywordCase: ['Lower', 'Upper', 'Preserve'],
   MaxEmptyLinesToKeep: 'count',
   SpacesBeforeTrailingComments: 'count',

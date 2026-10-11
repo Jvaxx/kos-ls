@@ -113,7 +113,8 @@ IndentWidth: 4              # columns per block level
 ContinuationIndentWidth: 4  # broken lines not aligned to a bracket
 ColumnLimit: 80             # 0: no limit
 BreakBeforeBraces: Attach   # Attach, Stroustrup (else on its own line), Allman
-KeywordCase: Lower          # Lower, Upper, Preserve
+BreakBeforeBinaryOperators: None  # None: `a +` / `b`; All: `a` / `+ b`
+KeywordCase: Lower          # Lower (runPath, runOncePath), Upper, Preserve
 MaxEmptyLinesToKeep: 1
 SpacesBeforeTrailingComments: 1
 AlignTrailingComments: true

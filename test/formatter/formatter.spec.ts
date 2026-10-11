@@ -57,14 +57,40 @@ describe('Formatter on every fixture', () => {
     expect(files.length).toBeGreaterThan(200);
   });
 
-  test.each(files.map(file => [file.slice(fixtures.length), file]))(
+  // the defaults, and every other choice
+  const styles: [string, Partial<FormatOptions>][] = [
+    ['default', {}],
+    [
+      'other',
+      {
+        IndentWidth: 2,
+        ContinuationIndentWidth: 8,
+        ColumnLimit: 40,
+        BreakBeforeBraces: 'Allman',
+        BreakBeforeBinaryOperators: 'All',
+        KeywordCase: 'Upper',
+        MaxEmptyLinesToKeep: 2,
+        SpacesBeforeTrailingComments: 2,
+        AlignTrailingComments: false,
+      },
+    ],
+  ];
+  const cases = files.flatMap(file =>
+    styles.map(([name, options]) => [
+      `${file.slice(fixtures.length)} (${name})`,
+      file,
+      options,
+    ]),
+  ) as [string, string, Partial<FormatOptions>][];
+
+  test.each(cases)(
     '%s',
-    (_, file) => {
+    (_, file, options) => {
       const source = readFileSync(file, 'utf8');
-      const once = format(source);
+      const once = format(source, options);
 
       // idempotence
-      expect(format(once)).toBe(once);
+      expect(format(once, options)).toBe(once);
 
       // same meaning: same tokens, same tree
       expect(tokensOf(once)).toEqual(tokensOf(source));
@@ -74,7 +100,7 @@ describe('Formatter on every fixture', () => {
       expect(commentsOf(once)).toEqual(commentsOf(source));
 
       // the edits give the same text
-      const result = formatText(source);
+      const result = formatText(source, options);
       if ('error' in result) {
         throw new Error(result.error);
       }
@@ -100,7 +126,8 @@ describe('Formatter rules', () => {
     expect(format('@LAZYGLOBAL   OFF.')).toBe('@lazyglobal off.\n');
     expect(format('print(1).')).toBe('print (1).\n');
     expect(format('print "a" at(1,2).')).toBe('print "a" at (1, 2).\n');
-    expect(format('runpath ( "a", 1 ).')).toBe('runpath("a", 1).\n');
+    expect(format('RUNPATH ( "a", 1 ).')).toBe('runPath("a", 1).\n');
+    expect(format('runoncepath("a").')).toBe('runOncePath("a").\n');
     expect(format('run once lib(1).')).toBe('run once lib(1).\n');
     expect(format('set x to not a and defined b.')).toBe(
       'set x to not a and defined b.\n',
@@ -220,6 +247,12 @@ describe('Formatter rules', () => {
     expect(format('set x to a * b + c * d.', { ColumnLimit: 18 })).toBe(
       'set x to a * b +\n    c * d.\n',
     );
+    expect(
+      format('set x to a * b + c * d.', {
+        ColumnLimit: 18,
+        BreakBeforeBinaryOperators: 'All',
+      }),
+    ).toBe('set x to a * b\n    + c * d.\n');
     const long = `print ${'a + '.repeat(40)}b.`;
     expect(format(long, { ColumnLimit: 0 })).toBe(`${long}\n`);
   });

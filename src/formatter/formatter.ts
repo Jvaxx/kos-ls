@@ -249,6 +249,15 @@ const separatorKeywords = new Set([
 ]);
 
 /**
+ * Keywords the kOS documentation writes in camel case, used for the lower
+ * case
+ */
+const camelKeywords = new Map([
+  [TokenType.runPath, 'runPath'],
+  [TokenType.runOncePath, 'runOncePath'],
+]);
+
+/**
  * Tokens never preceded by a space
  */
 const noSpaceBefore = new Set([
@@ -478,7 +487,7 @@ function tokenText(token: Token, options: FormatOptions): string {
   }
   switch (options.KeywordCase) {
     case 'Lower':
-      return token.lexeme.toLowerCase();
+      return camelKeywords.get(token.type) ?? token.lexeme.toLowerCase();
     case 'Upper':
       return token.lexeme.toUpperCase();
     case 'Preserve':
@@ -607,7 +616,9 @@ function buildLines(
         space: previous === undefined || spaceBetween(previous, token, roles),
         mustBreak: false,
         cost:
-          previous === undefined ? undefined : breakCost(previous, token, roles),
+          previous === undefined
+            ? undefined
+            : breakCost(previous, token, roles, options),
         open:
           token.type === TokenType.bracketOpen ||
           token.type === TokenType.squareOpen,
@@ -723,6 +734,7 @@ function breakCost(
   previous: Token,
   token: Token,
   roles: Roles,
+  options: FormatOptions,
 ): Maybe<number> {
   if (noSpaceBefore.has(token.type) || token.type === TokenType.atSign) {
     return undefined;
@@ -734,9 +746,11 @@ function breakCost(
   if (previous.type === TokenType.comma) {
     return costComma;
   }
-  const operator = binaryOperators.get(previous.type);
-  if (operator !== undefined && !roles.unary.has(previous)) {
-    return operator;
+  const before = options.BreakBeforeBinaryOperators === 'All';
+  const operator = before ? token : previous;
+  const cost = binaryOperators.get(operator.type);
+  if (cost !== undefined && !roles.unary.has(operator)) {
+    return cost;
   }
   if (separatorKeywords.has(previous.type)) {
     return costKeyword;
