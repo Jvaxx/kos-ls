@@ -21,21 +21,6 @@ export class KsLock {
   { }
 
   /**
-   * Is this lock "cooked"
-   */
-  get cooked(): boolean {
-    switch (this.name.lookup) {
-      case 'throttle':
-      case 'steering':
-      case 'wheelthrottle':
-      case 'wheelsteering':
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
    * What kind of symbol is represented in this case a lock
    */
   get tag(): KsSymbolKind.lock {

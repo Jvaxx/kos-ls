@@ -40,7 +40,7 @@ import {
   DIAGNOSTICS,
 } from '../../utilities/diagnosticsUtils';
 import { builtIn } from '../../utilities/constants';
-import { BuiltinKind, settableBuiltin } from '../clobber';
+import { BuiltinKind, trackerBuiltinKind } from '../clobber';
 import { toCase } from '../../utilities/stringUtils';
 import { cleanLocation } from '../../utilities/clean';
 import { Token } from '../../models/token';
@@ -799,7 +799,9 @@ export class SymbolTableBuilder {
       isVariable(tracker.declared.symbol)
     ) {
       result.tracker = tracker as BasicTracker<KsParameter | KsVariable>;
-    } else {
+    } else if (!this.hidesBuiltin(tracker)) {
+      // a builtin function or lock is hidden by the new variable; whether
+      // kOS allows it is the resolver's clobber check
       result.error = this.wrongTypeError(
         token,
         tracker,
@@ -883,7 +885,7 @@ export class SymbolTableBuilder {
           }
           break;
         case KsSymbolKind.lock:
-          if (!tracker.declared.symbol.cooked && tracker.usages.length === 0) {
+          if (tracker.usages.length === 0) {
             errors.push(this.createUnusedDiagnostic(tracker));
           }
           break;
@@ -1041,32 +1043,50 @@ export class SymbolTableBuilder {
   }
 
   /**
-   * The kind of the builtin this name would hide, as kOS classifies it
+   * The builtin this name would hide, as kOS classifies it
    * (`Compiler.cs` `BuiltInIdentifierType`): a function first, then a
    * system lock, then a bound variable
    * @param name name to look up
    */
-  public builtinKind(name: Token): Maybe<BuiltinKind> {
+  public builtinTracker(name: Token): Maybe<BasicTracker> {
     const found = (kind: KsSymbolKind) => {
       const tracker = this.lookupKind(name.lookup, ScopeKind.global, kind);
-      return !empty(tracker) && tracker.declared.uri === builtIn
+      return !empty(tracker) && this.hidesBuiltin(tracker)
         ? tracker
         : undefined;
     };
 
     // functions and locks share a table
-    const callable = found(KsSymbolKind.function);
-    if (!empty(callable)) {
-      return callable.declared.symbol.tag === KsSymbolKind.lock
-        ? BuiltinKind.systemLock
-        : BuiltinKind.function;
-    }
-    if (!empty(found(KsSymbolKind.variable))) {
-      return settableBuiltin(name.lookup)
-        ? BuiltinKind.settableVariable
-        : BuiltinKind.readOnlyVariable;
-    }
-    return undefined;
+    return found(KsSymbolKind.function) ?? found(KsSymbolKind.variable);
+  }
+
+  /**
+   * The kind of the builtin this name would hide, as kOS classifies it
+   * @param name name to look up
+   */
+  public builtinKind(name: Token): Maybe<BuiltinKind> {
+    return trackerBuiltinKind(this.builtinTracker(name));
+  }
+
+  /**
+   * Tie a name to the builtin it names, without declaring or setting
+   * anything: a set kOS refuses, or a lock of a system lock
+   * @param name name to bind
+   */
+  public bindBuiltin(name: Token): void {
+    name.tracker = this.builtinTracker(name);
+  }
+
+  /**
+   * Lock an existing lock again (`lock x to 2.` after `lock x to 1.`):
+   * the name is a set of that lock
+   * @param token name of the lock
+   * @param tracker tracker of the existing lock
+   */
+  public relock(token: Token, tracker: BasicTracker<KsLock>): void {
+    token.tracker = tracker;
+    tracker.sets.push(createSymbolSet(token));
+    this.logger.verbose(`relock ${token.lexeme} at ${rangeToString(token)}`);
   }
 
   /**

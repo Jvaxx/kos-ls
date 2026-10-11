@@ -99,7 +99,9 @@ file: a name is highlighted as what it resolves to.
 | `macro` | `@lazyglobal`, `@clobberbuiltins`, `// #include` and `// #region` |
 
 Modifiers: `declaration` (where a name is declared), `defaultLibrary`
-(kOS builtins: functions, variables, bodies, suffixes), `readonly`
+(kOS builtins: functions, variables, bodies, suffixes, and the system
+locks `steering`, `throttle`, `wheelSteering` and `wheelThrottle`,
+`lock steering to ...` included), `readonly`
 (builtin variables and suffixes that cannot be set, bodies included),
 `documentation` (doc comment tags).
 

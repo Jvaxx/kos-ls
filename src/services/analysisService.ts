@@ -988,7 +988,12 @@ export class AnalysisService extends EventEmitter {
           .reachable()
           .map((diagnostic) => addDiagnosticsUri(diagnostic, uri));
 
-    const typeDiagnostics = new TypeChecker(script, this.logger, this.tracer)
+    const typeDiagnostics = new TypeChecker(
+      script,
+      this.logger,
+      this.tracer,
+      this.clobberBuiltins,
+    )
       .check()
       .map((error) => addDiagnosticsUri(error, uri));
 

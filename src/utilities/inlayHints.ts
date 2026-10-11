@@ -7,6 +7,7 @@ import { TreeTraverse } from './treeTraverse';
 import { tokenTrackedType } from '../typeChecker/utilities/typeUtilities';
 import { rangeIntersection } from './positionUtils';
 import { cleanPosition } from './clean';
+import { builtIn } from './constants';
 
 /**
  * Finds the names declared with a value: variables, locks and loop
@@ -41,7 +42,8 @@ class DeclaredNames extends TreeTraverse {
 
 /**
  * Inlay hints of the types inferred for the names declared in a range:
- * `local x: Vessel is ship.`. Unknown types (Structure) get none
+ * `local x: Vessel is ship.`. Unknown types (Structure) and system locks
+ * get none
  * @param stmts statements of the script
  * @param range range shown by the client
  */
@@ -50,6 +52,12 @@ export const typeInlayHints = (stmts: IStmt[], range: Range): InlayHint[] => {
 
   for (const name of new DeclaredNames().find(stmts)) {
     if (!rangeIntersection(name, range)) {
+      continue;
+    }
+
+    // a system lock (`lock steering to ...`) has kOS's type, not one
+    // inferred here
+    if (name.tracker?.declared.uri === builtIn) {
       continue;
     }
 

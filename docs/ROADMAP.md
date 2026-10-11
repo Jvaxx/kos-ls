@@ -163,9 +163,8 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
   kind, builtin, declaration, read-only from the database's access;
   bodies read-only); doc comment tags split into keyword, parameter and
   type. Standard LSP types and modifiers only, so clients' default
-  highlight groups apply. Known: `set throttle to` and `lock steering
-  to` name a user variable (the analysis gap noted for hover); `list
-  engines in x` leaves `engines` a plain variable.
+  highlight groups apply. Known: `list engines in x` leaves `engines` a
+  plain variable.
 - Code actions (done): quick fixes for a missing period, a name hiding
   a builtin (rename to a free `name_`, or `@clobberbuiltins on.`),
   misspelled symbols, suffixes and doc tag types (closest names by
@@ -211,4 +210,22 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
   scratch, in uri order, and that check only applies within a file.
   On `parser_valid`, check and the probe agree: 2564 (283 such
   cross-file warnings gone, nothing added).
+- System locks (done): `lock steering to ...` and `lock throttle to
+  ...` (and the wheel locks) name kOS's builtin lock, as kOS compiles
+  them whatever else has the name: hover shows its documentation, the
+  highlighting marks it `defaultLibrary`, the value is checked against
+  its type (a hint, none on `parser_valid`'s 213 such locks) and it gets
+  no inlay hint. They used to declare a user lock (`lock throttle`) or
+  bind nothing (`lock steering`: no hover, a plain variable). Locking
+  an existing user lock again is a set of it, so its name has a hover.
+- One report per refused set (done): a set kOS refuses because the name
+  hides a builtin (`set r to 1.`, `list engines in r.`, `toggle ship.`)
+  had the clobber error plus a "wrong kind" warning or a "no getter"
+  hint; now only the error. A refused set of a system lock (`set
+  throttle to 1.`) is meant for kOS's lock, so its name is the builtin;
+  any other is analysed as the new variable it was meant to be, so the
+  rest of the script is checked as before. With `@clobberbuiltins on`
+  such a set declares a variable without the "wrong kind" warning.
+  `parser_valid`: 2564 to 2548 (15 duplicate warnings and a phantom
+  unused `throttle` variable gone, nothing added).
 - Maintenance: ESLint, dependency updates, remove pre-Node-10 shims.

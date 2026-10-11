@@ -24,7 +24,7 @@ import { mockLogger, mockTracer, logException } from '../models/logger';
 import { Script } from '../models/script';
 import { empty, notEmpty } from '../utilities/typeGuards';
 import { structureType } from './ksTypes/primitives/structure';
-import { iterator } from '../utilities/constants';
+import { builtIn, iterator } from '../utilities/constants';
 import { TokenType } from '../models/tokentypes';
 import {
   createFunctionType,
@@ -68,6 +68,12 @@ import { Type } from './models/types/type';
 import { CallSignature } from './models/types/callSignature';
 import { UnionType } from './models/types/unionType';
 import { FunctionScan } from '../analysis/functionScan';
+import {
+  bareIdentifier,
+  Clobber,
+  forbids,
+  trackerBuiltinKind,
+} from '../analysis/clobber';
 import {
   DocTag,
   declarationStart,
@@ -113,6 +119,12 @@ export class TypeChecker
   private readonly script: Script;
 
   /**
+   * Whether names may hide builtins (`@clobberbuiltins on.`): otherwise
+   * the resolver reports the sets kOS refuses, and they are not checked
+   */
+  private readonly clobberBuiltins: boolean;
+
+  /**
    * The cached bound check statement
    */
   private readonly checkStmtBind = this.checkStmt.bind(this);
@@ -121,10 +133,12 @@ export class TypeChecker
     script: Script,
     logger: ILogger = mockLogger,
     tracer: ITracer = mockTracer,
+    clobberBuiltins = false,
   ) {
     this.script = script;
     this.logger = logger;
     this.tracer = tracer;
+    this.clobberBuiltins = Stmt.clobbersBuiltins(script.stmts, clobberBuiltins);
   }
 
   /**
@@ -227,10 +241,32 @@ export class TypeChecker
    */
   visitDeclLock(decl: Decl.Lock): Diagnostics {
     const result = this.checkExpr(decl.value);
-    const { tracker } = decl.identifier;
+    const { identifier } = decl;
+    const { tracker } = identifier;
 
     if (this.isBasicTracker(tracker)) {
-      tracker.declareType(result.type);
+      if (tracker.declared.uri === builtIn) {
+        // a system lock: its type is kOS's
+        if (
+          !tracker.declared.type
+            .assignmentType()
+            .canCoerceFrom(result.type.assignmentType())
+        ) {
+          result.errors.push(
+            createDiagnostic(
+              decl.value,
+              `Cannot lock ${identifier.lexeme} of type ` +
+                `${tracker.declared.type.toString()} to ${result.type.toString()}`,
+              DiagnosticSeverity.Hint,
+              DIAGNOSTICS.TYPE_WRONG,
+            ),
+          );
+        }
+      } else if (tracker.declared.symbol.name === identifier) {
+        tracker.declareType(result.type);
+      } else {
+        tracker.setType(identifier, result.type);
+      }
     }
 
     return result.errors;
@@ -421,6 +457,10 @@ export class TypeChecker
    * @param stmt on / off statement
    */
   public visitOnOff(stmt: Stmt.OnOff): Diagnostics {
+    if (this.refusedSet(stmt.suffix)) {
+      return [];
+    }
+
     const result = this.checkExpr(stmt.suffix);
     const errors = result.errors;
 
@@ -479,6 +519,21 @@ export class TypeChecker
   }
 
   /**
+   * Is this the target of a set kOS refuses whose name is still the
+   * builtin's (`set throttle to 1.`, `toggle ship.`): the resolver
+   * reported it, so it is not checked as a set
+   * @param suffix set target
+   */
+  private refusedSet(suffix: IExpr): boolean {
+    const name = bareIdentifier(suffix);
+    return (
+      !this.clobberBuiltins &&
+      !empty(name) &&
+      forbids(Clobber.set, trackerBuiltinKind(name.tracker))
+    );
+  }
+
+  /**
    * Visit a chain of declarations or sets
    * @param stmt the chain
    */
@@ -493,6 +548,10 @@ export class TypeChecker
   public visitSet(stmt: Stmt.Set): Diagnostics {
     const exprResult = this.checkExpr(stmt.value);
     const errors = exprResult.errors;
+    if (this.refusedSet(stmt.suffix)) {
+      return errors;
+    }
+
     const suffixResult = this.checkExpr(stmt.suffix);
     errors.push(...suffixResult.errors);
 
@@ -715,6 +774,10 @@ export class TypeChecker
    * @param stmt toggle statement
    */
   public visitToggle(stmt: Stmt.Toggle): Diagnostics {
+    if (this.refusedSet(stmt.suffix)) {
+      return [];
+    }
+
     const result = this.checkExpr(stmt.suffix);
     const errors: Diagnostics = result.errors;
 

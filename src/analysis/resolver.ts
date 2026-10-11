@@ -23,7 +23,12 @@ import { SymbolTableBuilder } from './models/symbolTableBuilder';
 import { IDeferred, KsSymbolKind } from './types';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
 import { createDiagnostic, DIAGNOSTICS } from '../utilities/diagnosticsUtils';
-import { checkClobber, Clobber } from './clobber';
+import {
+  bareIdentifier,
+  BuiltinKind,
+  checkClobber,
+  Clobber,
+} from './clobber';
 import Denque from 'denque';
 import { Token } from '../models/token';
 
@@ -349,11 +354,6 @@ export class Resolver
     // determine scope type
     const scopeType = !empty(decl.scope) ? decl.scope.type : ScopeKind.global;
 
-    const { tracker } = this.tableBuilder.lookupLockTracker(
-      decl.identifier,
-      ScopeKind.global,
-    );
-
     const errors: Diagnostic[] = this.checkClobber(
       decl.identifier,
       Clobber.lock,
@@ -361,7 +361,23 @@ export class Resolver
     errors.push(...this.useExprLocals(decl.value));
     errors.push(...this.resolveExpr(decl.value));
 
-    if (empty(tracker)) {
+    // a lock of throttle, steering, wheelThrottle or wheelSteering is
+    // kOS's system lock, whatever else has that name
+    if (
+      this.tableBuilder.builtinKind(decl.identifier) === BuiltinKind.systemLock
+    ) {
+      this.tableBuilder.bindBuiltin(decl.identifier);
+      return errors;
+    }
+
+    const { tracker } = this.tableBuilder.lookupLockTracker(
+      decl.identifier,
+      ScopeKind.global,
+    );
+
+    if (!empty(tracker)) {
+      this.tableBuilder.relock(decl.identifier, tracker);
+    } else {
       const declareError = this.tableBuilder.declareLock(
         scopeType,
         decl.identifier,
@@ -608,7 +624,7 @@ export class Resolver
       ];
     }
 
-    const errors = this.setBinding(set, stmt);
+    const errors = this.setUnlessRefused(set, stmt, clobberErrors);
     errors.push(
       ...clobberErrors,
       ...this.useExprLocals(stmt.value),
@@ -1029,8 +1045,9 @@ export class Resolver
       return [];
     }
 
-    return this.checkClobber(stmt.target, Clobber.set).concat(
-      this.setBinding(stmt.target, stmt),
+    const clobberErrors = this.checkClobber(stmt.target, Clobber.set);
+    return clobberErrors.concat(
+      this.setUnlessRefused(stmt.target, stmt, clobberErrors),
     );
   }
 
@@ -1061,6 +1078,33 @@ export class Resolver
     }
 
     return errors;
+  }
+
+  /**
+   * Set a variable, as the author meant it when kOS refuses the set
+   * because the name hides a builtin (reported once, by the clobber
+   * error): a set of a system lock (`set throttle to 1.`) is meant for
+   * kOS's lock, so the name stays the builtin's; any other is a new
+   * variable (`set q to queue().`), declared as usual so the rest of the
+   * script is analysed with it
+   * @param set token to set
+   * @param range range of the set
+   * @param clobberErrors the clobber check of the set
+   */
+  private setUnlessRefused(
+    set: Token,
+    range: Range,
+    clobberErrors: Diagnostics,
+  ): Diagnostics {
+    if (
+      clobberErrors.length > 0 &&
+      this.tableBuilder.builtinKind(set) === BuiltinKind.systemLock
+    ) {
+      this.tableBuilder.bindBuiltin(set);
+      return [];
+    }
+
+    return this.setBinding(set, range);
   }
 
   /**
@@ -1303,16 +1347,3 @@ const accumulateErrors = <T>(
 
   return errors;
 };
-
-/**
- * The name of an expression that is a lone identifier (`x`, not `x:y`,
- * `x[0]` or `x()`)
- * @param expr expression
- */
-const bareIdentifier = (expr: IExpr): Maybe<Token> =>
-  expr instanceof Expr.Suffix &&
-  empty(expr.trailer) &&
-  expr.suffixTerm.trailers.length === 0 &&
-  expr.suffixTerm.atom instanceof SuffixTerm.Identifier
-    ? expr.suffixTerm.atom.token
-    : undefined;
