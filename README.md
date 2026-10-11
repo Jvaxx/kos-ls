@@ -83,6 +83,36 @@ is a `Structure`, accepted everywhere. A comment above a `parameter`
 statement documents its parameters, before the `@param` tags of the
 function.
 
+## Semantic highlighting
+
+The server classifies every token (`textDocument/semanticTokens`, full
+and range), so highlighting follows the analysis instead of a syntax
+file: a name is highlighted as what it resolves to.
+
+| Token type | |
+|---|---|
+| `keyword` | keywords and commands, `true`/`false`, a doc comment's `@param`/`@return` |
+| `variable`, `parameter`, `function` | names, by the symbol they resolve to (locks are variables) |
+| `property`, `method` | suffixes (`ship:altitude`, `ship:partsnamed(...)`) |
+| `number`, `string`, `operator`, `comment` | literals (bare file names are strings), operators, comments |
+| `type` | `{Type}` in a doc comment tag |
+| `macro` | `@lazyglobal`, `@clobberbuiltins`, `// #include` and `// #region` |
+
+Modifiers: `declaration` (where a name is declared), `defaultLibrary`
+(kOS builtins: functions, variables, bodies, suffixes), `readonly`
+(builtin variables and suffixes that cannot be set, bodies included),
+`documentation` (doc comment tags).
+
+Neovim uses them as soon as the server is attached, through the
+`@lsp.type.<type>`, `@lsp.mod.<modifier>` and
+`@lsp.typemod.<type>.<modifier>` highlight groups, e.g.:
+
+```lua
+vim.api.nvim_set_hl(0, "@lsp.typemod.variable.defaultLibrary", { link = "@variable.builtin" })
+vim.api.nvim_set_hl(0, "@lsp.typemod.function.defaultLibrary", { link = "@function.builtin" })
+vim.api.nvim_set_hl(0, "@lsp.type.macro", { link = "PreProc" })
+```
+
 ## Quick fixes
 
 Code actions (`vim.lsp.buf.code_action()` in Neovim) fix these

@@ -2,6 +2,7 @@ import { SymbolTable } from './analysis/models/symbolTable';
 import { IScript } from './parser/types';
 import { Diagnostic, TextDocument } from 'vscode-languageserver';
 import { DirectiveContainer } from './directives/directiveContainer';
+import { Comment, Token } from './models/token';
 
 export interface DependencyInfo {
   dependencyTables: Set<SymbolTable>;
@@ -21,6 +22,18 @@ export interface LexicalInfo {
   script: IScript;
   directives: DirectiveContainer;
   diagnostics: DiagnosticUri[];
+
+  /**
+   * The tokens of the script, those of the syntax tree: the analysis
+   * sets their trackers
+   */
+  tokens: Token[];
+
+  /**
+   * Comments after the last token (the others are in the
+   * `leadingComments` of the token that follows them)
+   */
+  trailingComments: Comment[];
 }
 
 export interface SemanticInfo {

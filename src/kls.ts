@@ -26,7 +26,11 @@ import {
   CodeActionKind,
   CodeActionParams,
   WorkspaceEdit,
+  SemanticTokens,
+  SemanticTokensParams,
+  SemanticTokensRangeParams,
 } from 'vscode-languageserver';
+import { semanticTokens, semanticTokensLegend } from './services/semanticTokens';
 import { codeActions } from './services/codeActions';
 import { ClientConfiguration } from './types';
 import { KsSymbolKind, SymbolTracker, KsBaseSymbol } from './analysis/types';
@@ -261,6 +265,12 @@ export class KLS {
     this.connection.languages.inlayHint.on(this.onInlayHint.bind(this));
     this.connection.onDocumentFormatting(this.onFormatting.bind(this));
     this.connection.onCodeAction(this.onCodeAction.bind(this));
+    this.connection.languages.semanticTokens.on((params, cancellation) =>
+      this.onSemanticTokens(params, cancellation),
+    );
+    this.connection.languages.semanticTokens.onRange((params, cancellation) =>
+      this.onSemanticTokens(params, cancellation),
+    );
     this.connection.onDocumentRangeFormatting(
       this.onRangeFormatting.bind(this),
     );
@@ -376,6 +386,11 @@ export class KLS {
         documentRangeFormattingProvider: true,
         codeActionProvider: {
           codeActionKinds: [CodeActionKind.QuickFix],
+        },
+        semanticTokensProvider: {
+          legend: semanticTokensLegend,
+          full: true,
+          range: true,
         },
       },
     };
@@ -633,6 +648,40 @@ export class KLS {
     } catch (err) {
       logException(this.logger, this.tracer, err, LogLevel.error);
       return undefined;
+    }
+  }
+
+  /**
+   * This handler classifies the tokens of a document, or of a range, for
+   * highlighting
+   * @param params the document, and the range if any
+   * @param cancellation request cancellation token
+   */
+  private async onSemanticTokens(
+    params: SemanticTokensParams | SemanticTokensRangeParams,
+    cancellation: CancellationToken,
+  ): Promise<SemanticTokens> {
+    const none = { data: [] };
+    try {
+      const { uri } = params.textDocument;
+      const document = this.documentService.getDocument(uri);
+      const documentInfo = await this.analysisService.loadInfo(uri);
+      if (
+        cancellation.isCancellationRequested ||
+        empty(document) ||
+        empty(documentInfo)
+      ) {
+        return none;
+      }
+
+      return semanticTokens(
+        documentInfo.lexicalInfo,
+        document,
+        'range' in params ? params.range : undefined,
+      );
+    } catch (err) {
+      logException(this.logger, this.tracer, err, LogLevel.error);
+      return none;
     }
   }
 

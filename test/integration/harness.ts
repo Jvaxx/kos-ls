@@ -9,6 +9,8 @@ import {
   Hover,
   InlayHint,
   PublishDiagnosticsParams,
+  Range,
+  SemanticTokens,
   SignatureHelp,
   TextEdit,
 } from 'vscode-languageserver/node';
@@ -24,6 +26,7 @@ import { mockLogger, mockTracer } from '../../src/models/logger';
 import { typeInitializer } from '../../src/typeChecker/initialize';
 import { defaultServerConfiguration } from '../../src/config/models/serverConfiguration';
 import { defaultWorkspaceConfiguration } from '../../src/config/models/workspaceConfiguration';
+import { semanticTokensLegend } from '../../src/services/semanticTokens';
 
 export const workspaces = join(__dirname, '../fixtures/workspaces');
 
@@ -229,6 +232,49 @@ export class TestClient {
       range,
       context: { diagnostics, ...(only ? { only } : {}) },
     });
+  }
+
+  /**
+   * The semantic tokens of a document, decoded: `text type mod,mod`, in
+   * document order
+   * @param path path relative to the workspace root
+   * @param range only this range
+   */
+  async semanticTokens(path: string, range?: Range): Promise<string[]> {
+    await this.settle();
+    const textDocument = { uri: this.uri(path) };
+    const result: SemanticTokens = range
+      ? await this.connection.sendRequest('textDocument/semanticTokens/range', {
+          textDocument,
+          range,
+        })
+      : await this.connection.sendRequest('textDocument/semanticTokens/full', {
+          textDocument,
+        });
+
+    const lines = readFileSync(join(this.root, path), 'utf8').split('\n');
+    const tokens: string[] = [];
+    let line = 0;
+    let character = 0;
+    for (let i = 0; i < result.data.length; i += 5) {
+      const [deltaLine, deltaStart, length, type, modifiers] = result.data.slice(
+        i,
+        i + 5,
+      );
+      line += deltaLine;
+      character = deltaLine === 0 ? character + deltaStart : deltaStart;
+      const names = semanticTokensLegend.tokenModifiers.filter(
+        (_, bit) => modifiers & (1 << bit),
+      );
+      tokens.push(
+        [
+          lines[line].slice(character, character + length),
+          semanticTokensLegend.tokenTypes[type],
+          ...(names.length > 0 ? [names.join(',')] : []),
+        ].join(' '),
+      );
+    }
+    return tokens;
   }
 
   /**

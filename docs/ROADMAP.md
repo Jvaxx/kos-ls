@@ -156,7 +156,16 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
 
 ## Phase 5: more
 
-- Semantic tokens (replaces client-side syntax files).
+- Semantic tokens (done; replaces client-side syntax files): full and
+  range requests (no deltas: a 1000-line file takes about 4 ms).
+  Keywords, literals, comments and operators come from the scanner's
+  tokens, now kept in `LexicalInfo`; names from their trackers (symbol
+  kind, builtin, declaration, read-only from the database's access;
+  bodies read-only); doc comment tags split into keyword, parameter and
+  type. Standard LSP types and modifiers only, so clients' default
+  highlight groups apply. Known: `set throttle to` and `lock steering
+  to` name a user variable (the analysis gap noted for hover); `list
+  engines in x` leaves `engines` a plain variable.
 - Code actions (done): quick fixes for a missing period, a name hiding
   a builtin (rename to a free `name_`, or `@clobberbuiltins on.`),
   misspelled symbols, suffixes and doc tag types (closest names by

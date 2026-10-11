@@ -802,6 +802,7 @@ export class AnalysisService extends EventEmitter {
       tokens,
       diagnostics: scanDiagnostics,
       directiveTokens,
+      trailingComments,
     } = scanner.scanTokens();
 
     const parser = new Parser(uri, tokens, this.logger, this.tracer);
@@ -813,6 +814,8 @@ export class AnalysisService extends EventEmitter {
     const info: LexicalInfo = {
       script,
       directives,
+      tokens,
+      trailingComments,
       diagnostics: [
         ...scanDiagnostics,
         ...parseDiagnostics,
