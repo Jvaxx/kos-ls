@@ -160,7 +160,14 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
 - Code actions: quick fixes for common diagnostics.
 - Disk size: stripped size of a file and of everything it runs, for
   probes with a few KB of disk.
-- Parser gaps: multiple declarations (#214), declare/set chains (#205),
-  `log x to var` (#189), `@clobberbuiltins` (#215).
+- Parser gaps (done): multiple declarations (#214) and declare/set
+  chains (#205) are one rule, `Stmt.Chain` of full `Decl.Var`/`Stmt.Set`
+  clauses; `log x to var` (#189): file arguments of log, copy, rename,
+  delete and compile use their variables, and a lone identifier naming
+  no symbol is a bare file name as in kOS (`barewordOkay`);
+  `@clobberbuiltins` (#215): `Stmt.Directive`, declarations may hide
+  builtins, directives valid in the run at the top of the file.
+  Diagnostics on `parser_valid`: 2687 to 2680 (7 false warnings on bare
+  file names gone).
 - `kos-ls check`: diagnostics from the command line, for CI.
 - Maintenance: ESLint, dependency updates, remove pre-Node-10 shims.
