@@ -91,7 +91,7 @@ namesakes (`stage` and `stage()`), structures derived at runtime (a
 rest are true errors, lints, and globals of libraries loaded at runtime
 by another script.
 
-## Phase 3: documentation everywhere
+## Phase 3: documentation everywhere (done)
 
 The most visible feature, built on phases 1-2:
 
@@ -108,6 +108,18 @@ The most visible feature, built on phases 1-2:
 - Completion items with documentation (`completionItem/resolve`), signature
   help with parameter names and per-parameter docs, inlay hints for
   inferred types (optional).
+
+Done: comments are trivia on the next token (`leadingComments`, with
+`trailing` set when code precedes them on their line). Hover, completion
+(`completionItem/resolve`) and signature help share one formatter
+(`src/utilities/documentation.ts`). Signature help now finds the call on
+the tokens before the cursor, so it also works in a call that does not
+parse yet. Doc comments (`src/analysis/docComment.ts`) document user
+functions and parameters, and their tag types type the parameters, the
+calls and the arguments; unknown tag types are reported
+(`type-unknown-in-doc`). Inlay hints show inferred types of variables,
+locks and loop elements. Diagnostics on `parser_valid` are unchanged
+(2687).
 
 ## Phase 4: formatter
 
