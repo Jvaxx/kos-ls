@@ -31,9 +31,21 @@ export class Type implements IType {
   public displayName: string;
 
   /**
-   * Documentation from the kOS database
+   * Documentation from the kOS database. A type applied from a template
+   * shows the template's: it may be applied before the docs are loaded
    */
-  public docs?: TypeDocs;
+  public get docs(): Maybe<TypeDocs> {
+    return this.ownDocs ?? this.typeTemplate?.docs;
+  }
+
+  public set docs(docs: Maybe<TypeDocs>) {
+    this.ownDocs = docs;
+  }
+
+  /**
+   * Documentation given to this type itself
+   */
+  private ownDocs?: TypeDocs;
 
   /**
    * Whether suffixes can be added at runtime, see IParametricType.dynamic

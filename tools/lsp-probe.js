@@ -2,10 +2,15 @@
 // Headless LSP client: starts a kls server over stdio, opens files under a
 // workspace root and prints the diagnostics it publishes.
 //
-//   node tools/lsp-probe.js [--server <cmd...> --] <root> [file...]
+//   node tools/lsp-probe.js [--server <cmd...> --]
+//     [--ask <method> <file>:<line>:<col>]... <root> [file...]
 //
 // Without files, every .ks under <root> is opened. The default server is
-// this checkout's compiled out/src/server.js.
+// this checkout's compiled out/src/server.js. Each --ask sends a position
+// request (e.g. textDocument/hover, textDocument/completion,
+// textDocument/signatureHelp; 1-based line and column) and prints its
+// JSON result instead of the diagnostics. For a completion, the first
+// item is also resolved (completionItem/resolve).
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -17,6 +22,13 @@ if (args[0] === '--server') {
   const end = args.indexOf('--');
   server = args.slice(1, end);
   args = args.slice(end + 1);
+}
+const asks = [];
+while (args[0] === '--ask') {
+  const [method, where] = args.slice(1, 3);
+  const [file, line, col] = where.split(':');
+  asks.push({ method, file: path.resolve(file), line: +line - 1, character: +col - 1 });
+  args = args.slice(3);
 }
 const root = path.resolve(args[0]);
 const walk = dir =>
@@ -50,6 +62,22 @@ conn.listen();
   }
   // kls debounces workspace loading and propagation (4 s): wait for it to settle
   await new Promise(r => setTimeout(r, 7000));
+  if (asks.length > 0) {
+    for (const { method, file, line, character } of asks) {
+      const result = await conn.sendRequest(method, {
+        textDocument: { uri: uri(file) }, position: { line, character },
+      });
+      console.log(`${method} ${path.relative(root, file)}:${line + 1}:${character + 1}`);
+      console.log(JSON.stringify(result, null, 2));
+      const items = Array.isArray(result) ? result : result?.items;
+      if (method === 'textDocument/completion' && items?.length > 0) {
+        console.log('completionItem/resolve');
+        console.log(JSON.stringify(await conn.sendRequest('completionItem/resolve', items[0]), null, 2));
+      }
+    }
+    proc.kill();
+    process.exit(0);
+  }
   const sev = ['', 'error', 'warning', 'info', 'hint'];
   for (const f of files) {
     for (const d of diags.get(uri(f)) ?? []) {

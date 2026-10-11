@@ -10,7 +10,7 @@
 import databaseJson from '../../../data/kos-1.6.0.1.json';
 import { KosDatabase, ParameterEntry, SuffixEntry, Documented } from './schema';
 import { parseType, TypeExpression } from './typeExpression';
-import { IParametricType, IType, OperatorKind, TypeDocs, TypeKind } from '../types';
+import { Access, IParametricType, IType, OperatorKind, TypeDocs, TypeKind } from '../types';
 import { Type } from '../models/types/type';
 import { ParametricType } from '../models/parametricTypes/parametricType';
 import { Operator } from '../models/types/operator';
@@ -67,6 +67,9 @@ export interface BuiltinSymbol {
 
   /** whether it is a lock (`throttle`), for variables */
   lock: boolean;
+
+  /** whether it can be read and set, for variables */
+  access?: Access;
 
   docs: TypeDocs;
 }
@@ -348,6 +351,7 @@ export function loadDatabase(database: KosDatabase): KosTypes {
       segments: nameSegments(name),
       type: resolveText(entry.type),
       lock: entry.lock === true,
+      access: { get: true, set: entry.access === 'getset' },
       docs: docs(entry),
     });
   }

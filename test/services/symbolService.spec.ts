@@ -576,8 +576,8 @@ describe('symbol service', () => {
 
         expect(response).toEqual({
           contents: {
-            language: 'kos',
-            value: '(variable) y: Scalar',
+            kind: 'markdown',
+            value: '```kerboscript\n(variable) y: Scalar\n```',
           },
           range: Range.create(Position.create(3, 14), Position.create(3, 15)),
         });
@@ -600,8 +600,8 @@ describe('symbol service', () => {
 
         expect(response).toEqual({
           contents: {
-            language: 'kos',
-            value: '(literal) 10: Scalar',
+            kind: 'markdown',
+            value: '```kerboscript\n(literal) 10: Scalar\n```',
           },
           range: Range.create(Position.create(2, 11), Position.create(2, 13)),
         });

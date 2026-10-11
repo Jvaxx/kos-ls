@@ -18,6 +18,7 @@ import {
   DocumentHighlight,
   DocumentHighlightKind,
   Connection,
+  MarkupKind,
 } from 'vscode-languageserver';
 import {
   KsBaseSymbol,
@@ -42,7 +43,9 @@ import { Scanner } from '../scanner/scanner';
 import { isValidIdentifier } from '../models/tokentypes';
 import { tokenTrackedType } from '../typeChecker/utilities/typeUtilities';
 import { IFindResult } from '../parser/types';
-import { IType } from '../typeChecker/types';
+import { IType, TypeDocs, Access } from '../typeChecker/types';
+import { kosTypes } from '../typeChecker/initialize';
+import { formatHover } from '../utilities/documentation';
 
 export type SymbolConnection = Pick<
   Connection,
@@ -339,35 +342,61 @@ export class SymbolService extends EventEmitter {
 
     const { token } = result;
     const type = tokenTrackedType(token);
+    if (empty(type)) {
+      return undefined;
+    }
 
     const { tracker } = token;
     let label: string;
     let symbolKind: string;
+    let docs: Maybe<TypeDocs>;
+    let access: Maybe<Access>;
 
     if (!empty(tracker)) {
-      symbolKind = KsSymbolKind[tracker.declared.symbol.tag];
+      const { symbol, uri: declaredUri } = tracker.declared;
+      symbolKind = KsSymbolKind[symbol.tag];
 
-      const { name } = tracker.declared.symbol;
+      const { name } = symbol;
       label = typeof name === 'string' ? name : name.lexeme;
+
+      switch (symbol.tag) {
+        case KsSymbolKind.suffix:
+          // the tracked type is the suffix itself
+          label = type.displayName ?? label;
+          docs = type.docs;
+          access = type.access;
+          break;
+        case KsSymbolKind.function:
+          docs = type.docs;
+          break;
+        case KsSymbolKind.variable:
+        case KsSymbolKind.lock:
+          // builtin variables share their types, their docs are apart
+          if (declaredUri === builtIn) {
+            const lookup = label.toLowerCase();
+            const builtin = kosTypes().variables.find(
+              (variable) => variable.name.toLowerCase() === lookup,
+            );
+            docs = builtin?.docs;
+            access = builtin?.access;
+          }
+          break;
+      }
     } else {
       symbolKind = 'literal';
       label = token.lexeme;
     }
 
-    return (
-      type && {
-        contents: {
-          // Note doesn't does do much other than format it as code
-          // may look into adding type def syntax highlighting
-          language: 'kos',
-          value: `(${symbolKind}) ${label}: ${type.toString()}`,
-        },
-        range: {
-          start: cleanPosition(token.start),
-          end: cleanPosition(token.end),
-        },
-      }
-    );
+    return {
+      contents: {
+        kind: MarkupKind.Markdown,
+        value: formatHover(symbolKind, label, type, docs, access),
+      },
+      range: {
+        start: cleanPosition(token.start),
+        end: cleanPosition(token.end),
+      },
+    };
   }
 
   /**
