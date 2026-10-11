@@ -1,6 +1,82 @@
+import {
+  ParameterInformation,
+  SignatureInformation,
+  MarkupKind,
+} from 'vscode-languageserver';
 import { IType, TypeDocs, Access, TypeKind } from '../typeChecker/types';
 import { UnionType } from '../typeChecker/models/types/unionType';
 import { VariadicType } from '../typeChecker/models/types/variadicType';
+import { KsSymbol, KsSymbolKind } from '../analysis/types';
+import { kosTypes } from '../typeChecker/initialize';
+import { builtIn } from './constants';
+
+/**
+ * What is shown about a symbol besides its type
+ */
+export interface SymbolDocs {
+  /**
+   * Name of the symbol as it is presented
+   */
+  name: string;
+
+  /**
+   * Its documentation, if any
+   */
+  docs?: TypeDocs;
+
+  /**
+   * Its access, for properties
+   */
+  access?: Access;
+}
+
+/**
+ * Builtin variables by lowercase name: they share their types, so their
+ * docs are kept apart
+ */
+let builtinVariables: Maybe<Map<string, { docs: TypeDocs; access?: Access }>>;
+
+/**
+ * The documentation of a symbol
+ * @param symbol the symbol
+ * @param uri uri of its declaration
+ * @param type its type
+ */
+export const symbolDocs = (
+  symbol: KsSymbol,
+  uri: string,
+  type: IType,
+): SymbolDocs => {
+  const { name } = symbol;
+  const lexeme = typeof name === 'string' ? name : name.lexeme;
+
+  switch (symbol.tag) {
+    case KsSymbolKind.suffix:
+      // the type is the suffix itself
+      return {
+        name: type.displayName ?? lexeme,
+        docs: type.docs,
+        access: type.access,
+      };
+    case KsSymbolKind.function:
+      return { name: lexeme, docs: type.docs };
+    case KsSymbolKind.variable:
+    case KsSymbolKind.lock:
+      if (uri === builtIn) {
+        builtinVariables ??= new Map(
+          kosTypes().variables.map((variable) => [
+            variable.name.toLowerCase(),
+            variable,
+          ]),
+        );
+        const builtin = builtinVariables.get(lexeme.toLowerCase());
+        return { name: lexeme, docs: builtin?.docs, access: builtin?.access };
+      }
+      return { name: lexeme };
+    default:
+      return { name: lexeme };
+  }
+};
 
 /**
  * A parameter of a call signature, ready to be shown
@@ -160,4 +236,50 @@ export const formatHover = (
   const body = formatDocs(docs, access);
   const block = '```kerboscript\n' + signature + '\n```';
   return body === '' ? block : `${block}\n\n${body}`;
+};
+
+/**
+ * Signature help for a call: the signature, with the range of each
+ * parameter in it, and the documentation
+ * @param name name of the called symbol
+ * @param type its type
+ * @param docs its documentation
+ */
+export const signatureInformation = (
+  name: string,
+  type: IType,
+  docs?: TypeDocs,
+): SignatureInformation => {
+  const params = parameterLabels(type, docs);
+  const returns = type.callSignature()?.returns();
+
+  // the label is built here to know where each parameter is
+  let label = `${name}(`;
+  const parameters: ParameterInformation[] = params.map((param, i) => {
+    if (i > 0) {
+      label += ', ';
+    }
+    const start = label.length;
+    label += param.label;
+    const range: [number, number] = [start, label.length];
+    return param.doc === undefined
+      ? { label: range }
+      : {
+          label: range,
+          documentation: { kind: MarkupKind.Markdown, value: param.doc },
+        };
+  });
+  label += ')';
+  if (returns !== undefined && !returns.noneType) {
+    label += `: ${typeText(returns)}`;
+  }
+
+  const body = formatDocs(docs);
+  return body === ''
+    ? { label, parameters }
+    : {
+        label,
+        documentation: { kind: MarkupKind.Markdown, value: body },
+        parameters,
+      };
 };

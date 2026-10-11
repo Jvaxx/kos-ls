@@ -3,6 +3,7 @@ import {
   CompletionItem,
   CompletionItemKind,
   Diagnostic,
+  MarkupKind,
   DiagnosticSeverity,
   DocumentSymbol,
   MessageReader,
@@ -32,13 +33,66 @@ import {
   cleanCompletion,
   cleanLocation,
   cleanRange,
-  cleanToken,
 } from './clean';
 import { DIAGNOSTICS, createDiagnosticUri } from './diagnosticsUtils';
 import { mapper } from './mapper';
 import { rangeAfter, rangeContainsPos } from './positionUtils';
 import { empty } from './typeGuards';
 import { presentName } from './stringUtils';
+import { formatDocs, formatSignature, symbolDocs } from './documentation';
+
+/**
+ * The documentation of the items of the last completion, given on
+ * `completionItem/resolve`: it is only built for the items the client
+ * shows
+ */
+export class CompletionDocs {
+  /**
+   * Which completion the items belong to
+   */
+  private generation = 0;
+
+  /**
+   * Builders of the documentation of each item
+   */
+  private builders: (() => string)[] = [];
+
+  /**
+   * Forget the items of the previous completion
+   */
+  public reset(): void {
+    this.generation += 1;
+    this.builders = [];
+  }
+
+  /**
+   * Give an item documentation, built when it is resolved
+   * @param item completion item
+   * @param build builds the documentation in Markdown
+   */
+  public add(item: CompletionItem, build: () => string): CompletionItem {
+    item.data = { generation: this.generation, index: this.builders.length };
+    this.builders.push(build);
+    return item;
+  }
+
+  /**
+   * Add its documentation to an item of the last completion
+   * @param item completion item
+   */
+  public resolve(item: CompletionItem): CompletionItem {
+    const { generation, index } = item.data ?? {};
+    if (generation !== this.generation || typeof index !== 'number') {
+      return item;
+    }
+
+    const build = this.builders[index];
+    const value = build === undefined ? '' : build();
+    return value === ''
+      ? item
+      : { ...item, documentation: { kind: MarkupKind.Markdown, value } };
+  }
+}
 
 /**
  * Get the connection primitives based on the request connection type
@@ -168,24 +222,25 @@ export const symbolCompletionItems = async (
     entity: KsBaseSymbol,
   ): CompletionItem => {
     const kind = symbolCompletionMapper(entity.tag);
+    const label = entity.name.lexeme;
 
-    let typeString = 'structure';
+    let type: Maybe<IType>;
     const { tracker } = entity.name;
     if (!empty(tracker)) {
-      const type = tracker.getType({ uri, range: entity.name });
-
-      if (!empty(type)) {
-        typeString = type.toString();
-      }
+      type = tracker.getType({ uri, range: entity.name });
     }
+    type ??= structureType;
 
-    return {
-      kind,
-      label: entity.name.lexeme,
-      sortText: sortLabel(entity.name.lexeme),
-      detail: `${entity.name.lexeme}: ${typeString}`,
-      data: cleanToken(entity.name),
-    } as CompletionItem;
+    const { docs, access } = symbolDocs(entity, entity.name.uri, type);
+    return analyzer.completionDocs.add(
+      {
+        kind,
+        label,
+        sortText: sortLabel(label),
+        detail: formatSignature(label, type, docs),
+      },
+      () => formatDocs(docs, access),
+    );
   };
 
   const localCompletions = toCompletion.bind(null, locals);
@@ -239,13 +294,16 @@ export const suffixCompletionItems = async (
       analyzer.completionCase,
       suffix.displayName ?? suffix.name,
     );
-    return {
-      kind: empty(suffix.callSignature())
-        ? CompletionItemKind.Property
-        : CompletionItemKind.Method,
-      label,
-      detail: `${label}: ${suffix.toString()}`,
-    };
+    return analyzer.completionDocs.add(
+      {
+        kind: empty(suffix.callSignature())
+          ? CompletionItemKind.Property
+          : CompletionItemKind.Method,
+        label,
+        detail: formatSignature(label, suffix, suffix.docs),
+      },
+      () => formatDocs(suffix.docs, suffix.access),
+    );
   });
 };
 

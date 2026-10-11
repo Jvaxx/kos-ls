@@ -7,6 +7,7 @@ import {
   Diagnostic,
   Hover,
   PublishDiagnosticsParams,
+  SignatureHelp,
 } from 'vscode-languageserver/node';
 import {
   createMessageConnection,
@@ -204,6 +205,42 @@ export class TestClient {
       },
     );
     return (items ?? []).map((item) => item.label);
+  }
+
+  /**
+   * The completions at a position
+   * @param path path relative to the workspace root
+   */
+  async completion(
+    path: string,
+    line: number,
+    character: number,
+  ): Promise<CompletionItem[]> {
+    await this.settle();
+    const items: CompletionItem[] | null = await this.connection.sendRequest(
+      'textDocument/completion',
+      {
+        textDocument: { uri: this.uri(path) },
+        position: { line, character },
+      },
+    );
+    return items ?? [];
+  }
+
+  resolve(item: CompletionItem): Promise<CompletionItem> {
+    return this.connection.sendRequest('completionItem/resolve', item);
+  }
+
+  async signatureHelp(
+    path: string,
+    line: number,
+    character: number,
+  ): Promise<SignatureHelp | null> {
+    await this.settle();
+    return this.connection.sendRequest('textDocument/signatureHelp', {
+      textDocument: { uri: this.uri(path) },
+      position: { line, character },
+    });
   }
 
   async hover(

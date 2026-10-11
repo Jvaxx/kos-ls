@@ -12,8 +12,6 @@ import {
   CompletionParams,
   CompletionItem,
   TextDocumentPositionParams,
-  ParameterInformation,
-  SignatureInformation,
   SignatureHelp,
   FoldingRangeParams,
   FoldingRange,
@@ -27,7 +25,6 @@ import { empty } from './utilities/typeGuards';
 import { ScriptFind, AstContext } from './parser/scriptFind';
 import * as Expr from './parser/models/expr';
 import * as Stmt from './parser/models/stmt';
-import * as SuffixTerm from './parser/models/suffixTerm';
 import {
   builtIn,
   serverName,
@@ -36,14 +33,19 @@ import {
   DEFAULT_BODIES,
   languageServer,
 } from './utilities/constants';
-import { binarySearchIndex, rangeContains } from './utilities/positionUtils';
+import { rangeContains } from './utilities/positionUtils';
+import { Scanner } from './scanner/scanner';
+import { TokenType } from './models/tokentypes';
+import { Token } from './models/token';
 import { DocumentService } from './services/documentService';
 import {
   caseMapper,
   logMapper,
   suffixCompletionItems,
   symbolCompletionItems,
+  CompletionDocs,
 } from './utilities/serverUtils';
+import { symbolDocs, signatureInformation } from './utilities/documentation';
 import { cleanDiagnostic } from './utilities/clean';
 import { TypeKind } from './typeChecker/types';
 import { FoldableService } from './services/foldableService';
@@ -105,6 +107,11 @@ export class KLS {
    * The case completions are presented in
    */
   public completionCase: CaseKind;
+
+  /**
+   * Documentation of the items of the last completion
+   */
+  public readonly completionDocs = new CompletionDocs();
 
   /**
    * Has the client finished initialization, after which configuration
@@ -411,6 +418,8 @@ export class KLS {
         return undefined;
       }
 
+      this.completionDocs.reset();
+
       // determine if we're inside a suffix of some kind
       const result = await this.findToken(
         position,
@@ -457,7 +466,7 @@ export class KLS {
    */
   private onCompletionResolve(completionItem: CompletionItem): CompletionItem {
     try {
-      return completionItem;
+      return this.completionDocs.resolve(completionItem);
     } catch (err) {
       logException(this.logger, this.tracer, err, LogLevel.error);
       return completionItem;
@@ -489,75 +498,34 @@ export class KLS {
 
     const { tracker, index } = result;
 
-    let label =
-      typeof tracker.declared.symbol.name === 'string'
-        ? tracker.declared.symbol.name
-        : tracker.declared.symbol.name.lexeme;
-
     const type = tracker.getType({
       uri,
       range: { start: position, end: position },
     });
 
-    if (empty(type)) {
+    if (
+      empty(type) ||
+      (type.kind !== TypeKind.function && type.kind !== TypeKind.suffix) ||
+      empty(type.callSignature())
+    ) {
       return undefined;
     }
 
-    switch (type.kind) {
-      case TypeKind.function:
-      case TypeKind.suffix:
-        const callSignature = type.callSignature();
+    const { symbol, uri: declaredUri } = tracker.declared;
+    const { name, docs } = symbolDocs(symbol, declaredUri, type);
+    const signature = signatureInformation(name, type, docs);
 
-        if (empty(callSignature)) {
-          return undefined;
-        }
+    // every argument past a variadic parameter is that parameter
+    const count = signature.parameters?.length ?? 0;
+    const params = type.callSignature()!.params();
+    const variadic =
+      params.length > 0 && params[params.length - 1].kind === TypeKind.variadic;
 
-        let start = label.length + 1;
-        const params = callSignature.params();
-        const paramInfos: ParameterInformation[] = [];
-
-        // check if normal or variadic type
-        if (params.length === 1 && params[0].kind === TypeKind.variadic) {
-          // generate variadic labels
-          const variadicLabel = params[0].toString();
-          paramInfos.push(
-            ParameterInformation.create([start, start + variadicLabel.length]),
-          );
-          label = `${label}(${variadicLabel})`;
-        } else if (params.length > 0) {
-          // generate normal labels
-
-          const labels: string[] = [];
-          for (let i = 0; i < params.length - 1; i += 1) {
-            const paramLabel = `${params[i].toString()}, `;
-            paramInfos.push(
-              ParameterInformation.create([
-                start,
-                start + paramLabel.length - 2,
-              ]),
-            );
-            labels.push(paramLabel);
-            start = start + paramLabel.length;
-          }
-
-          const paramLabel = `${params[params.length - 1].toString()}`;
-          paramInfos.push(
-            ParameterInformation.create([start, start + paramLabel.length]),
-          );
-          labels.push(paramLabel);
-          label = `${label}(${labels.join('')})`;
-        }
-
-        return {
-          signatures: [
-            SignatureInformation.create(label, undefined, ...paramInfos),
-          ],
-          activeParameter: index,
-          activeSignature: undefined,
-        };
-      default:
-        return undefined;
-    }
+    return {
+      signatures: [signature],
+      activeParameter: variadic ? Math.min(index, count - 1) : index,
+      activeSignature: 0,
+    };
   }
 
   /**
@@ -903,7 +871,66 @@ export class KLS {
   }
 
   /**
-   * Get a function located at the current location
+   * The tracker of a called name. A call being typed often does not parse
+   * yet, leaving its tokens unresolved: a function is then found by name
+   * @param tokens tokens scanned from the document
+   * @param i index of the called name
+   * @param uri document uri
+   */
+  private async calleeTracker(
+    tokens: Token[],
+    i: number,
+    uri: string,
+  ): Promise<Maybe<SymbolTracker>> {
+    const callee = tokens[i];
+    const tracker = await this.trackerOf(callee, uri);
+    if (!empty(tracker) || (i > 0 && tokens[i - 1].type === TokenType.colon)) {
+      return tracker;
+    }
+
+    const lookup = callee.lookup;
+    const symbols = [
+      ...(await this.getScopedSymbols(callee.start, uri)),
+      ...(await this.getImportedSymbols(uri)),
+    ];
+    const symbol = symbols.find(
+      (candidate) =>
+        candidate.tag === KsSymbolKind.function &&
+        candidate.name.lookup === lookup,
+    );
+    return symbol?.name.tracker;
+  }
+
+  /**
+   * The tracker of the analyzed token at the place of a scanned one
+   * @param token a token scanned from the document
+   * @param uri document uri
+   */
+  private async trackerOf(
+    token: Token,
+    uri: string,
+  ): Promise<Maybe<SymbolTracker>> {
+    // ranges include both ends: a position may also find the token
+    // touching this one, so only one starting at the same place counts
+    const { line, character } = token.start;
+    const middle = character + Math.floor(token.lexeme.length / 2);
+    for (const pos of [token.start, Position.create(line, middle)]) {
+      const found = await this.findToken(pos, uri);
+      if (
+        !empty(found) &&
+        found.token.start.line === line &&
+        found.token.start.character === character
+      ) {
+        return found.token.tracker;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Get the call around a position: the tracker of the called function or
+   * suffix, and the index of the argument at the position
    * @param pos position in the document
    * @param uri document uri
    */
@@ -911,84 +938,58 @@ export class KLS {
     pos: Position,
     uri: string,
   ): Promise<Maybe<{ tracker: SymbolTracker; index: number }>> {
-    // we need the document info to lookup a signature
-    const documentInfo = await this.analysisService.loadInfo(uri);
-    if (empty(documentInfo)) return undefined;
+    const document = this.documentService.getDocument(uri);
+    if (empty(document)) return undefined;
 
-    const { script } = documentInfo.lexicalInfo;
-    const finder = new ScriptFind();
+    // the tokens up to the position: the call may not parse yet
+    const text = document.getText(Range.create(Position.create(0, 0), pos));
+    const { tokens } = new Scanner(text, uri).scanTokens();
 
-    // attempt to find a token here get surround invalid Stmt context
-    const outerResult = finder.find(script, pos, Expr.Suffix, Stmt.Invalid);
-    const innerResult = finder.find(script, pos, SuffixTerm.Call);
-
+    // walk back to each unclosed bracket, counting the commas between
+    let depth = 0;
     let index = 0;
-    if (
-      !empty(innerResult) &&
-      !empty(innerResult.node) &&
-      innerResult.node instanceof SuffixTerm.Call
-    ) {
-      index =
-        innerResult.node.args.length > 0 ? innerResult.node.args.length - 1 : 0;
-    }
+    for (let i = tokens.length - 1; i >= 0; i -= 1) {
+      switch (tokens[i].type) {
+        case TokenType.bracketClose:
+        case TokenType.squareClose:
+          depth += 1;
+          break;
+        case TokenType.squareOpen:
+          depth = Math.max(depth - 1, 0);
+          break;
+        case TokenType.comma:
+          if (depth === 0) index += 1;
+          break;
+        case TokenType.period:
+        case TokenType.curlyOpen:
+        case TokenType.curlyClose:
+          // the statement ends here
+          if (depth === 0) return undefined;
+          break;
+        case TokenType.bracketOpen:
+          if (depth > 0) {
+            depth -= 1;
+            break;
+          }
 
-    // currently we only support invalid statements for signature completion
-    // we could possible support call expressions as well
-    if (empty(outerResult) || empty(outerResult.node)) {
-      return undefined;
-    }
-
-    // determine the identifier of the invalid statement and parameter index
-    const { node } = outerResult;
-
-    // check if suffix
-    if (node instanceof Expr.Suffix) {
-      const tracker = node.mostResolveTracker();
-
-      if (empty(tracker)) {
-        return undefined;
-      }
-
-      switch (tracker.declared.symbol.tag) {
-        case KsSymbolKind.function:
-        case KsSymbolKind.suffix:
-          return {
-            index,
-            tracker,
-          };
-        default:
-          return undefined;
-      }
-    }
-
-    // check if invalid statement
-    if (node instanceof Stmt.Invalid) {
-      const { ranges } = node;
-      const indices = binarySearchIndex(ranges, pos);
-      const start = Array.isArray(indices) ? indices[0] : indices;
-
-      for (let i = start; i >= 0; i -= 1) {
-        const element = ranges[i];
-
-        if (element instanceof Expr.Suffix) {
-          const tracker = element.mostResolveTracker();
-
+          // a call if the token before is a function or a suffix
+          const tracker =
+            i > 0 ? await this.calleeTracker(tokens, i - 1, uri) : undefined;
           if (!empty(tracker)) {
             switch (tracker.declared.symbol.tag) {
               case KsSymbolKind.function:
               case KsSymbolKind.suffix:
-                return {
-                  index,
-                  tracker,
-                };
-              default:
-                return undefined;
+                return { tracker, index };
             }
           }
-        }
+
+          // a grouping: the call, if any, is further out
+          index = 0;
+          break;
       }
     }
 
     return undefined;
   }
+
 }
