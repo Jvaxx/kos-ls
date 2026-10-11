@@ -1,2 +1,6 @@
 #!/usr/bin/env node
-require('../dist/server.js');
+if (process.argv[2] === 'format') {
+  process.exitCode = require('../dist/format.js').main(process.argv.slice(3));
+} else {
+  require('../dist/server.js');
+}

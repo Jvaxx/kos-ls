@@ -1,4 +1,4 @@
-import { Position, Range, TextEdit } from 'vscode-languageserver';
+import { Diagnostic, Position, Range, TextEdit } from 'vscode-languageserver';
 import { Scanner } from '../scanner/scanner';
 import { Parser } from '../parser/parser';
 import { Token, Comment } from '../models/token';
@@ -285,13 +285,13 @@ const costDepth = 10;
 function format(source: string, options: FormatOptions): FormatResult {
   const scanned = new Scanner(source).scanTokens();
   if (scanned.diagnostics.length > 0) {
-    return { error: 'The file has syntax errors.' };
+    return syntaxError(scanned.diagnostics);
   }
 
   const { tokens, trailingComments } = scanned;
   const ast = new Parser('', tokens).parse();
   if (ast.diagnostics.length > 0) {
-    return { error: 'The file has syntax errors.' };
+    return syntaxError(ast.diagnostics);
   }
 
   const roles = annotate(ast.script, tokens);
@@ -337,6 +337,19 @@ function format(source: string, options: FormatOptions): FormatResult {
  * Properties of statements holding a name
  */
 const nameProperties = ['identifier', 'element', 'collection', 'target'];
+
+/**
+ * The refusal to format a file with syntax errors, naming the first one
+ */
+function syntaxError(diagnostics: Diagnostic[]): { error: string } {
+  const first = diagnostics.reduce((a, b) =>
+    before(b.range.start, a.range.start) ? b : a,
+  );
+  const { line, character } = first.range.start;
+  return {
+    error: `Syntax error at ${line + 1}:${character + 1}: ${first.message}`,
+  };
+}
 
 /**
  * Find what the AST knows about the tokens

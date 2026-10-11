@@ -83,6 +83,42 @@ is a `Structure`, accepted everywhere. A comment above a `parameter`
 statement documents its parameters, before the `@param` tags of the
 function.
 
+## Formatting
+
+The server formats documents and ranges (`textDocument/formatting`,
+`rangeFormatting`; `vim.lsp.buf.format()` in Neovim), and so does the
+command line:
+
+```sh
+kos-ls format file.ks dir/      # in place; directories are searched for .ks
+kos-ls format --check .         # list the files to format, exit 1 if any
+kos-ls format < in.ks > out.ks  # standard input to standard output
+```
+
+The style is clang-format's LLVM style with 4-space indentation: attached
+braces, 80 columns, one statement per line, one space around binary
+operators, lowercase keywords. Every comment is kept: one following code
+stays on its line (consecutive ones are aligned). Long lines are broken
+at commas, then operators, then keywords, outer brackets first, and
+continue aligned after the open bracket. The header blocks of a `from`
+loop stay on one line. A file with syntax errors is not formatted.
+
+Options are read from the nearest `.kos-format` file, or `format` section
+of a `ksconfig.json`, from the file's directory up (editor tab settings
+are ignored, so the editor and the command line agree). A `.kos-format`
+is clang-format's flat YAML or JSON:
+
+```yaml
+IndentWidth: 4              # columns per block level
+ContinuationIndentWidth: 4  # broken lines not aligned to a bracket
+ColumnLimit: 80             # 0: no limit
+BreakBeforeBraces: Attach   # Attach, Stroustrup (else on its own line), Allman
+KeywordCase: Lower          # Lower, Upper, Preserve
+MaxEmptyLinesToKeep: 1
+SpacesBeforeTrailingComments: 1
+AlignTrailingComments: true
+```
+
 ## Developer tools
 
 `npm run probe -- <root> [files...]` starts the server headlessly, opens the

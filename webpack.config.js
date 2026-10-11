@@ -10,11 +10,15 @@ const outDir = process.env.NODE_ENV && process.env.NODE_ENV === 'dev' ?
 /**@type {import('webpack').Configuration}*/
 const config = {
     target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
-    entry: path.join(__dirname, '/src/server.ts'), // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
+    entry: {
+        // the language server, and the `kos-ls format` command
+        server: path.join(__dirname, '/src/server.ts'),
+        format: path.join(__dirname, '/src/cli/format.ts'),
+    },
     output: {
         // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
         path: path.join(__dirname, outDir),
-        filename: 'server.js',
+        filename: '[name].js',
         libraryTarget: 'commonjs2',
         devtoolModuleFilenameTemplate: '../[resource-path]'
     },
