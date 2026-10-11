@@ -41,6 +41,7 @@
     "test": "jest --config jest.config.js",
     "bench": "zakzak -c ./zakzak.config.json",
     "probe": "node tools/lsp-probe.js",
+    "kos-db": "node out/tools/kos-db/generate.js",
     "prepack": "npm run build && npm run bundle && npm test"
   },
   "devDependencies": {

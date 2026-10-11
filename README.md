@@ -64,6 +64,10 @@ files (all `.ks` under `<root>` by default) and prints the diagnostics it
 publishes. `--server <cmd...> --` runs another server instead, for
 comparisons.
 
+`npm run kos-db -- --kos <kOS repository> ...` regenerates the kOS
+database (`data/kos-<version>.json`) from the kOS C# and documentation.
+See [docs/kos-db.md](docs/kos-db.md).
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
