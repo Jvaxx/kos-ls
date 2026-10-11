@@ -54,6 +54,22 @@ export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
   }
 
   /**
+   * Remove usages and sets, recorded by a file whose table is replaced
+   * @param entries the usages and sets to remove
+   */
+  public removeEntries(entries: Set<Location>): void {
+    for (const list of [this.usages, this.sets]) {
+      let kept = 0;
+      for (const entry of list) {
+        if (!entries.has(entry)) {
+          list[kept++] = entry;
+        }
+      }
+      list.length = kept;
+    }
+  }
+
+  /**
    * Set the declared type of this symbol
    * @param type type to declare this symbol
    */
@@ -112,6 +128,11 @@ export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
     }
   }
 }
+
+/**
+ * Usages and sets a file recorded on trackers of other tables, by tracker
+ */
+export type ForeignEntries = Map<BasicTracker, Set<Location>>;
 
 /**
  * Create a set symbol

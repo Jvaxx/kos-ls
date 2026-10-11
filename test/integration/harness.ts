@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, relative } from 'path';
 import { PassThrough } from 'stream';
 import {
   CodeAction,
@@ -7,13 +7,17 @@ import {
   CompletionItem,
   createConnection,
   Diagnostic,
+  DocumentHighlight,
+  DocumentHighlightKind,
   Hover,
   InlayHint,
+  Location,
   PublishDiagnosticsParams,
   Range,
   SemanticTokens,
   SignatureHelp,
   TextEdit,
+  WorkspaceEdit,
 } from 'vscode-languageserver/node';
 import {
   createMessageConnection,
@@ -415,6 +419,75 @@ export class TestClient {
     return this.connection.sendRequest('textDocument/hover', {
       textDocument: { uri: this.uri(path) },
       position: { line, character },
+    });
+  }
+
+  /**
+   * Document highlights at a position, as `line:col R|W` (1-based, R a
+   * read, W a write), in document order
+   */
+  async highlights(
+    path: string,
+    line: number,
+    character: number,
+  ): Promise<string[]> {
+    await this.settle();
+    const highlights: DocumentHighlight[] | null =
+      await this.connection.sendRequest('textDocument/documentHighlight', {
+        textDocument: { uri: this.uri(path) },
+        position: { line, character },
+      });
+    return (highlights ?? [])
+      .map(({ range: { start }, kind }) => ({ start, kind }))
+      .sort((a, b) => a.start.line - b.start.line || a.start.character - b.start.character)
+      .map(
+        ({ start, kind }) =>
+          `${start.line + 1}:${start.character + 1} ` +
+          (kind === DocumentHighlightKind.Write ? 'W' : 'R'),
+      );
+  }
+
+  /**
+   * References at a position, declaration included, as `path line:col`
+   * (path relative to the root, 1-based), sorted
+   */
+  async references(
+    path: string,
+    line: number,
+    character: number,
+  ): Promise<string[]> {
+    await this.settle();
+    const locations: Location[] | null = await this.connection.sendRequest(
+      'textDocument/references',
+      {
+        textDocument: { uri: this.uri(path) },
+        position: { line, character },
+        context: { includeDeclaration: true },
+      },
+    );
+    return (locations ?? [])
+      .map(
+        ({ uri, range: { start } }) =>
+          `${relative(this.root, URI.parse(uri).fsPath)} ` +
+          `${start.line + 1}:${start.character + 1}`,
+      )
+      .sort();
+  }
+
+  /**
+   * Rename the symbol at a position
+   */
+  async rename(
+    path: string,
+    line: number,
+    character: number,
+    newName: string,
+  ): Promise<WorkspaceEdit | null> {
+    await this.settle();
+    return this.connection.sendRequest('textDocument/rename', {
+      textDocument: { uri: this.uri(path) },
+      position: { line, character },
+      newName,
     });
   }
 

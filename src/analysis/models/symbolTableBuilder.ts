@@ -9,6 +9,7 @@ import {
   UseResult,
   SearchState,
   IFunctionScanResult,
+  KsSet,
 } from '../types';
 import { KsFunction } from '../../models/function';
 import { KsLock } from '../../models/lock';
@@ -22,7 +23,7 @@ import {
 import { ScopePosition } from './scopePosition';
 import { mockLogger } from '../../models/logger';
 import { Environment } from './environment';
-import { BasicTracker, createSymbolSet } from './tracker';
+import { BasicTracker, createSymbolSet, ForeignEntries } from './tracker';
 import { SymbolTable } from './symbolTable';
 import {
   isVariable,
@@ -88,6 +89,12 @@ export class SymbolTableBuilder {
   public dependentTables: Set<SymbolTable>;
 
   /**
+   * The usages and sets this file recorded on trackers of other tables
+   * (builtins, globals of other files), removed with its table
+   */
+  private readonly foreignEntries: ForeignEntries;
+
+  /**
    * logger class to reporting errors and information
    */
   public logger: ILogger;
@@ -114,6 +121,7 @@ export class SymbolTableBuilder {
     this.globalSymbolEnvironment = new Map();
     this.dependencyTables = new Set();
     this.dependentTables = new Set();
+    this.foreignEntries = new Map();
   }
 
   /**
@@ -127,6 +135,7 @@ export class SymbolTableBuilder {
       this.dependentTables,
       this.uri,
       this.logger,
+      this.foreignEntries,
     );
 
     // add self as dependency to dependent tables
@@ -334,7 +343,7 @@ export class SymbolTableBuilder {
     }
 
     token.tracker = tracker;
-    tracker.sets.push(createSymbolSet(token));
+    this.recordSet(tracker, createSymbolSet(token));
     this.logger.verbose(
       `set variable ${token.lexeme} at ${rangeToString(token)}`,
     );
@@ -629,7 +638,9 @@ export class SymbolTableBuilder {
 
     // indicate usage
     token.tracker = tracker;
-    tracker.usages.push(cleanLocation(token));
+    const usage = cleanLocation(token);
+    tracker.usages.push(usage);
+    this.recordForeign(tracker, usage);
     this.logger.verbose(
       `Use ${toCase(CaseKind.pascalCase, KsSymbolKind[symbolType])} ` +
         `${token.lexeme} at ${rangeToString(token)}`,
@@ -1069,12 +1080,54 @@ export class SymbolTableBuilder {
   }
 
   /**
+   * Record a set on a tracker
+   * @param tracker tracker of the symbol set
+   * @param set the set
+   */
+  private recordSet(tracker: BasicTracker, set: KsSet): void {
+    tracker.sets.push(set);
+    this.recordForeign(tracker, set);
+  }
+
+  /**
+   * Remember a usage or set recorded on a tracker of another table, so
+   * that the table built here can take it back when it is replaced
+   * @param tracker tracker the entry was added to
+   * @param entry the usage or set
+   */
+  private recordForeign(tracker: BasicTracker, entry: Location): void {
+    if (tracker.uri === this.uri) {
+      return;
+    }
+
+    let entries = this.foreignEntries.get(tracker);
+    if (empty(entries)) {
+      entries = new Set();
+      this.foreignEntries.set(tracker, entries);
+    }
+    entries.add(entry);
+  }
+
+  /**
    * Tie a name to the builtin it names, without declaring or setting
-   * anything: a set kOS refuses, or a lock of a system lock
+   * anything: a set kOS refuses
    * @param name name to bind
    */
   public bindBuiltin(name: Token): void {
     name.tracker = this.builtinTracker(name);
+  }
+
+  /**
+   * Lock a system lock (`lock steering to ...`): the name is a set of
+   * the builtin lock
+   * @param name name of the lock
+   */
+  public lockSystem(name: Token): void {
+    const tracker = this.builtinTracker(name);
+    name.tracker = tracker;
+    if (!empty(tracker)) {
+      this.recordSet(tracker, createSymbolSet(name));
+    }
   }
 
   /**
@@ -1085,7 +1138,7 @@ export class SymbolTableBuilder {
    */
   public relock(token: Token, tracker: BasicTracker<KsLock>): void {
     token.tracker = tracker;
-    tracker.sets.push(createSymbolSet(token));
+    this.recordSet(tracker, createSymbolSet(token));
     this.logger.verbose(`relock ${token.lexeme} at ${rangeToString(token)}`);
   }
 

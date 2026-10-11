@@ -4,7 +4,7 @@ import { rangeContainsPos } from '../../utilities/positionUtils';
 import { mockLogger } from '../../models/logger';
 import { empty } from '../../utilities/typeGuards';
 import { ScopeKind } from '../../parser/types';
-import { BasicTracker } from './tracker';
+import { BasicTracker, ForeignEntries } from './tracker';
 import { Environment } from './environment';
 import { builtIn } from '../../utilities/constants';
 
@@ -38,12 +38,18 @@ export class SymbolTable implements GraphNode<SymbolTable> {
   public readonly logger: ILogger;
 
   /**
+   * The usages and sets this file recorded on trackers of other tables
+   */
+  private readonly foreignEntries: ForeignEntries;
+
+  /**
    * construct a symbol table. typically this is done by the symbol table builder
    * @param rootScope the root scope of the symbol table
    * @param dependencyTables tables that this table is dependent on
    * @param dependentTable tables that are dependent on this table
    * @param uri the file uri for this symbol table
    * @param logger a logger for the symbol table
+   * @param foreignEntries usages and sets recorded on other tables
    */
   constructor(
     rootScope: EnvironmentNode,
@@ -51,12 +57,14 @@ export class SymbolTable implements GraphNode<SymbolTable> {
     dependentTable: Set<SymbolTable>,
     uri: string,
     logger: ILogger = mockLogger,
+    foreignEntries: ForeignEntries = new Map(),
   ) {
     this.rootScope = rootScope;
     this.dependencyTables = dependencyTables;
     this.dependentTables = dependentTable;
     this.uri = uri;
     this.logger = logger;
+    this.foreignEntries = foreignEntries;
 
     for (const symbolTable of dependencyTables) {
       symbolTable.dependentTables.add(this);
@@ -111,6 +119,14 @@ export class SymbolTable implements GraphNode<SymbolTable> {
     // clear own references
     this.dependencyTables.clear();
     this.dependentTables.clear();
+
+    // take back the usages and sets recorded on other tables: the
+    // builtins live as long as the server, and a dependency's table can
+    // outlive this one
+    for (const [tracker, entries] of this.foreignEntries) {
+      tracker.removeEntries(entries);
+    }
+    this.foreignEntries.clear();
   }
 
   /**

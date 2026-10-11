@@ -366,7 +366,7 @@ export class Resolver
     if (
       this.tableBuilder.builtinKind(decl.identifier) === BuiltinKind.systemLock
     ) {
-      this.tableBuilder.bindBuiltin(decl.identifier);
+      this.tableBuilder.lockSystem(decl.identifier);
       return errors;
     }
 

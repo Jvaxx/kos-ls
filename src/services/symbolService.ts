@@ -245,10 +245,12 @@ export class SymbolService extends EventEmitter {
       return undefined;
     }
 
+    // a builtin's declaration is not in a file
     const { declaration, sets, usages } = locations;
-    const refLocations = context.includeDeclaration
-      ? [declaration, ...sets, ...usages]
-      : [...sets, ...usages];
+    const refLocations =
+      context.includeDeclaration && declaration.uri !== builtIn
+        ? [declaration, ...sets, ...usages]
+        : [...sets, ...usages];
 
     return refLocations.map(loc => cleanLocation(loc));
   }
@@ -298,8 +300,9 @@ export class SymbolService extends EventEmitter {
       return undefined;
     }
 
+    // kOS's names cannot be renamed
     const locations = await this.getSymbolLocations(position, uri);
-    if (empty(locations)) {
+    if (empty(locations) || locations.declaration.uri === builtIn) {
       return undefined;
     }
     const changes: PropType<WorkspaceEdit, 'changes'> = {};

@@ -228,4 +228,13 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
   such a set declares a variable without the "wrong kind" warning.
   `parser_valid`: 2564 to 2548 (15 duplicate warnings and a phantom
   unused `throttle` variable gone, nothing added).
+- Builtin usages (done; found while doing system locks): a file's
+  usages and sets of builtins were pushed on the shared builtin
+  trackers at every analysis and never removed, so highlights and
+  references on `steering` or `ship` listed each use twice and kept
+  stale positions after edits (and memory grew). Each table now takes
+  back what it recorded on other tables when it is replaced. A lock of
+  a system lock is a write of it in highlights; rename refuses kOS's
+  names (it used to edit the uses and a pseudo-file `builtIn`), and
+  references no longer include that pseudo-file.
 - Maintenance: ESLint, dependency updates, remove pre-Node-10 shims.
