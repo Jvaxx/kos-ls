@@ -1758,10 +1758,19 @@ export class TypeChecker
         : [assignmentType];
 
     if (target && !members.some(member => target.canCoerceFrom(member))) {
+      // None converts to an optional parameter's union: the value
+      // failed to convert to the other members (`Vessel`, not `Vessel?`)
+      const targetName =
+        target instanceof UnionType && target.noneType
+          ? target.types
+              .filter(type => !type.noneType)
+              .map(type => type.toString())
+              .join(' or ')
+          : target.toString();
       errors.push(
         createDiagnostic(
           range,
-          `${assignmentType.toString()} cannot be converted to a ${target.toString()}`,
+          `${assignmentType.toString()} cannot be converted to a ${targetName}`,
           DiagnosticSeverity.Hint,
           DIAGNOSTICS.TYPE_WRONG,
         ),

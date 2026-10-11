@@ -54,6 +54,40 @@ describe('documentation', () => {
     expect(help?.signatures[0].parameters?.[1].label).toEqual([21, 34]);
   });
 
+  test('signature help for a suffix call that does not parse yet', async () => {
+    client.open(file, '');
+
+    // the call is the last line, still open
+    const label = async (text: string) => {
+      client.change(file, text);
+      const lines = text.split('\n');
+      const help = await client.signatureHelp(
+        file,
+        lines.length - 1,
+        lines[lines.length - 1].length,
+      );
+      return help?.signatures[0].label ?? null;
+    };
+
+    // a builtin variable, a local variable, a chain of suffixes
+    expect(await label('print ship:partsnamed(')).toBe(
+      'partsNamed(name: String): List<Part>',
+    );
+    expect(await label('local v is ship.\nprint v:partsnamed(')).toBe(
+      'partsNamed(name: String): List<Part>',
+    );
+    expect(await label('print ship:body:geopositionof(')).toBe(
+      'geoPositionOf(vectorPos: Vector): GeoCoordinates',
+    );
+    expect(await label('print body("Mun"):geopositionof(')).toBe(
+      'geoPositionOf(vectorPos: Vector): GeoCoordinates',
+    );
+
+    // a suffix that is not callable, or not found
+    expect(await label('print ship:partsnamed("a"):length:foo(')).toBeNull();
+    expect(await label('print ship:nothing(')).toBeNull();
+  });
+
   test('no signature help outside a call', async () => {
     client.open(file, 'local y is (1 + 2).\nprint v(1, 2, 3).\n');
 
@@ -171,7 +205,7 @@ describe('types in doc comment tags', () => {
 
     expect(await client.messages(file)).toEqual([
       '9:16 String cannot be converted to a Scalar',
-      '9:21 Scalar cannot be converted to a Vessel?',
+      '9:21 Scalar cannot be converted to a Vessel',
       '9:24 Unable to find suffix foo on type Scalar',
     ]);
 

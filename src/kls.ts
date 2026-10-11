@@ -74,7 +74,7 @@ import { formatText, formatRange, FormatResult } from './formatter/formatter';
 import { findFormatOptions } from './formatter/config';
 import { FormatOptions } from './formatter/options';
 import { cleanDiagnostic } from './utilities/clean';
-import { TypeKind } from './typeChecker/types';
+import { IType, TypeKind } from './typeChecker/types';
 import { FoldableService } from './services/foldableService';
 import {
   AnalysisService,
@@ -1218,7 +1218,8 @@ export class KLS {
 
   /**
    * The tracker of a called name. A call being typed often does not parse
-   * yet, leaving its tokens unresolved: a function is then found by name
+   * yet, leaving its tokens unresolved: a function is then found by name,
+   * a suffix through the type of what it is called on
    * @param tokens tokens scanned from the document
    * @param i index of the called name
    * @param uri document uri
@@ -1228,23 +1229,105 @@ export class KLS {
     i: number,
     uri: string,
   ): Promise<Maybe<SymbolTracker>> {
-    const callee = tokens[i];
-    const tracker = await this.trackerOf(callee, uri);
-    if (!empty(tracker) || (i > 0 && tokens[i - 1].type === TokenType.colon)) {
+    const tracker = await this.trackerOf(tokens[i], uri);
+    if (!empty(tracker)) {
       return tracker;
     }
 
-    const lookup = callee.lookup;
+    if (i > 0 && tokens[i - 1].type === TokenType.colon) {
+      return (await this.unresolvedType(tokens, i, uri))?.tracker();
+    }
+
+    return this.namedTracker(tokens[i], uri, [KsSymbolKind.function]);
+  }
+
+  /**
+   * The tracker of the symbol a name refers to, found by name
+   * @param token a token scanned from the document
+   * @param uri document uri
+   * @param kinds the kinds of symbol it may name
+   */
+  private async namedTracker(
+    token: Token,
+    uri: string,
+    kinds: KsSymbolKind[],
+  ): Promise<Maybe<SymbolTracker>> {
+    const { lookup } = token;
     const symbols = [
-      ...(await this.getScopedSymbols(callee.start, uri)),
+      ...(await this.getScopedSymbols(token.start, uri)),
       ...(await this.getImportedSymbols(uri)),
     ];
     const symbol = symbols.find(
       (candidate) =>
-        candidate.tag === KsSymbolKind.function &&
-        candidate.name.lookup === lookup,
+        kinds.includes(candidate.tag) && candidate.name.lookup === lookup,
     );
     return symbol?.name.tracker;
+  }
+
+  /**
+   * The type of a name in scanned tokens that the analysis may not have
+   * resolved: a suffix is looked up on the value it follows (`ship:body`,
+   * `ship:partsNamed("a"):length`), anything else by name
+   * @param tokens tokens scanned from the document
+   * @param i index of the name
+   * @param uri document uri
+   */
+  private async unresolvedType(
+    tokens: Token[],
+    i: number,
+    uri: string,
+  ): Promise<Maybe<IType>> {
+    const token = tokens[i];
+    if (i > 1 && tokens[i - 1].type === TokenType.colon) {
+      const receiver = await this.valueType(tokens, i - 2, uri);
+      return receiver?.getSuffix(token.lookup);
+    }
+
+    const location = { uri, range: token };
+    const tracker =
+      (await this.trackerOf(token, uri)) ??
+      (await this.namedTracker(token, uri, [
+        KsSymbolKind.variable,
+        KsSymbolKind.parameter,
+        KsSymbolKind.lock,
+        KsSymbolKind.function,
+      ]));
+    return tracker?.getType(location);
+  }
+
+  /**
+   * The type of the value an expression of scanned tokens ends with: a
+   * name, or a call (`body("Kerbin")`, `ship:partsNamed("a")`)
+   * @param tokens tokens scanned from the document
+   * @param end index of the last token of the expression
+   * @param uri document uri
+   */
+  private async valueType(
+    tokens: Token[],
+    end: number,
+    uri: string,
+  ): Promise<Maybe<IType>> {
+    const last = tokens[end];
+    if (last.type === TokenType.bracketClose) {
+      // back to the call's open bracket
+      let depth = 0;
+      for (let i = end; i > 0; i -= 1) {
+        if (tokens[i].type === TokenType.bracketClose) depth += 1;
+        if (tokens[i].type === TokenType.bracketOpen) depth -= 1;
+        if (depth === 0) {
+          const callee = await this.calleeTracker(tokens, i - 1, uri);
+          const type = callee?.getType({ uri, range: tokens[i - 1] });
+          return type?.callSignature()?.returns();
+        }
+      }
+      return undefined;
+    }
+
+    if (last.type !== TokenType.identifier) {
+      return undefined;
+    }
+
+    return (await this.unresolvedType(tokens, end, uri))?.assignmentType();
   }
 
   /**
