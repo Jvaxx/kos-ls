@@ -62,6 +62,11 @@ export interface CsSuffix {
   owner?: string;
   /** description passed to the suffix constructor, when a literal */
   description?: string;
+  /**
+   * for OptionalArgsSuffix, the classes of the default values, one per
+   * parameter, e.g. `['StringValue', 'BooleanValue']`
+   */
+  defaults?: string[];
   file: string;
   line: number;
 }
@@ -409,12 +414,24 @@ export function extractClasses(source: string, file: string): CsClass[] {
       .filter((d): d is string => d !== undefined)
       .pop();
 
+    // new Structure[] { new StringValue(""), new BooleanValue(false) }
+    const defaults = construction.args
+      .map((arg) => /^new\s+\w+\s*\[\s*\]\s*\{([^]*)\}$/.exec(arg.trim()))
+      .find((match) => match !== null);
+
     cls.suffixes.push({
       names: parseNames(args[0]),
       kind: construction.kind,
       generics: construction.generics,
       owner: call[2],
       description,
+      ...(defaults
+        ? {
+            defaults: splitTopLevel(defaults[1])
+              .map((value) => /^new\s+([\w.]+)/.exec(value.trim())?.[1])
+              .filter((value): value is string => value !== undefined),
+          }
+        : {}),
       file,
       line: lineAt(code, call.index!),
     });

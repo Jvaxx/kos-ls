@@ -441,6 +441,7 @@
           "params": [
             {
               "type": "String",
+              "optional": true,
               "name": "text",
               "doc": "`String`"
             }
@@ -454,6 +455,7 @@
           "params": [
             {
               "type": "String",
+              "optional": true,
               "name": "text",
               "doc": "struct:`String` initial starting text in the field."
             }
@@ -467,6 +469,7 @@
           "params": [
             {
               "type": "String",
+              "optional": true,
               "name": "text",
               "doc": "`String`"
             }
@@ -479,11 +482,13 @@
           "params": [
             {
               "type": "String",
+              "optional": true,
               "name": "text",
               "doc": "`String` text to display"
             },
             {
               "type": "Boolean",
+              "optional": true,
               "name": "on"
             }
           ]
@@ -496,11 +501,13 @@
           "params": [
             {
               "type": "String",
+              "optional": true,
               "name": "text",
               "doc": "`String` text to display"
             },
             {
               "type": "Boolean",
+              "optional": true,
               "name": "on",
               "doc": "`Boolean` state of the checkbox initially"
             }
@@ -519,22 +526,22 @@
           "url": "structures/gui_widgets/box.html#method:BOX:ADDHSLIDER",
           "params": [
             {
-              "type": "String",
+              "type": "Scalar",
+              "optional": true,
               "name": "init",
               "doc": "`Scalar` starting value"
             },
             {
               "type": "Scalar",
+              "optional": true,
               "name": "min",
               "doc": "`Scalar` left endpoint value"
             },
             {
               "type": "Scalar",
+              "optional": true,
               "name": "max",
               "doc": "`Scalar` right endpoint value"
-            },
-            {
-              "type": "Scalar"
             }
           ]
         },
@@ -545,22 +552,22 @@
           "url": "structures/gui_widgets/box.html#method:BOX:ADDVSLIDER",
           "params": [
             {
-              "type": "String",
+              "type": "Scalar",
+              "optional": true,
               "name": "init",
               "doc": "`Scalar` starting value"
             },
             {
               "type": "Scalar",
+              "optional": true,
               "name": "min",
               "doc": "`Scalar` top endpoint value"
             },
             {
               "type": "Scalar",
+              "optional": true,
               "name": "max",
               "doc": "`Scalar` bottom endpoint value"
-            },
-            {
-              "type": "Scalar"
             }
           ]
         },
@@ -608,6 +615,7 @@
           "params": [
             {
               "type": "Scalar",
+              "optional": true,
               "name": "size",
               "doc": "`Scalar` the size of the area to take up with empty space."
             }
@@ -618,9 +626,8 @@
           "type": "Label",
           "params": [
             {
-              "type": "Structure",
-              "optional": true,
-              "variadic": true
+              "type": "String",
+              "optional": true
             }
           ]
         },

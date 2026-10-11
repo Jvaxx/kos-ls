@@ -90,6 +90,29 @@ namespace kOS.Suffixed
     expect(stage.suffixes[0].line).toBe(9);
   });
 
+  test('reads the default values of optional-argument suffixes', () => {
+    const [box] = extractClasses(
+      `
+    [kOS.Safe.Utilities.KOSNomenclature("Box")]
+    public class Box : Widget
+    {
+        private void InitializeSuffixes()
+        {
+            AddSuffix("ADDLABEL", new OptionalArgsSuffix<Label>(AddLabel, new Structure[] { new StringValue ("") }));
+            AddSuffix("ADDCHECKBOX", new OptionalArgsSuffix<Button>(AddCheckbox, new Structure [] { new StringValue(""), new BooleanValue(false) }));
+            AddSuffix("CLEAR", new NoArgsVoidSuffix(Clear));
+        }
+    }`,
+      'Box.cs',
+    );
+
+    expect(box.suffixes.map((s) => [s.names, s.defaults])).toEqual([
+      [['ADDLABEL'], ['StringValue']],
+      [['ADDCHECKBOX'], ['StringValue', 'BooleanValue']],
+      [['CLEAR'], undefined],
+    ]);
+  });
+
   test('reads generic classes and multiple names', () => {
     const classes = extractClasses(
       `

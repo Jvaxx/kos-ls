@@ -672,9 +672,20 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       : formatType(mapNames(parseType(result.type), (n) => (extra.includes(n) ? 'Structure' : n)));
   };
 
-  // OptionalArgsSuffix parameters are filled from the documentation or
-  // the previous definitions
-  const unknownParameters = new Set<SuffixEntry>();
+  // suffixes the overrides add, which the previous database has too
+  const overridden = new Set<string>();
+  const overrideStructures = (input.overrides as { structures?: Record<string, { suffixes?: object }> } | undefined)
+    ?.structures;
+  for (const [structure, { suffixes }] of Object.entries(overrideStructures ?? {})) {
+    for (const suffix of Object.keys(suffixes ?? {})) {
+      overridden.add(`${structure}:${suffix.toUpperCase()}`);
+    }
+  }
+
+  // OptionalArgsSuffix parameters: one optional parameter per default
+  // value in the C#, otherwise filled from the previous definitions or the
+  // documentation
+  const unknownParameters = new Map<SuffixEntry, string[] | undefined>();
 
   const addSuffix = (building: Building, cls: CsClass, suffix: CsSuffix) => {
     const where = `${building.name}:${suffix.names?.[0] ?? '?'}, ${suffix.file}:${suffix.line}`;
@@ -719,7 +730,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
         break;
       case 'OptionalArgsSuffix':
         entry = { access: 'call', type: g[0] };
-        unknownParameters.add(entry);
+        unknownParameters.set(
+          entry,
+          suffix.defaults?.map((text) => typeOf(text, cls, building, where)),
+        );
         break;
       default:
         report.add('Unknown suffix classes', `${suffix.kind} (${where})`);
@@ -1025,7 +1039,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
 
       // parameters
       const docParams = found?.member?.params;
-      if (unknownParameters.has(suffix)) {
+      const defaults = unknownParameters.get(suffix);
+      if (defaults !== undefined) {
+        suffix.params = defaults.map((type) => ({ type, optional: true }));
+      } else if (unknownParameters.has(suffix)) {
         const params =
           (old && previousParams(old.suffix.params, where)) ??
           docParams?.map((p) => ({
@@ -1072,7 +1089,11 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       }
     }
     for (const [upper, { type }] of previousSuffixes) {
-      if (!building.keys.has(upper) && !inherited(building, upper, structures)) {
+      if (
+        !building.keys.has(upper) &&
+        !inherited(building, upper, structures) &&
+        !overridden.has(`${name}:${upper}`)
+      ) {
         report.add('Previous definitions: suffixes not in the C#', `${name}:${upper} (was ${type.name})`);
       }
     }

@@ -300,11 +300,6 @@
 - KUniverse:getCraft: 2 parameters, 3 documented
 - Part:symmetryPartner: 1 parameters, 2 documented
 
-## Documented parameter counts that differ (names applied in order) (2)
-
-- Box:addHSlider: 4 parameters, 3 documented
-- Box:addVSlider: 4 parameters, 3 documented
-
 ## Functions without documentation (15)
 
 - anglediff() (src/kOS.Safe/Function/Trigonometry.cs)
