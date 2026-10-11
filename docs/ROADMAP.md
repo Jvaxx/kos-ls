@@ -136,6 +136,21 @@ locks and loop elements. Diagnostics on `parser_valid` are unchanged
 - Tests: idempotence (`format(format(x)) == format(x)`) and AST
   equivalence (formatting never changes meaning) on every fixture.
 
+Done: `src/formatter` writes every token and comment once, in order;
+the AST only labels tokens (unary operators, call parentheses, keywords
+used as names, block kinds). Statements become logical lines, broken
+greedily at the cheapest place (commas, operators by precedence,
+keywords, after brackets; outer brackets first) and aligned after the
+open bracket. Anonymous function bodies indent from the line of their
+`{`; `from` headers stay inline. The output is rescanned and refused if
+a token or comment differs; files with syntax errors are not formatted.
+Options (clang-format names, plus `BreakBeforeBinaryOperators`) come
+from the nearest `.kos-format` or `ksconfig.json` `format` section.
+`textDocument/formatting`, `rangeFormatting` (whole lines; edits are per
+gap between tokens) and `kos-ls format [--check]`. Every fixture is
+tested in two styles: idempotence, same tokens and tree, comments kept,
+edits. Diagnostics on `parser_valid` are unchanged (2687).
+
 ## Phase 5: more
 
 - Semantic tokens (replaces client-side syntax files).
