@@ -8,6 +8,7 @@ import {
   KsBaseSymbol,
   UseResult,
   SearchState,
+  IFunctionScanResult,
 } from '../types';
 import { KsFunction } from '../../models/function';
 import { KsLock } from '../../models/lock';
@@ -397,18 +398,14 @@ export class SymbolTableBuilder {
    * Add a new function symbol to the table
    * @param scopeKind the requested scope type
    * @param token token for the requested function
-   * @param requiredParameters required parameters for the function
-   * @param optionalParameters optional parameters for the function
-   * @param returnValue does the function have a return type
+   * @param scan parameters and return of the function
    * @param type type to declare function as
    */
   public declareFunction(
     scopeKind: ScopeKind,
     token: Token,
     range: Range,
-    requiredParameters: number,
-    optionalParameters: number,
-    returnValue: boolean,
+    scan: IFunctionScanResult,
     type?: IType,
   ): Maybe<Diagnostic> {
     const conflictTracker = this.lookupKind(
@@ -450,9 +447,10 @@ export class SymbolTableBuilder {
         scopeKind,
         token,
         range,
-        requiredParameters,
-        optionalParameters,
-        returnValue,
+        scan.requiredParameters,
+        scan.optionalParameters,
+        scan.return,
+        scan.variadic,
       ),
       this.uri,
       type,

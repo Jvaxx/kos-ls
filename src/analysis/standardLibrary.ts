@@ -43,9 +43,12 @@ export const standardLibraryBuilder = (caseKind: CaseKind): SymbolTable => {
       ScopeKind.global,
       builtInToken(toCase(caseKind, ...segments)),
       builtInRange,
-      params.length - optional,
-      optional,
-      !(type.callSignature()?.returns().noneType ?? true),
+      {
+        requiredParameters: params.length - optional,
+        optionalParameters: optional,
+        return: !(type.callSignature()?.returns().noneType ?? true),
+        variadic: false,
+      },
       type,
     );
   }

@@ -25,7 +25,11 @@ import { empty, notEmpty } from '../utilities/typeGuards';
 import { structureType } from './ksTypes/primitives/structure';
 import { iterator } from '../utilities/constants';
 import { TokenType } from '../models/tokentypes';
-import { createFunctionType, createUnion } from './utilities/typeCreators';
+import {
+  createFunctionType,
+  createUnion,
+  createVarType,
+} from './utilities/typeCreators';
 import { zip } from '../utilities/arrayUtils';
 import {
   binaryOperatorMap,
@@ -56,12 +60,25 @@ import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
 import { createDiagnostic, DIAGNOSTICS } from '../utilities/diagnosticsUtils';
 import { BasicTracker } from '../analysis/models/tracker';
 import { SuffixTypeBuilder } from './models/suffixTypeNode';
+import { TreeTraverse } from '../utilities/treeTraverse';
 import { Operator } from './models/types/operator';
 import { VariadicType } from './models/types/variadicType';
 import { Type } from './models/types/type';
 import { CallSignature } from './models/types/callSignature';
 
 type Diagnostics = Diagnostic[];
+
+/**
+ * Operators that give a Boolean whatever their operands
+ */
+const comparisonOperators = new Set([
+  OperatorKind.greaterThan,
+  OperatorKind.lessThan,
+  OperatorKind.greaterThanEqual,
+  OperatorKind.lessThanEqual,
+  OperatorKind.notEqual,
+  OperatorKind.equal,
+]);
 
 /**
  * The type checker attempts to identify places where the rules of the type
@@ -113,6 +130,9 @@ export class TypeChecker
 
       this.logger.info(`Type Checking started for ${file}.`);
 
+      for (const decl of new FunctionDeclarations().find(this.script.stmts)) {
+        this.declareFunctionType(decl);
+      }
       const typeErrors = this.checkStmts(this.script.stmts);
 
       this.logger.info(`Type Checking finished for ${file}`);
@@ -205,7 +225,16 @@ export class TypeChecker
    * @param decl function declaration
    */
   visitDeclFunction(decl: Decl.Func): Diagnostics {
-    const errors = this.checkStmt(decl.block);
+    // its type was declared before checking (see check)
+    return this.checkStmt(decl.block);
+  }
+
+  /**
+   * Declare the type of a function from its parameter counts and whether it
+   * returns. kOS functions can be used before their declaration
+   * @param decl function declaration
+   */
+  private declareFunctionType(decl: Decl.Func): void {
     const { tracker } = decl.identifier;
 
     if (!empty(tracker) && tracker.kind === TrackerKind.basic) {
@@ -214,11 +243,15 @@ export class TypeChecker
         const paramsTypes: IType[] = [];
 
         // TODO eventually we should tag ks parameter to the function type
-        for (let i = 0; i < symbol.requiredParameters; i += 1) {
-          paramsTypes.push(structureType);
-        }
-        for (let i = 0; i < symbol.optionalParameters; i += 1) {
-          paramsTypes.push(createUnion(true, structureType, noneType));
+        if (symbol.variadic) {
+          paramsTypes.push(createVarType(structureType));
+        } else {
+          for (let i = 0; i < symbol.requiredParameters; i += 1) {
+            paramsTypes.push(structureType);
+          }
+          for (let i = 0; i < symbol.optionalParameters; i += 1) {
+            paramsTypes.push(createUnion(true, structureType, noneType));
+          }
         }
 
         const returnType = symbol.returnValue ? structureType : noneType;
@@ -232,8 +265,6 @@ export class TypeChecker
         tracker.declareType(funcType);
       }
     }
-
-    return errors;
   }
 
   /**
@@ -557,7 +588,8 @@ export class TypeChecker
 
     const iterable = this.checkGetter(stmt.collection, errors, result.type);
 
-    if (!iterable.hasSuffix(iterator)) {
+    // an unknown type (Structure) may be enumerable
+    if (!iterable.anyType && !iterable.hasSuffix(iterator)) {
       errors.push(
         createDiagnostic(
           stmt.collection,
@@ -1048,9 +1080,12 @@ export class TypeChecker
       return false;
     }
 
+    // a delegate is only called explicitly
     if (
+      currentType.kind !== TypeKind.delegate &&
       callSignature.requiredParams() === 0 &&
-      !(trailer instanceof SuffixTerm.Call)
+      !(trailer instanceof SuffixTerm.Call) &&
+      !(trailer instanceof SuffixTerm.Delegate)
     ) {
       builder.nodes.push(currentType.assignmentType());
       return true;
@@ -1095,7 +1130,7 @@ export class TypeChecker
       return errors;
     }
 
-    builder.nodes.push(type.assignmentType());
+    builder.nodes.push(callSignature.returns());
     call.open.tracker = type.tracker();
     call.close.tracker = type.tracker();
 
@@ -1601,6 +1636,11 @@ export class TypeChecker
       return { errors, type: subOp.returnType };
     }
 
+    // recover if structure
+    if (baseType.anyType) {
+      return { errors, type: structureType };
+    }
+
     errors.push(this.operatorError(operatorKind, expr.factor, baseType));
     return {
       errors,
@@ -1650,6 +1690,18 @@ export class TypeChecker
   ): ITypeResultExpr<IType> {
     let calcType: Maybe<IType> = undefined;
 
+    // with an unknown operand the operator is only known at runtime:
+    // `Structure * 2` may be a Scalar or a Vector
+    if (leftType.anyType || rightType.anyType) {
+      if (comparisonOperators.has(operator)) {
+        return { errors, type: booleanType };
+      }
+      const concatenation =
+        operator === OperatorKind.plus &&
+        (leftType === stringType || rightType === stringType);
+      return { errors, type: concatenation ? stringType : structureType };
+    }
+
     // determine the type to perform the operation on
     if (leftType.isSubtypeOf(scalarType) && rightType.isSubtypeOf(scalarType)) {
       calcType = scalarType;
@@ -1688,11 +1740,6 @@ export class TypeChecker
 
     // no operator found return error
     if (empty(leftOps) && empty(rightOps)) {
-      // recover if both structure
-      if (leftType.anyType && rightType.anyType) {
-        return { errors, type: structureType };
-      }
-
       errors.push(this.operatorError(operator, expr, leftType, rightType));
 
       return {
@@ -1799,3 +1846,23 @@ const accumulateErrors = <T>(
 
   return errors;
 };
+
+/**
+ * Find every function declaration of a script, nested ones included
+ */
+class FunctionDeclarations extends TreeTraverse {
+  private found: Decl.Func[] = [];
+
+  public find(stmts: IStmt[]): Decl.Func[] {
+    this.found = [];
+    for (const stmt of stmts) {
+      this.stmtAction(stmt);
+    }
+    return this.found;
+  }
+
+  public visitDeclFunction(decl: Decl.Func): void {
+    this.found.push(decl);
+    super.visitDeclFunction(decl);
+  }
+}

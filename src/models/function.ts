@@ -15,6 +15,7 @@ export class KsFunction {
    * @param requiredParameters the number of required parameters
    * @param optionalParameters the number of optional parameters
    * @param returnValue does the function return a value
+   * @param variadic does the number of arguments vary
    */
   constructor(
     public readonly scope: ScopeKind,
@@ -23,6 +24,7 @@ export class KsFunction {
     public readonly requiredParameters: number,
     public readonly optionalParameters: number,
     public readonly returnValue: boolean,
+    public readonly variadic = false,
   ) {
   }
 

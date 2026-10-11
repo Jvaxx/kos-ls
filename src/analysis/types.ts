@@ -30,6 +30,12 @@ export interface IFunctionScanResult {
    * Does the function return a value
    */
   return: boolean;
+
+  /**
+   * Does the function read parameters in a loop or branch, so that the
+   * number of arguments it takes varies
+   */
+  variadic: boolean;
 }
 
 /**

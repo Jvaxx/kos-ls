@@ -182,9 +182,7 @@ export class PreResolver
       scopeType,
       decl.identifier,
       decl,
-      result.requiredParameters,
-      result.optionalParameters,
-      result.return,
+      result,
     );
     const stmtErrors = this.resolveStmt(decl.block);
 

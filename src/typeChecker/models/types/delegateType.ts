@@ -102,10 +102,11 @@ export class DelegateType implements IType {
   }
 
   /**
-   * What is the assignment type of this type
+   * What is the assignment type of this type. A delegate is a value: it is
+   * only called explicitly, so it assigns as itself
    */
   public assignmentType(): IType {
-    return this.function.assignmentType();
+    return this;
   }
 
   /**

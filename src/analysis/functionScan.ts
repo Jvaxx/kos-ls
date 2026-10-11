@@ -15,6 +15,11 @@ export class FunctionScan extends TreeTraverse {
   private result: IFunctionScanResult;
 
   /**
+   * How many loops and branches enclose the current node
+   */
+  private depth = 0;
+
+  /**
    * Function scan constructor
    */
   constructor() {
@@ -23,6 +28,7 @@ export class FunctionScan extends TreeTraverse {
       requiredParameters: 0,
       optionalParameters: 0,
       return: false,
+      variadic: false,
     };
   }
 
@@ -35,7 +41,9 @@ export class FunctionScan extends TreeTraverse {
       requiredParameters: 0,
       optionalParameters: 0,
       return: false,
+      variadic: false,
     };
+    this.depth = 0;
 
     this.stmtAction(node);
 
@@ -63,6 +71,35 @@ export class FunctionScan extends TreeTraverse {
   public visitDeclParameter(decl: Decl.Param): void {
     this.result.requiredParameters += decl.requiredParameters.length;
     this.result.optionalParameters += decl.optionalParameters.length;
+    if (this.depth > 0) {
+      this.result.variadic = true;
+    }
+  }
+
+  /**
+   * Parameters read in a loop or branch take a varying number of arguments
+   * @param visit visit of the loop or branch
+   */
+  private enclosed(visit: () => void): void {
+    this.depth += 1;
+    visit();
+    this.depth -= 1;
+  }
+
+  public visitIf(stmt: Stmt.If): void {
+    this.enclosed(() => super.visitIf(stmt));
+  }
+
+  public visitUntil(stmt: Stmt.Until): void {
+    this.enclosed(() => super.visitUntil(stmt));
+  }
+
+  public visitFrom(stmt: Stmt.From): void {
+    this.enclosed(() => super.visitFrom(stmt));
+  }
+
+  public visitFor(stmt: Stmt.For): void {
+    this.enclosed(() => super.visitFor(stmt));
   }
 
   /**

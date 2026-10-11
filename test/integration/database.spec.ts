@@ -87,4 +87,53 @@ describe('kOS database', () => {
     expect(await hoverText(client, 2, 6)).toContain('c: TimeStamp');
     expect(await client.messages(file)).toEqual([]);
   });
+
+  test('user functions, unknown types and optional arguments', async () => {
+    client.open(
+      file,
+      [
+        '@lazyglobal off.',
+        'local g is gui(200).',
+        'local s is g:addhslider(0, 0, 100).',
+        'set g:addbutton("go"):onclick to start@.',
+        'local d is report@.',
+        'd:call().',
+        'print_args(2, "a", "b").',
+        'function start { print s:value. }',
+        'function report { return 1. }',
+        'function print_args {',
+        '  parameter n.',
+        '  from { local i is 0. } until i >= n step { set i to i + 1. } do {',
+        '    parameter arg.',
+        '    print arg.',
+        '  }',
+        '}',
+        'function f {',
+        '  parameter items, offset.',
+        '  for item in items { print -item. }',
+        '  print -offset.',
+        '  print offset * 0.5 + v(1, 0, 0).',
+        '  print v(1, 0, 0):normalized * offset - v(0, 1, 0).',
+        '}',
+      ].join('\n'),
+    );
+
+    expect(await client.messages(file)).toEqual([]);
+  });
+
+  test('wrong argument counts of user functions are reported', async () => {
+    client.open(
+      file,
+      [
+        'function two { parameter a, b. print a + b. }',
+        'two(1).',
+        'two(1, 2, 3).',
+      ].join('\n'),
+    );
+
+    expect(await client.messages(file)).toEqual([
+      '2:6 Call expected 2 required parameters but was called with 1 arguments',
+      '3:11 Call expected 2 parameters but was called with 3 arguments',
+    ]);
+  });
 });
