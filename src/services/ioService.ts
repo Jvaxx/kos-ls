@@ -68,14 +68,23 @@ export class IoService {
    * Load a collection of documents from a given directory
    * @param path the path of the directory
    */
-  public async *loadDirectory(path: string): AsyncIterableIterator<Document> {
+  public async *loadDirectory(
+    path: string,
+    skip: (path: string) => boolean = () => false,
+  ): AsyncIterableIterator<Document> {
     const directoryPaths = readdirSync(path);
 
     for (const directoryPath of directoryPaths) {
+      if (directoryPath.startsWith('.') || directoryPath === 'node_modules') {
+        continue;
+      }
       const dirPath = join(path, directoryPath);
+      if (skip(dirPath)) {
+        continue;
+      }
 
       if (statSync(dirPath).isDirectory()) {
-        yield* this.loadDirectory(dirPath);
+        yield* this.loadDirectory(dirPath, skip);
       } else {
         if (dirPath.endsWith('.ks')) {
           yield {
@@ -84,12 +93,6 @@ export class IoService {
           };
         }
 
-        if (dirPath.endsWith('ksconfig.json')) {
-          yield {
-            uri: URI.file(dirPath).toString(),
-            text: await readFileAsync(dirPath, 'utf-8'),
-          };
-        }
       }
     }
   }

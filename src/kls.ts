@@ -1,7 +1,6 @@
 import {
   Position,
   Location,
-  Diagnostic,
   Range,
   Connection,
   InitializeParams,
@@ -9,6 +8,7 @@ import {
   TextDocumentSyncKind,
   InitializedParams,
   DidChangeConfigurationNotification,
+  DidChangeWatchedFilesNotification,
   CompletionParams,
   CompletionItem,
   TextDocumentPositionParams,
@@ -20,7 +20,7 @@ import {
   CancellationToken,
   TextDocument,
 } from 'vscode-languageserver';
-import { ClientConfiguration, DiagnosticUri } from './types';
+import { ClientConfiguration } from './types';
 import { KsSymbolKind, SymbolTracker, KsBaseSymbol } from './analysis/types';
 import { mockLogger, mockTracer, logException } from './models/logger';
 import { empty } from './utilities/typeGuards';
@@ -46,7 +46,10 @@ import {
 import { cleanDiagnostic } from './utilities/clean';
 import { TypeKind } from './typeChecker/types';
 import { FoldableService } from './services/foldableService';
-import { AnalysisService } from './services/analysisService';
+import {
+  AnalysisService,
+  DiagnosticsByUri,
+} from './services/analysisService';
 import { IFindResult } from './parser/types';
 import { ResolverService } from './services/resolverService';
 import { runPath } from './utilities/pathUtils';
@@ -61,7 +64,6 @@ import {
   ChangeConfiguration,
 } from './services/configurationService';
 import { URI } from 'vscode-uri';
-import { debounce } from './utilities/debounce';
 import { CONFIG_DIAGNOSTICS } from './utilities/diagnosticsUtils';
 import { SymbolService } from './services/symbolService';
 import { IoService } from './services/ioService';
@@ -98,12 +100,16 @@ export class KLS {
   private keywords: CompletionItem[];
 
   /**
-   * Debounced function to bulk update the cached server documents
+   * Has the client finished initialization, after which configuration
+   * changes reload the workspace
    */
-  private readonly debouncedCacheDocuments: (
-    workspaceUri: Maybe<URI>,
-    rootVolumeUri: Maybe<URI>,
-  ) => void;
+  private initialized = false;
+
+  /**
+   * Operations in progress that lead to analysis, e.g. a configuration
+   * reload waiting for the file to be read
+   */
+  private readonly pending = new Set<Promise<unknown>>();
 
   /**
    * A service to handle changes to the configuration
@@ -187,10 +193,27 @@ export class KLS {
       this.documentService,
       this.analysisService,
     );
-    this.debouncedCacheDocuments = debounce(
-      4000,
-      this.cacheDocuments.bind(this),
-    );
+  }
+
+  /**
+   * Resolves once all pending analysis is done and its diagnostics sent
+   */
+  public async whenIdle(): Promise<void> {
+    while (this.pending.size > 0) {
+      await Promise.all(this.pending);
+    }
+    await this.analysisService.whenIdle();
+  }
+
+  /**
+   * Track an operation until it settles, for whenIdle
+   * @param operation the operation's promise
+   */
+  private track<T>(operation: Promise<T>): Promise<T> {
+    this.pending.add(operation);
+    const untrack = () => this.pending.delete(operation);
+    operation.then(untrack, untrack);
+    return operation;
   }
 
   /**
@@ -199,7 +222,9 @@ export class KLS {
   public listen(): void {
 
     this.connection.onInitialize(this.onInitialize.bind(this));
-    this.connection.onInitialized(this.onInitialized.bind(this));
+    this.connection.onInitialized((params) =>
+      this.track(this.onInitialized(params)),
+    );
     this.connection.onCompletion(this.onCompletion.bind(this));
     this.connection.onCompletionResolve(this.onCompletionResolve.bind(this));
     this.connection.onSignatureHelp(this.onSignatureHelp.bind(this));
@@ -209,9 +234,22 @@ export class KLS {
     this.symbolService.listen();
 
     this.documentService.on('change', this.onChange.bind(this));
-    this.analysisService.on('propagate', this.sendDiagnostics.bind(this));
-    this.configurationService.on('change', this.onConfigChange.bind(this));
-    this.configurationService.on('error', this.sendDiagnostics.bind(this));
+    this.documentService.on('close', (uri) =>
+      this.analysisService.invalidateDocument(uri),
+    );
+    this.documentService.on('configLoad', (load) => this.track(load));
+    this.documentService.on('diskChange', (uri) =>
+      this.analysisService.invalidateDocument(uri),
+    );
+    this.analysisService.on('propagate', (diagnostics) =>
+      this.publishDiagnostics(diagnostics),
+    );
+    this.configurationService.on('change', (change) =>
+      this.track(this.onConfigChange(change)),
+    );
+    this.configurationService.on('error', (diagnostics, uri) =>
+      this.publishDiagnostics(new Map([[uri, diagnostics]])),
+    );
 
     this.connection.listen();
   }
@@ -220,8 +258,10 @@ export class KLS {
    * Initialize the server from the client connection
    * @param params initialization parameters
    */
-  private onInitialize(params: InitializeParams): InitializeResult {
-    const { capabilities, rootPath, rootUri } = params;
+  private async onInitialize(
+    params: InitializeParams,
+  ): Promise<InitializeResult> {
+    const { capabilities, rootPath, rootUri, workspaceFolders } = params;
     this.connection.console.log(
       `[KLS Server(${process.pid})] Started and initialize received.`,
     );
@@ -243,17 +283,26 @@ export class KLS {
     clientCapability.hasWorkspaceFolder = !!capabilities.workspace
       ?.workspaceFolders;
 
-    // get root path if it exists
-    if (rootPath) {
+    // can file watchers be registered
+    clientCapability.hasWatchedFiles =
+      !!capabilities.workspace?.didChangeWatchedFiles?.dynamicRegistration;
+
+    // only the first workspace folder is supported
+    const workspaceUri = workspaceFolders?.[0]?.uri ?? rootUri;
+    if (workspaceUri) {
+      serverConfiguration.workspaceUri = URI.parse(workspaceUri);
+      serverConfiguration.workspaceFolder =
+        serverConfiguration.workspaceUri.fsPath;
+    } else if (rootPath) {
       serverConfiguration.workspaceFolder = rootPath;
     }
 
-    // get root uri if it exists
-    if (rootUri) {
-      serverConfiguration.workspaceUri = URI.parse(rootUri);
-    }
-
     this.configurationService.updateServerConfiguration(serverConfiguration);
+
+    // the workspace configuration is read before any document is analysed,
+    // as it determines how run statements are resolved
+    this.documentService.workspaceUri = serverConfiguration.workspaceUri;
+    await this.documentService.loadWorkspaceConfig();
     this.onConfigChange(this.configurationService);
 
     return {
@@ -306,6 +355,19 @@ export class KLS {
       });
     }
 
+    // watch scripts and the configuration changed outside the client
+    if (clientCapability.hasWatchedFiles) {
+      this.connection.client.register(
+        DidChangeWatchedFilesNotification.type,
+        {
+          watchers: [
+            { globPattern: '**/*.{ks,KS}' },
+            { globPattern: '**/ksconfig.json' },
+          ],
+        },
+      );
+    }
+
     // register workspace changes
     if (clientCapability.hasWorkspaceFolder) {
       this.connection.workspace.onDidChangeWorkspaceFolders(_ => {
@@ -318,6 +380,9 @@ export class KLS {
 
     this.configurationService.updateServerConfiguration({ clientConfig });
     this.onConfigChange(this.configurationService);
+
+    this.initialized = true;
+    await this.reloadWorkspace();
   }
 
   /**
@@ -525,12 +590,12 @@ export class KLS {
    */
   private async onChange(document: TextDocument) {
     try {
-      const diagnostic = await this.analysisService.analyzeDocument(
+      const diagnostics = await this.analysisService.analyzeDocument(
         document.uri,
         document.getText(),
       );
 
-      this.sendDiagnostics(diagnostic, document.uri);
+      this.publishDiagnostics(new Map([[document.uri, diagnostics]]));
     } catch (err) {
       // report any exceptions to the client
       logException(this.logger, this.tracer, err, LogLevel.error);
@@ -560,63 +625,54 @@ export class KLS {
     this.keywords = keywordCompletions(casePreference);
     this.logger.level = logPreference;
 
-    const rootVolume =
-      workspaceConfiguration.rootVolumeUri() ||
-      serverConfiguration.workspaceUri;
+    const { workspaceUri } = serverConfiguration;
+    this.documentService.workspaceUri = workspaceUri;
+    this.resolverService.rootVolume =
+      workspaceConfiguration.rootVolumeUri() ?? workspaceUri;
+    this.resolverService.volumes = workspaceConfiguration.volumeUris();
+    this.documentService.isExcluded = (uri) =>
+      workspaceConfiguration.isExcluded(uri);
 
     this.analysisService
       .setCase(casePreference)
-      .setBodies(workspaceConfiguration.bodies ?? DEFAULT_BODIES);
+      .setBodies(workspaceConfiguration.bodies ?? DEFAULT_BODIES)
+      .setPreload(workspaceConfiguration.preloadUris());
 
-    this.debouncedCacheDocuments(serverConfiguration.workspaceUri, rootVolume);
+    // path resolution may have changed: everything is reanalysed
+    this.analysisService.invalidateAll();
+    if (this.initialized) {
+      await this.reloadWorkspace();
+    }
   }
 
   /**
-   * Cache all documents in the current workspace
-   * @param rootVolumeUri uri to the root volume
+   * Analyse every document of the workspace and publish the diagnostics
    */
-  private async cacheDocuments(
-    workspaceUri: Maybe<URI>,
-    rootVolumeUri: Maybe<URI>,
-  ) {
-    this.resolverService.rootVolume = rootVolumeUri;
-    this.documentService.workspaceUri = workspaceUri;
-
-    const diagnostics = await this.analysisService.loadDirectory();
-    this.sendDiagnostics(diagnostics);
+  private async reloadWorkspace() {
+    this.publishDiagnostics(await this.analysisService.loadDirectory());
   }
 
-  /**lintRules
-   * send diagnostics to client
-   * @param diagnostics diagnostics to organize and send
+  /**
+   * Publish the diagnostics of documents, after applying the lint rules.
+   * Each document present replaces its previous diagnostics, so a document
+   * with none clears them.
+   * @param diagnostics diagnostics by document uri
    */
-  private sendDiagnostics(diagnostics: DiagnosticUri[], uri?: string): void {
-    const diagnosticMap: Map<string, Diagnostic[]> = new Map();
-    const filteredDiagnostics = this.lintManager.apply(diagnostics);
-
-    // retrieve diagnostics from analyzer
-    for (const diagnostic of filteredDiagnostics) {
-      const uriDiagnostics = diagnosticMap.get(diagnostic.uri);
-      if (empty(uriDiagnostics)) {
-        diagnosticMap.set(diagnostic.uri, [cleanDiagnostic(diagnostic)]);
-      } else {
-        uriDiagnostics.push(cleanDiagnostic(diagnostic));
+  private publishDiagnostics(diagnostics: DiagnosticsByUri): void {
+    const { workspaceConfiguration } = this.configurationService;
+    for (const [uri, documentDiagnostics] of diagnostics) {
+      if (
+        workspaceConfiguration.isExcluded(URI.parse(uri)) &&
+        !this.documentService.isOpen(uri)
+      ) {
+        continue;
       }
-    }
 
-    // send diagnostics to each document reported
-    for (const [uri, diagnostics] of diagnosticMap.entries()) {
       this.connection.sendDiagnostics({
         uri,
-        diagnostics,
-      });
-    }
-
-    // if not problems found clear out diagnostics
-    if (!empty(uri) && empty(diagnosticMap.get(uri))) {
-      this.connection.sendDiagnostics({
-        uri,
-        diagnostics: [],
+        diagnostics: this.lintManager
+          .apply(documentDiagnostics)
+          .map(cleanDiagnostic),
       });
     }
   }

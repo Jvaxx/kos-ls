@@ -1,0 +1,4 @@
+{
+  "volumes": { "1": "src" },
+  "preload": ["src/lib/std.ks"]
+}

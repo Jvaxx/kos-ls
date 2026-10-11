@@ -1,23 +1,93 @@
-# Workspace Configuration with **ksconfig.json**
+# Workspace configuration: `ksconfig.json`
 
-The kos-language-server as of 0.13.0 now supports a workspace level configuration file `ksconfig.json`. This file describes the following configurations
+A `ksconfig.json` at the root of the workspace (the folder the client
+opens) configures how kos-ls reads the scripts. It is read at startup and
+again whenever it changes, on disk or in the editor. All properties are
+optional.
 
 |Name|Description|
 |--|--|
-|archive|The location relative to this `ksconfig.json` that corresponds to the archive directory `0:/`|
-|bodies|A list of custom bodies for the language server to consider valid. By default the normal KSP bodies are assumed|
+|archive|The directory of the archive, volume `0:`, relative to this file. Default: this file's directory|
+|volumes|Directories of other kOS volumes, relative to this file|
+|preload|Files run before every script at runtime: their globals are visible in every file|
+|exclude|Files and directories that are not analysed unless opened or run by another file|
+|bodies|A list of custom bodies for the language server to consider valid. By default the stock KSP bodies are assumed|
 |linting|A collection of rules and levels indicating what level lints should be reported|
+
+Paths in these properties are relative to `ksconfig.json`.
+
+## Example
+
+A layout where `src/` is edited and its files are copied to the ship's
+disk (`1:`) by a build, which also writes generated copies to `bin/` and
+`boot/`; the boot file loads `1:/lib/std.ks` before every mission:
+
+```json
+{
+  "volumes": { "1": "src" },
+  "preload": ["src/lib/std.ks"],
+  "exclude": ["bin", "boot"]
+}
+```
 
 # Archive
 
-The location of the archive directory
-
-## Example
-This `ksconfig.json` will set the server to assume a directory scripts relative to the config corresponds to `0:/`
+The directory that corresponds to the archive, `0:/`. Paths like
+`runpath("0:/lib/orbit")` are resolved from it.
 
 ```json
 {
   "archive": "scripts"
+}
+```
+
+# Volumes
+
+kOS paths can name a volume by number or name: `1:/lib/std.ks`,
+`probe:/data.json`. `volumes` maps volumes other than the archive to
+directories, by number or name (case-insensitive, with or without the
+colon). A path on a volume with no directory is reported.
+
+```json
+{
+  "volumes": { "1": "src", "probe": "../probe-disk" }
+}
+```
+
+Paths without a volume (`runpath("lib/orbit")`) are relative to the
+current directory at runtime, which is not known statically. kos-ls takes
+the first existing file among: the calling file's directory, the root of
+the volume the calling file is on, and the archive.
+
+# Preload
+
+Some files are run at runtime in a way that cannot be followed, e.g. a
+boot file that loads a library only if it exists on the ship's disk:
+
+```
+if exists("1:/lib/std.ks") { runoncepath("1:/lib/std.ks"). }
+```
+
+The globals of the files listed in `preload`, and of the files they run,
+are visible in every other file of the workspace, without "symbol may not
+exist" warnings.
+
+```json
+{
+  "preload": ["src/lib/std.ks"]
+}
+```
+
+# Exclude
+
+Files and directories, e.g. generated copies of the scripts, that are not
+analysed when the workspace is loaded and whose diagnostics are not
+reported. They are still analysed when opened in the editor, and when
+another file runs them.
+
+```json
+{
+  "exclude": ["bin", "boot"]
 }
 ```
 

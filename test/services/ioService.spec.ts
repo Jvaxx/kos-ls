@@ -23,10 +23,8 @@ describe('ioService', () => {
         documents.push(document);
       }
 
-      expect(documents).toHaveLength(3);
-      expect(
-        documents.find(doc => basename(doc.uri) === 'ksconfig.json'),
-      ).toBeDefined();
+      // only scripts: the configuration is read from the workspace root
+      expect(documents).toHaveLength(2);
       expect(
         documents.find(doc => basename(doc.uri) === 'example.ks'),
       ).toBeDefined();

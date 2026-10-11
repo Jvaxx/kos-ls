@@ -459,7 +459,9 @@ describe('analysis service', () => {
       resolverService,
     );
 
-    const diagnostics = await analysisService.loadDirectory();
+    const diagnostics = [
+      ...(await analysisService.loadDirectory()).values(),
+    ].flat();
     expect(diagnostics).toHaveLength(1);
 
     expect(diagnostics[0].uri).toBe(

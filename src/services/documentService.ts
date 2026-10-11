@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import {
   Connection,
+  DidChangeWatchedFilesParams,
   DidChangeTextDocumentParams,
   DidCloseTextDocumentParams,
   DidOpenTextDocumentParams,
@@ -9,6 +10,7 @@ import {
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
+import { join } from 'path';
 import { logException, mockTracer } from '../models/logger';
 import { normalizeExtensions } from '../utilities/pathUtils';
 import { empty } from '../utilities/typeGuards';
@@ -18,9 +20,10 @@ type DocumentChangeHandler = (document: TextDocument) => void;
 type DocumentClosedHandler = (uri: string) => void;
 
 type DocumentConnection = Pick<
-Connection,
+  Connection,
   'onDidChangeTextDocument' | 'onDidCloseTextDocument' | 'onDidOpenTextDocument'
->;
+> &
+  Partial<Pick<Connection, 'onDidChangeWatchedFiles'>>;
 
 export declare interface DocumentService {
   on(event: 'change', listener: DocumentChangeHandler): this;
@@ -32,7 +35,19 @@ export declare interface DocumentService {
   ): boolean;
   on(event: 'close', listener: DocumentClosedHandler): this;
   emit(event: 'close', ...args: Parameters<DocumentClosedHandler>): boolean;
+  on(event: 'configLoad', listener: (load: Promise<void>) => void): this;
+  emit(event: 'configLoad', load: Promise<void>): boolean;
+  on(event: 'diskChange', listener: DocumentClosedHandler): this;
+  emit(
+    event: 'diskChange',
+    ...args: Parameters<DocumentClosedHandler>
+  ): boolean;
 }
+
+/**
+ * Name of the workspace configuration file
+ */
+export const configFileName = 'ksconfig.json';
 
 /**
  * Service responsible for managing documents being loaded by the client and the server
@@ -42,6 +57,11 @@ export class DocumentService extends EventEmitter {
    * What is the root volume of this directory
    */
   public workspaceUri?: URI;
+
+  /**
+   * Files not loaded when caching the workspace
+   */
+  public isExcluded: (uri: URI) => boolean = () => false;
 
   /**
    * Currently cached documents loaded by the client
@@ -117,6 +137,29 @@ export class DocumentService extends EventEmitter {
     this.conn.onDidChangeTextDocument(this.onChangeHandler.bind(this));
     this.conn.onDidOpenTextDocument(this.onOpenHandler.bind(this));
     this.conn.onDidCloseTextDocument(this.onCloseHandler.bind(this));
+    this.conn.onDidChangeWatchedFiles?.(this.onWatchedFilesHandler.bind(this));
+  }
+
+  /**
+   * Read the configuration file at the root of the workspace, if the
+   * client has not opened it, and emit a config change event. With no
+   * file, the event carries an empty configuration.
+   */
+  public async loadWorkspaceConfig(): Promise<void> {
+    if (empty(this.workspaceUri) || !empty(this.clientConfigDoc)) {
+      return;
+    }
+
+    const uri = URI.file(join(this.workspaceUri.fsPath, configFileName));
+    let text = '{}';
+    try {
+      text = await this.ioService.load(uri.fsPath);
+    } catch {
+      // no configuration file: defaults apply
+    }
+
+    this.serverConfigDoc = TextDocument.create(uri.toString(), 'json', 0, text);
+    this.emit('configChange', this.serverConfigDoc);
   }
 
   /**
@@ -138,6 +181,14 @@ export class DocumentService extends EventEmitter {
     }
 
     return this.clientDocs.get(normalized) || this.serverDocs.get(normalized);
+  }
+
+  /**
+   * Is a document open in the client
+   * @param uri document uri
+   */
+  public isOpen(uri: string): boolean {
+    return this.clientDocs.has(uri);
   }
 
   /**
@@ -196,6 +247,7 @@ export class DocumentService extends EventEmitter {
     try {
       for await (const { uri, text } of this.ioService.loadDirectory(
         this.workspaceUri.fsPath,
+        (path) => this.isExcluded(URI.file(path)),
       )) {
         // store as sever doc if .ks
         if (uri.endsWith('.ks')) {
@@ -205,12 +257,6 @@ export class DocumentService extends EventEmitter {
           }
         }
 
-        // store as config if ksconfig
-        if (uri.endsWith('ksconfig.json')) {
-          if (!this.clientConfigDoc) {
-            this.serverConfigDoc = TextDocument.create(uri, 'json', 0, text);
-          }
-        }
       }
     } catch (err) {
       logException(this.logger, mockTracer, err, LogLevel.error);
@@ -385,16 +431,36 @@ export class DocumentService extends EventEmitter {
   private onCloseHandler(params: DidCloseTextDocumentParams): void {
     const { uri } = params.textDocument;
 
-    // get the current document and remove
-    const document = this.clientDocs.get(uri);
+    // the text on disk applies again, it is reloaded when needed
     this.clientDocs.delete(uri);
+    this.serverDocs.delete(uri);
 
-    // if document not empty add to server docs
-    if (!empty(document)) {
-      this.serverDocs.set(uri, document);
+    if (uri.endsWith(configFileName) && this.clientConfigDoc?.uri === uri) {
+      this.clientConfigDoc = undefined;
+      this.emit('configLoad', this.loadWorkspaceConfig());
     }
 
-    // handle document closing
     this.emit('close', uri);
+  }
+
+  /**
+   * Handle files changed on disk. Open documents are managed by the
+   * client and ignored.
+   * @param params changed files
+   */
+  private onWatchedFilesHandler(params: DidChangeWatchedFilesParams): void {
+    for (const { uri } of params.changes) {
+      if (uri.endsWith('.ks') && !this.clientDocs.has(uri)) {
+        this.serverDocs.delete(uri);
+        this.emit('diskChange', uri);
+      } else if (
+        uri.endsWith(configFileName) &&
+        !empty(this.workspaceUri) &&
+        URI.parse(uri).fsPath ===
+          join(this.workspaceUri.fsPath, configFileName)
+      ) {
+        this.emit('configLoad', this.loadWorkspaceConfig());
+      }
+    }
   }
 }
