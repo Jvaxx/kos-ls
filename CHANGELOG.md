@@ -1,3 +1,11 @@
+# [2.0.0] (unreleased)
+
+First release of the kos-ls fork. See docs/ROADMAP.md.
+
+- Server-only repository: the VS Code client is removed.
+- Package renamed `kos-ls`; binaries `kos-ls` and `kls`.
+- Node.js 22 or later.
+
 # [1.1.5] (2020-8-5)
 
 # Bug Fixes

@@ -1,10 +1,7 @@
 node_modules
 out
 dist
-server/build/*
-.idea/*
-*.vsix
-
 coverage
-
 junit.xml
+TEST.xml
+.idea/

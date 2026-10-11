@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Editor (please complete the following information):**
  - OS: [e.g. Window, Linux, Mac]
- - Editor [e.g. vscode atom]
+ - Editor [e.g. Neovim 0.12]
  - Extension Version [e.g. 22]
 
 **Additional context**

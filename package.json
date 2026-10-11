@@ -1,201 +1,62 @@
 {
-  "name": "kos-vscode",
-  "displayName": "kOS (Kerboscript)",
-  "description": "Syntax highlighting, auto-complete, and language diagnostics for KerboScript in Kerbal Operating System.",
-  "author": "John Chabot",
-  "license": "MIT",
-  "version": "1.1.7",
-  "scripts": {
-    "bench": "cd server && npm run bench",
-    "vscode:prepublish": "cd clients/vscode && npm run update-vscode && cd ../.. && node build/clean.js && npm run bundle && npm run test",
-    "bundle": "run-p bundle:vscode bundle:server",
-    "build": "run-p build:vscode build:server",
-    "test": "cd server && npm test",
-    "bundle:vscode": "cd clients/vscode && npm run bundle",
-    "bundle:server": "cd server && npm run bundle",
-    "build:vscode": "cd clients/vscode && npm run build",
-    "build:server": "cd server && npm run build",
-    "postinstall": "cd clients/vscode && npm install && npm install && cd ../../server && npm install && cd .."
+  "name": "kos-ls",
+  "description": "Language server for Kerboscript, the language of the kOS mod for Kerbal Space Program. Maintained fork of kos-language-server.",
+  "version": "2.0.0-dev",
+  "main": "dist/server.js",
+  "bin": {
+    "kos-ls": "./bin/kos-ls",
+    "kls": "./bin/kos-ls"
   },
-  "galleryBanner": {
-    "color": "#a3a3a3",
-    "theme": "dark"
-  },
-  "icon": "clients/vscode/images/kos_extension_logo.png",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jonnyboyC/kos-language-server"
-  },
-  "publisher": "JohnChabot",
-  "categories": [
-    "Programming Languages",
-    "Snippets"
+  "files": [
+    "dist/**/*",
+    "bin"
   ],
-  "bugs": {
-    "url": "https://github.com/jonnyboyC/kos-language-server/issues"
+  "author": "Jvaxx",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
   },
-  "homepage": "https://github.com/jonnyboyC/kos-language-server#readme",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "denque": "^2.1.0",
+    "jsonc-parser": "^3.3.0",
+    "ts-set-utils": "^0.2.0",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12",
+    "vscode-uri": "^3.0.8"
+  },
   "keywords": [
     "Kerbal Operating System",
     "kos",
     "Kerbal Space Program",
     "ksp",
-    "language-server"
+    "language-server",
+    "lsp",
+    "neovim"
   ],
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "bundle": "webpack --config ./webpack.config.js --mode production",
+    "test": "jest --config jest.config.js",
+    "bench": "zakzak -c ./zakzak.config.json",
+    "probe": "node tools/lsp-probe.js",
+    "prepack": "npm run build && npm run bundle && npm test"
+  },
   "devDependencies": {
-    "npm-run-all": "^4.1.5"
+    "@dynatrace/zakzak": "^0.6.6",
+    "@types/jest": "^29.5.13",
+    "@types/node": "^22.6.1",
+    "jest": "^29.7.0",
+    "jest-junit": "^16.0.0",
+    "jstat": "^1.9.6",
+    "npm-run-all": "^4.1.5",
+    "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.6.2",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
   },
-  "engines": {
-    "vscode": "^1.93.0"
-  },
-  "activationEvents": [
-    "workspaceContains:**/ksconfig.json",
-    "onCommand:kos.lspPort"
-  ],
-  "main": "./clients/vscode/out/extension.js",
-  "contributes": {
-    "configuration": {
-      "type": "object",
-      "title": "kOS configuration",
-      "properties": {
-        "kos-vscode.kerbalSpaceProgramPath": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "The full path to Kerbal Space Program."
-        },
-        "kos-vscode.telnetHost": {
-          "type": "string",
-          "default": "127.0.0.1",
-          "description": "The host of the kOS telnet server"
-        },
-        "kos-vscode.telnetPort": {
-          "type": "number",
-          "default": 5410,
-          "description": "The port of the kOS telnet server"
-        },
-        "kos-vscode.lspPort": {
-          "type": "number",
-          "default": 7000,
-          "scope": "window",
-          "description": "The WebSocket port to stream LSP log data into."
-        },
-        "kos-vscode.completionCase": {
-          "type": "string",
-          "default": "camelcase",
-          "enum": [
-            "lowercase",
-            "uppercase",
-            "camelcase",
-            "pascalcase"
-          ],
-          "description": "The case kos-language-server will suggest as part of auto completion"
-        },
-        "kos-vscode.trace.server.verbosity": {
-          "scope": "window",
-          "type": "string",
-          "description": "Controls the verbosity of the trace between VS Code and the language server",
-          "enum": [
-            "off",
-            "message",
-            "verbose"
-          ],
-          "default": "off"
-        },
-        "kos-vscode.trace.server.format": {
-          "scope": "window",
-          "type": "string",
-          "description": "Controls the format of the trace between VS Code and the language server",
-          "enum": [
-            "text",
-            "json"
-          ],
-          "default": "text"
-        },
-        "kos-vscode.trace.server.level": {
-          "scope": "window",
-          "type": "string",
-          "description": "Controls the level of message log.",
-          "enum": [
-            "verbose",
-            "info",
-            "log",
-            "warn",
-            "error",
-            "none"
-          ],
-          "default": "error"
-        }
-      }
-    },
-    "commands": [
-      {
-        "command": "kos.searchDocs",
-        "title": "kOS: Search Documentation"
-      },
-      {
-        "command": "kos.startTelnet",
-        "title": "kOS: Connect Telnet Client"
-      },
-      {
-        "command": "kos.startksp",
-        "title": "kOS: Start Kerbal Space Program"
-      },
-      {
-        "command": "kos.startLspLog",
-        "title": "kOS: Route Logging to LSP inspector"
-      },
-      {
-        "command": "kos.startVscodeLog",
-        "title": "kOS: Route Logging to Vscode"
-      }
-    ],
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "kos.startksp",
-          "when": "resourceLangId == kos"
-        },
-        {
-          "command": "kos.startLspLog",
-          "when": "resourceLangId == kos"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "kos.searchDocs",
-          "when": "resourceLangId == kos",
-          "group": "4_search"
-        }
-      ]
-    },
-    "languages": [
-      {
-        "id": "kos",
-        "aliases": [
-          "Kerbal Operating System",
-          "kos"
-        ],
-        "extensions": [
-          ".ks"
-        ],
-        "configuration": "./kos.configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "kos",
-        "scopeName": "source.kos",
-        "path": "./clients/vscode/kos-grammar/language-kos.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "kos",
-        "path": "clients/vscode/snippets/snippets.json"
-      }
-    ]
-  }
+  "contributors": [
+    "John Chabot (original author)"
+  ]
 }
