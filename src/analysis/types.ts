@@ -7,6 +7,7 @@ import { IExpr, IStmt, ScopeKind } from '../parser/types';
 import { BasicTracker } from './models/tracker';
 import { Token } from '../models/token';
 import { KsSuffix } from '../models/suffix';
+import { Parameter } from '../parser/models/declare';
 import { Environment } from './models/environment';
 import { TypeTracker } from './models/typeTracker';
 import { IType } from '../typeChecker/types';
@@ -36,6 +37,11 @@ export interface IFunctionScanResult {
    * number of arguments it takes varies
    */
   variadic: boolean;
+
+  /**
+   * The parameters, in order
+   */
+  parameters: Parameter[];
 }
 
 /**

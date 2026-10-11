@@ -44,7 +44,7 @@ import { toCase } from '../../utilities/stringUtils';
 import { cleanLocation } from '../../utilities/clean';
 import { Token } from '../../models/token';
 import { KsParameter } from '../../models/parameter';
-import { IType } from '../../typeChecker/types';
+import { IType, TypeDocs } from '../../typeChecker/types';
 
 /**
  * The Symbol table builder is used to declare new symbols and track new symbols
@@ -407,6 +407,7 @@ export class SymbolTableBuilder {
     range: Range,
     scan: IFunctionScanResult,
     type?: IType,
+    docs?: TypeDocs,
   ): Maybe<Diagnostic> {
     const conflictTracker = this.lookupKind(
       token.lookup,
@@ -451,6 +452,7 @@ export class SymbolTableBuilder {
         scan.optionalParameters,
         scan.return,
         scan.variadic,
+        docs,
       ),
       this.uri,
       type,
@@ -538,6 +540,7 @@ export class SymbolTableBuilder {
     scopeKind: ScopeKind,
     token: Token,
     range: Range,
+    docs?: TypeDocs,
   ): Maybe<Diagnostic> {
     const conflictTracker = this.lookupKind(
       token.lookup,
@@ -573,7 +576,10 @@ export class SymbolTableBuilder {
     }
 
     const scopeNode = this.selectScopeNode(scopeKind);
-    const tracker = new BasicTracker(new KsParameter(token, range), this.uri);
+    const tracker = new BasicTracker(
+      new KsParameter(token, range, docs),
+      this.uri,
+    );
 
     token.tracker = tracker;
     scopeNode.environment.set(token.lookup, KsSymbolKind.parameter, tracker);

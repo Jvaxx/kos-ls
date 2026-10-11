@@ -48,6 +48,7 @@ export const standardLibraryBuilder = (caseKind: CaseKind): SymbolTable => {
         optionalParameters: optional,
         return: !(type.callSignature()?.returns().noneType ?? true),
         variadic: false,
+        parameters: [],
       },
       type,
     );

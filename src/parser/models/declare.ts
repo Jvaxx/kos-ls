@@ -1,3 +1,4 @@
+import type { DocTag } from '../../analysis/docComment';
 import { Stmt, Block } from './stmt';
 import { IExpr, IStmtVisitor, ScopeKind, NodeDataBuilder } from '../types';
 import { TokenType } from '../../models/tokentypes';
@@ -330,6 +331,12 @@ export class Param extends Decl {
 }
 
 export class Parameter extends NodeBase {
+  /**
+   * Its documentation, from the doc comment above its statement or the
+   * `@param` tag of its function. Set by the pre-resolver
+   */
+  public docTag?: DocTag;
+
   constructor(public readonly identifier: Token) {
     super();
   }

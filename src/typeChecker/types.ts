@@ -172,6 +172,9 @@ export interface TypeDocs {
 
   /** names and descriptions of the call parameters, in order */
   params?: { name?: string; doc?: string }[];
+
+  /** description of the returned value */
+  returns?: string;
 }
 
 /**

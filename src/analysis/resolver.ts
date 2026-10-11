@@ -376,6 +376,9 @@ export class Resolver
         scopeType,
         parameter.identifier,
         parameter,
+        parameter.docTag?.doc === undefined
+          ? undefined
+          : { doc: parameter.docTag.doc },
       );
 
       if (!empty(error)) {
@@ -389,6 +392,9 @@ export class Resolver
         scopeType,
         parameter.identifier,
         parameter,
+        parameter.docTag?.doc === undefined
+          ? undefined
+          : { doc: parameter.docTag.doc },
       );
 
       if (!empty(error)) {

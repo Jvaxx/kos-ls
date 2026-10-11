@@ -59,7 +59,9 @@ export const symbolDocs = (
         access: type.access,
       };
     case KsSymbolKind.function:
-      return { name: lexeme, docs: type.docs };
+      return { name: lexeme, docs: type.docs ?? symbol.docs };
+    case KsSymbolKind.parameter:
+      return { name: lexeme, docs: symbol.docs };
     case KsSymbolKind.variable:
     case KsSymbolKind.lock:
       if (uri === builtIn) {
@@ -133,8 +135,13 @@ export const parameterLabels = (
     return [];
   }
 
-  return signature.params().map((param, i) => {
-    const { name, doc } = docs?.params?.[i] ?? {};
+  // names only fit parameters they match one to one: a user function
+  // reading its parameters in a branch takes them as one variadic
+  const params = signature.params();
+  const named = docs?.params?.length === params.length ? docs.params : [];
+
+  return params.map((param, i) => {
+    const { name, doc } = named[i] ?? {};
     const variadic = param.kind === TypeKind.variadic;
     const optional = !variadic && param.noneType;
     const text = typeText(param);
@@ -207,6 +214,10 @@ export const formatDocs = (docs?: TypeDocs, access?: Access): string => {
     sections.push(
       params.map((param) => `- \`${param.name}\`: ${param.doc}`).join('\n'),
     );
+  }
+
+  if (docs?.returns !== undefined) {
+    sections.push(`Returns: ${docs.returns}`);
   }
 
   if (docs?.url !== undefined) {

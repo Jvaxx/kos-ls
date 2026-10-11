@@ -267,6 +267,7 @@ export class TypeChecker
           returnType,
           ...paramsTypes,
         );
+        funcType.docs = symbol.docs;
 
         tracker.declareType(funcType);
       }

@@ -17,6 +17,11 @@ export interface Comment {
    * Where the comment is in the source
    */
   readonly range: Range;
+
+  /**
+   * Whether code precedes the comment on its line
+   */
+  readonly trailing: boolean;
 }
 
 /**

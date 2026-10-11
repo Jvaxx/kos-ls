@@ -75,3 +75,69 @@ describe('documentation', () => {
     );
   });
 });
+
+describe('doc comments', () => {
+  let client: TestClient;
+
+  beforeEach(async () => {
+    client = await TestClient.start(root);
+  });
+
+  afterEach(async () => {
+    await client?.stop();
+  });
+
+  const source = [
+    '// Burn time for a maneuver.',
+    '// @param dv {Scalar} delta-v in m/s',
+    '// @param ves the vessel',
+    '// @return {Scalar} seconds',
+    'function burnTime {',
+    '    parameter dv, ves is ship.',
+    '    return dv / ves:availablethrust.',
+    '}',
+    '',
+    '// Target altitude',
+    'parameter target.',
+    'print burnTime(10, ship) + target.',
+  ].join('\n');
+
+  test('document functions and parameters in hover', async () => {
+    client.open(file, source);
+
+    const fn = (await client.hover(file, 11, 8))!.contents as MarkupContent;
+    expect(fn.value).toBe(
+      '```kerboscript\n' +
+        '(function) burnTime(dv: Structure, ves?: Structure): Structure\n' +
+        '```\n\n' +
+        'Burn time for a maneuver.\n\n' +
+        '- `dv`: delta-v in m/s\n- `ves`: the vessel\n\n' +
+        'Returns: seconds',
+    );
+
+    const dv = (await client.hover(file, 5, 15))!.contents as MarkupContent;
+    expect(dv.value).toContain('delta-v in m/s');
+
+    const target = (await client.hover(file, 11, 28))!.contents as MarkupContent;
+    expect(target.value).toContain('Target altitude');
+  });
+
+  test('document functions in signature help and completion', async () => {
+    client.open(file, source);
+
+    const help = await client.signatureHelp(file, 11, 19);
+    expect(help?.activeParameter).toBe(1);
+    expect(help?.signatures[0].parameters?.[1].documentation).toEqual({
+      kind: 'markdown',
+      value: 'the vessel',
+    });
+
+    const item = (await client.completion(file, 11, 6)).find(
+      (i) => i.label === 'burnTime',
+    )!;
+    const resolved = await client.resolve(item);
+    expect((resolved.documentation as MarkupContent).value).toContain(
+      'Burn time for a maneuver.',
+    );
+  });
+});

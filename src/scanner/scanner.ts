@@ -73,6 +73,11 @@ export class Scanner {
   private comments: Comment[];
 
   /**
+   * line where the last token ends, -1 before the first
+   */
+  private lastTokenLine: number;
+
+  /**
    * Scanner constructor
    * @param source source string
    * @param uri source uri
@@ -94,6 +99,7 @@ export class Scanner {
     this.startPosition = new MutableMarker(0, 0);
     this.currentPosition = new MutableMarker(0, 0);
     this.comments = [];
+    this.lastTokenLine = -1;
 
     this.whiteSpaceResult = {
       result: null,
@@ -131,6 +137,7 @@ export class Scanner {
               result.result.leadingComments = this.comments;
               this.comments = [];
             }
+            this.lastTokenLine = result.result.end.line;
             tokens.push(result.result);
             break;
           case ScanKind.Diagnostic:
@@ -267,6 +274,7 @@ export class Scanner {
         start: startPosition,
         end: new Marker(startPosition.line, startPosition.character + text.length),
       },
+      trailing: startPosition.line === this.lastTokenLine,
     });
     return result;
   }

@@ -1,6 +1,7 @@
 import { KsSymbolKind } from '../analysis/types';
 import { Token } from './token';
 import { Range } from 'vscode-languageserver';
+import type { TypeDocs } from '../typeChecker/types';
 
 /**
  * A class containing the information of a parameter
@@ -14,6 +15,7 @@ export class KsParameter {
   constructor(
     public readonly name: Token,
     public readonly range: Range,
+    public readonly docs?: TypeDocs,
   )
   { }
 

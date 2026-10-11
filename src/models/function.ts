@@ -2,6 +2,7 @@ import { ScopeKind } from '../parser/types';
 import { KsSymbolKind } from '../analysis/types';
 import { Token } from './token';
 import { Range } from 'vscode-languageserver';
+import type { TypeDocs } from '../typeChecker/types';
 
 /**
  * A class containing the information of a function
@@ -25,6 +26,7 @@ export class KsFunction {
     public readonly optionalParameters: number,
     public readonly returnValue: boolean,
     public readonly variadic = false,
+    public readonly docs?: TypeDocs,
   ) {
   }
 

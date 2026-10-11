@@ -18,6 +18,14 @@ import { mockLogger, mockTracer, logException } from '../models/logger';
 import { SymbolTableBuilder } from './models/symbolTableBuilder';
 import { Diagnostic } from 'vscode-languageserver';
 import { FunctionScan } from './functionScan';
+import {
+  DocComment,
+  declarationStart,
+  functionDocs,
+  parameterTag,
+  parseDocComment,
+} from './docComment';
+import { TypeDocs } from '../typeChecker/types';
 
 export type Diagnostics = Diagnostic[];
 
@@ -56,6 +64,11 @@ export class PreResolver
    * statements
    */
   private readonly functionScan: FunctionScan;
+
+  /**
+   * Doc comments of the functions around the current node
+   */
+  private readonly functionComments: Maybe<DocComment>[] = [];
 
   /**
    * Pre resolver constructor
@@ -178,13 +191,25 @@ export class PreResolver
     }
 
     const result = this.functionScan.scan(decl.block);
+    const comment = parseDocComment(
+      declarationStart(decl.scope, decl.functionToken),
+    );
+
+    // the docs of the parameters are known once the body is visited
+    const docs: TypeDocs = {};
     const declareErrors = this.tableBuilder.declareFunction(
       scopeType,
       decl.identifier,
       decl,
       result,
+      undefined,
+      docs,
     );
+
+    this.functionComments.push(comment);
     const stmtErrors = this.resolveStmt(decl.block);
+    this.functionComments.pop();
+    Object.assign(docs, functionDocs(comment, result.parameters));
 
     if (!empty(declareErrors)) {
       stmtErrors.push(declareErrors);
@@ -192,8 +217,26 @@ export class PreResolver
     return stmtErrors;
   }
 
-  // check parameter declaration
-  public visitDeclParameter(_: Param): Diagnostics {
+  /**
+   * Document the parameters from the doc comments
+   * @param decl parameter declaration
+   */
+  public visitDeclParameter(decl: Param): Diagnostics {
+    const statement = parseDocComment(
+      declarationStart(decl.scope, decl.parameterToken),
+    );
+    const fn = this.functionComments[this.functionComments.length - 1];
+
+    for (const parameter of [
+      ...decl.requiredParameters,
+      ...decl.optionalParameters,
+    ]) {
+      parameter.docTag = parameterTag(
+        statement,
+        fn,
+        parameter.identifier.lexeme,
+      );
+    }
     return [];
   }
 

@@ -378,14 +378,17 @@ describe('When scanning comments', () => {
       {
         text: '// first',
         range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+        trailing: false,
       },
       {
         text: '// second',
         range: { start: { line: 1, character: 2 }, end: { line: 1, character: 11 } },
+        trailing: false,
       },
     ]);
     expect(tokens[1].leadingComments).toBeUndefined();
     expect(trailingComments.map((c) => c.text)).toEqual(['// after']);
+    expect(trailingComments[0].trailing).toBe(true);
   });
 
   test('a directive is kept as a comment too', () => {

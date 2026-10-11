@@ -29,6 +29,7 @@ export class FunctionScan extends TreeTraverse {
       optionalParameters: 0,
       return: false,
       variadic: false,
+      parameters: [],
     };
   }
 
@@ -42,6 +43,7 @@ export class FunctionScan extends TreeTraverse {
       optionalParameters: 0,
       return: false,
       variadic: false,
+      parameters: [],
     };
     this.depth = 0;
 
@@ -71,6 +73,10 @@ export class FunctionScan extends TreeTraverse {
   public visitDeclParameter(decl: Decl.Param): void {
     this.result.requiredParameters += decl.requiredParameters.length;
     this.result.optionalParameters += decl.optionalParameters.length;
+    this.result.parameters.push(
+      ...decl.requiredParameters,
+      ...decl.optionalParameters,
+    );
     if (this.depth > 0) {
       this.result.variadic = true;
     }
