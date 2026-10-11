@@ -21,10 +21,6 @@ program
   .option('--node-ipc', 'Connect with node inter process communication')
   .option('--stdio', 'Connect with standard io')
   .option('--clientProcessId <id>', 'Id of the attached client process')
-  .option(
-    '--harmony_async_iteration',
-    'Must be enabled if using node.js pre 10.0',
-  )
   .parse(process.argv);
 
 const options = program.opts()
