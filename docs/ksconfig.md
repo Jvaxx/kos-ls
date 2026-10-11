@@ -11,6 +11,7 @@ optional.
 |volumes|Directories of other kOS volumes, relative to this file|
 |preload|Files run before every script at runtime: their globals are visible in every file|
 |exclude|Files and directories that are not analysed unless opened or run by another file|
+|clobberBuiltins|`true` lets names hide kOS builtins in every file, as kOS's `Config:CLOBBERBUILTINS` setting does. Default: `false`; a file can still set `@clobberbuiltins on.` or `off.`|
 |bodies|A list of custom bodies for the language server to consider valid. By default the stock KSP bodies are assumed|
 |linting|A collection of rules and levels indicating what level lints should be reported|
 
@@ -180,6 +181,7 @@ The `symbols-strict` grouping contains rules related to symbols. This includes u
 |symbol-unused-locally|This applies to global variables that are not used locally. This is for locks and variables that are declared global but not used in there file. There are cases where the this may occur such as global constants, but the server cannot track global usage|warning|
 |symbol-shadowing|This applies to cases were a symbol is redeclared in an inner scope. This is not an error but can lead to logic bugs where the outer symbol is expected|warning|
 |symbol-conflict|This applies to cases were a symbol is redeclared in the same scope. This is an error in kOS|warning|
+|symbol-clobber-builtin|A declaration hides a builtin that kOS does not let it hide: `set`, `local`, `global`, `parameter`, `toggle`, `x on.` and `list ... in x` may not hide a builtin function, read-only variable or system lock (`throttle`, `steering`, `wheelThrottle`, `wheelSteering`); `lock` a builtin function or variable; `function` any builtin. kOS refuses to compile it unless `@clobberbuiltins on.` (or `clobberBuiltins` in `ksconfig.json`)|error|
 
 ### **Type-Checking**
 

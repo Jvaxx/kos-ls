@@ -133,6 +133,11 @@ export class AnalysisService extends EventEmitter {
   private celestialBodies: string[];
 
   /**
+   * May declarations hide builtins without `@clobberbuiltins on.`
+   */
+  private clobberBuiltins = false;
+
+  /**
    * Construct a new analysis service
    * @param caseKind the typing case of the build in standard and body libraries
    * @param logger A logger to log performance and exception
@@ -205,6 +210,19 @@ export class AnalysisService extends EventEmitter {
    * the files they run, are visible in every other file.
    * @param uris preloaded files
    */
+  /**
+   * Set whether declarations may hide builtins without the directive
+   * @param clobberBuiltins kOS's `Config:CLOBBERBUILTINS`
+   */
+  public setClobberBuiltins(clobberBuiltins: boolean): this {
+    if (clobberBuiltins !== this.clobberBuiltins) {
+      this.clobberBuiltins = clobberBuiltins;
+      this.invalidateAll();
+    }
+
+    return this;
+  }
+
   public setPreload(uris: URI[]): this {
     const preload = uris
       .map((uri) => normalizeExtensions(uri))
@@ -791,12 +809,14 @@ export class AnalysisService extends EventEmitter {
       symbolTableBuilder,
       this.logger,
       this.tracer,
+      this.clobberBuiltins,
     );
     const resolver = new Resolver(
       script,
       symbolTableBuilder,
       this.logger,
       this.tracer,
+      this.clobberBuiltins,
     );
 
     // functions first, as they can be called before their declaration

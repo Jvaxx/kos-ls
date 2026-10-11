@@ -543,17 +543,19 @@ export const leadingDirectives = (stmts: IStmt[]): Directive[] => {
 };
 
 /**
- * Is `@clobberbuiltins on.` set at the top of a script: names declared
- * in it may then hide kOS builtins
+ * May names declared in a script hide kOS builtins: its
+ * `@clobberbuiltins on|off.` at the top, else the default (kOS's
+ * `Config:CLOBBERBUILTINS`)
  * @param stmts top level statements of a script
+ * @param fallback value without the directive
  */
-export const clobbersBuiltins = (stmts: IStmt[]): boolean =>
+export const clobbersBuiltins = (stmts: IStmt[], fallback = false): boolean =>
   leadingDirectives(stmts).reduce(
     (on, { directive, onOff }) =>
       directive.type === TokenType.clobberBuiltins
         ? onOff.type === TokenType.on
         : on,
-    false,
+    fallback,
   );
 
 export class If extends Stmt {

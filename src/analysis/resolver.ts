@@ -23,6 +23,7 @@ import { SymbolTableBuilder } from './models/symbolTableBuilder';
 import { IDeferred, KsSymbolKind } from './types';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
 import { createDiagnostic, DIAGNOSTICS } from '../utilities/diagnosticsUtils';
+import { checkClobber, Clobber } from './clobber';
 import Denque from 'denque';
 import { Token } from '../models/token';
 
@@ -72,6 +73,11 @@ export class Resolver
    * Is the script using the lazy global directive
    */
   private lazyGlobal: boolean;
+
+  /**
+   * May declarations hide builtins (`@clobberbuiltins`)
+   */
+  private readonly clobberBuiltins: boolean;
 
   /**
    * The directives at the top of the script, the only valid ones
@@ -126,9 +132,11 @@ export class Resolver
     symbolTableBuilder: SymbolTableBuilder,
     logger: ILogger = mockLogger,
     tracer: ITracer = mockTracer,
+    clobberBuiltins = false,
   ) {
     this.script = script;
     this.tableBuilder = symbolTableBuilder;
+    this.clobberBuiltins = Stmt.clobbersBuiltins(script.stmts, clobberBuiltins);
     this.localResolver = new LocalResolver();
     this.setResolver = new SetResolver(this.localResolver);
     this.deferred = new Denque();
@@ -155,9 +163,6 @@ export class Resolver
       this.logger.info(`Resolving started for ${file}.`);
 
       this.tableBuilder.rewind();
-      this.tableBuilder.clobberBuiltins = Stmt.clobbersBuiltins(
-        this.script.stmts,
-      );
       this.tableBuilder.beginScope(this.script);
 
       const errors: Diagnostics = [];
@@ -248,19 +253,36 @@ export class Resolver
   }
 
   /**
+   * Check a declaration against kOS's builtin clobbering rule, before it
+   * is declared
+   * @param name declared name
+   * @param clobber kind of declaration
+   */
+  private checkClobber(name: Token, clobber: Clobber): Diagnostics {
+    return this.clobberBuiltins
+      ? []
+      : checkClobber(this.tableBuilder, name, clobber);
+  }
+
+  /**
+   * Check a set of a lone identifier (`set x to 1.`, `toggle x.`,
+   * `x on.`); kOS does not check suffixes and indexes
+   * @param suffix set target
+   */
+  private checkBareClobber(suffix: IExpr): Diagnostics {
+    const name = bareIdentifier(suffix);
+    return empty(name) ? [] : this.checkClobber(name, Clobber.set);
+  }
+
+  /**
    * Use the locals of a file argument (log, copy, rename, delete,
    * compile). kOS takes a lone identifier that names no variable as the
    * file name itself (`log x to out.`), so it is not reported missing.
    * @param expr file argument
    */
   private useFileLocals(expr: IExpr): Diagnostics {
-    if (
-      expr instanceof Expr.Suffix &&
-      empty(expr.trailer) &&
-      expr.suffixTerm.trailers.length === 0 &&
-      expr.suffixTerm.atom instanceof SuffixTerm.Identifier &&
-      !this.tableBuilder.symbolExists(expr.suffixTerm.atom.token)
-    ) {
+    const name = bareIdentifier(expr);
+    if (!empty(name) && !this.tableBuilder.symbolExists(name)) {
       return [];
     }
 
@@ -302,6 +324,7 @@ export class Resolver
     // determine scope type
     const scopeType = !empty(decl.scope) ? decl.scope.type : ScopeKind.global;
 
+    const clobberErrors = this.checkClobber(decl.identifier, Clobber.set);
     const declareError = this.tableBuilder.declareVariable(
       scopeType,
       decl.identifier,
@@ -313,6 +336,7 @@ export class Resolver
     if (!empty(declareError)) {
       errors.push(declareError);
     }
+    errors.push(...clobberErrors);
 
     return errors;
   }
@@ -330,7 +354,11 @@ export class Resolver
       ScopeKind.global,
     );
 
-    const errors: Diagnostic[] = this.useExprLocals(decl.value);
+    const errors: Diagnostic[] = this.checkClobber(
+      decl.identifier,
+      Clobber.lock,
+    );
+    errors.push(...this.useExprLocals(decl.value));
     errors.push(...this.resolveExpr(decl.value));
 
     if (empty(tracker)) {
@@ -386,6 +414,7 @@ export class Resolver
 
     // check required parameters
     for (const parameter of decl.requiredParameters) {
+      errors.push(...this.checkClobber(parameter.identifier, Clobber.set));
       const error = this.tableBuilder.declareParameter(
         scopeType,
         parameter.identifier,
@@ -402,6 +431,7 @@ export class Resolver
 
     // check optional parameters
     for (const parameter of decl.optionalParameters) {
+      errors.push(...this.checkClobber(parameter.identifier, Clobber.set));
       const error = this.tableBuilder.declareParameter(
         scopeType,
         parameter.identifier,
@@ -480,7 +510,8 @@ export class Resolver
    * @param stmt the syntax node
    */
   public visitOnOff(stmt: Stmt.OnOff): Diagnostics {
-    const errors = this.useExprLocals(stmt.suffix);
+    const errors = this.checkBareClobber(stmt.suffix);
+    errors.push(...this.useExprLocals(stmt.suffix));
     errors.push(...this.resolveExpr(stmt.suffix));
 
     return errors;
@@ -561,6 +592,7 @@ export class Resolver
    * @param stmt the syntax node
    */
   public visitSet(stmt: Stmt.Set): Diagnostics {
+    const clobberErrors = this.checkBareClobber(stmt.suffix);
     const { set, used } = this.setResolver.resolveExpr(stmt.suffix);
 
     // check if a set target exists
@@ -578,6 +610,7 @@ export class Resolver
 
     const errors = this.setBinding(set, stmt);
     errors.push(
+      ...clobberErrors,
       ...this.useExprLocals(stmt.value),
       ...this.useTokens(used),
       ...this.resolveExpr(stmt.value),
@@ -809,7 +842,8 @@ export class Resolver
    * @param stmt the syntax node
    */
   public visitToggle(stmt: Stmt.Toggle): Diagnostics {
-    const errors = this.useExprLocals(stmt.suffix);
+    const errors = this.checkBareClobber(stmt.suffix);
+    errors.push(...this.useExprLocals(stmt.suffix));
     errors.push(...this.resolveExpr(stmt.suffix));
 
     return errors;
@@ -995,7 +1029,9 @@ export class Resolver
       return [];
     }
 
-    return this.setBinding(stmt.target, stmt);
+    return this.checkClobber(stmt.target, Clobber.set).concat(
+      this.setBinding(stmt.target, stmt),
+    );
   }
 
   /**
@@ -1267,3 +1303,16 @@ const accumulateErrors = <T>(
 
   return errors;
 };
+
+/**
+ * The name of an expression that is a lone identifier (`x`, not `x:y`,
+ * `x[0]` or `x()`)
+ * @param expr expression
+ */
+const bareIdentifier = (expr: IExpr): Maybe<Token> =>
+  expr instanceof Expr.Suffix &&
+  empty(expr.trailer) &&
+  expr.suffixTerm.trailers.length === 0 &&
+  expr.suffixTerm.atom instanceof SuffixTerm.Identifier
+    ? expr.suffixTerm.atom.token
+    : undefined;

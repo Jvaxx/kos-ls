@@ -50,6 +50,12 @@ export class WorkspaceConfiguration {
   public readonly exclude?: string[];
 
   /**
+   * May declarations hide kOS builtins without `@clobberbuiltins on.`
+   * (kOS's `Config:CLOBBERBUILTINS`, off by default)
+   */
+  public readonly clobberBuiltins?: boolean;
+
+  /**
    * Construct a new configuration
    * @param rootVolumePath root volume
    * @param bodies custom bodies
@@ -57,6 +63,7 @@ export class WorkspaceConfiguration {
    * @param volumes directories of other volumes
    * @param preload files run before every script
    * @param exclude files and directories not analysed
+   * @param clobberBuiltins may declarations hide builtins
    */
   constructor(
     configDirectoryUri?: URI,
@@ -66,6 +73,7 @@ export class WorkspaceConfiguration {
     volumes?: Map<string, string>,
     preload?: string[],
     exclude?: string[],
+    clobberBuiltins?: boolean,
   ) {
     this.configDirectoryUri = configDirectoryUri;
     this.rootVolumePath = rootVolumePath;
@@ -74,6 +82,7 @@ export class WorkspaceConfiguration {
     this.volumes = volumes;
     this.preload = preload;
     this.exclude = exclude;
+    this.clobberBuiltins = clobberBuiltins;
   }
 
   /**
@@ -157,6 +166,7 @@ export class WorkspaceConfiguration {
       config.volumes || this.volumes,
       config.preload || this.preload,
       config.exclude || this.exclude,
+      config.clobberBuiltins ?? this.clobberBuiltins,
     );
   }
 

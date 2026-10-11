@@ -710,6 +710,7 @@ export class KLS {
     this.analysisService
       .setCase(casePreference)
       .setBodies(workspaceConfiguration.bodies ?? DEFAULT_BODIES)
+      .setClobberBuiltins(workspaceConfiguration.clobberBuiltins ?? false)
       .setPreload(workspaceConfiguration.preloadUris());
 
     // path resolution may have changed: everything is reanalysed

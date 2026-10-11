@@ -24,6 +24,7 @@ const VALID_PROPERTIES = [
   'volumes',
   'preload',
   'exclude',
+  'clobberBuiltins',
   'format',
 ];
 
@@ -43,6 +44,7 @@ export function parseWorkspaceConfiguration(
   let volumes: Maybe<Map<string, string>> = undefined;
   let preload: Maybe<string[]> = undefined;
   let exclude: Maybe<string[]> = undefined;
+  let clobberBuiltins: Maybe<boolean> = undefined;
   const diagnostics: DiagnosticUri[] = [];
   const uri = document.uri;
 
@@ -95,6 +97,20 @@ export function parseWorkspaceConfiguration(
                 );
                 exclude = excludeResult.values;
                 diagnostics.push(...excludeResult.diagnostics);
+                break;
+              case 'clobberBuiltins':
+                if (value.type === 'boolean') {
+                  clobberBuiltins = value.value;
+                } else {
+                  diagnostics.push(
+                    createConfigDiagnostic(
+                      nodeRange(value, text),
+                      uri,
+                      'Expected true or false for clobberBuiltins.',
+                      CONFIG_DIAGNOSTICS.INVALID_VALUE,
+                    ),
+                  );
+                }
                 break;
               case 'format':
                 // read by the formatter, from the file on disk
@@ -152,6 +168,7 @@ export function parseWorkspaceConfiguration(
       volumes,
       preload,
       exclude,
+      clobberBuiltins,
     ),
     diagnostics,
   };

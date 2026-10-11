@@ -343,6 +343,30 @@ describe('WorkspaceConfigParser kos-ls properties', () => {
     expect(config.exclude).toEqual([]);
   });
 
+  test('parses clobberBuiltins', () => {
+    const on = parseWorkspaceConfiguration(
+      makeDocument('{ "clobberBuiltins": true }'),
+    );
+    expect(on.diagnostics).toHaveLength(0);
+    expect(on.config.clobberBuiltins).toBe(true);
+    expect(parseWorkspaceConfiguration(makeDocument('{}')).config.clobberBuiltins)
+      .toBeUndefined();
+
+    // a later config keeps an explicit false
+    const off = parseWorkspaceConfiguration(
+      makeDocument('{ "clobberBuiltins": false }'),
+    ).config;
+    expect(on.config.merge(off).clobberBuiltins).toBe(false);
+
+    const wrong = parseWorkspaceConfiguration(
+      makeDocument('{ "clobberBuiltins": "yes" }'),
+    );
+    expect(wrong.diagnostics.map((d) => d.message)).toEqual([
+      'Expected true or false for clobberBuiltins.',
+    ]);
+    expect(wrong.config.clobberBuiltins).toBeUndefined();
+  });
+
   test('equality sees changes in maps', () => {
     const a = parseWorkspaceConfiguration(
       makeDocument('{ "volumes": { "1": "src" } }'),

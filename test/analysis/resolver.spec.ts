@@ -17,9 +17,18 @@ import {
 import { Marker } from '../../src/scanner/models/marker';
 import {
   noParseErrors,
+  parseSource,
   resolveSource,
   noResolverErrors,
 } from '../utilities/setup';
+import { SymbolTableBuilder } from '../../src/analysis/models/symbolTableBuilder';
+import {
+  standardLibraryBuilder,
+  bodyLibraryBuilder,
+} from '../../src/analysis/standardLibrary';
+import { PreResolver } from '../../src/analysis/preResolver';
+import { Resolver } from '../../src/analysis/resolver';
+import { DIAGNOSTICS } from '../../src/utilities/diagnosticsUtils';
 
 const fakeUri = 'C:\\fake.ks';
 const unitTestPath = join(
@@ -620,7 +629,61 @@ describe('resolver', () => {
       expect(messages).toEqual([[11, 'Symbol missing may not exist']]);
     });
 
-    test('clobber builtins', () => {
+    describe('clobber builtins', () => {
+      // resolve with the standard and body libraries, kOS's config default
+      const clobbers = (source: string[], clobberBuiltins = false) => {
+        const { parse } = parseSource(source.join('\n'));
+        expect(parse.diagnostics).toHaveLength(0);
+
+        const builder = new SymbolTableBuilder(fakeUri);
+        builder.linkDependency(standardLibraryBuilder(CaseKind.lowerCase));
+        builder.linkDependency(bodyLibraryBuilder(CaseKind.lowerCase));
+        const args = [undefined, undefined, clobberBuiltins] as const;
+        const diagnostics = [
+          ...new PreResolver(parse.script, builder, ...args).resolve(),
+          ...new Resolver(parse.script, builder, ...args).resolve(),
+        ];
+
+        return diagnostics
+          .filter((d) => d.code === DIAGNOSTICS.CLOBBER_BUILTIN)
+          .map((d) => `${d.range.start.line}: ${d.message.split('.')[0]}`)
+          .sort();
+      };
+
+      test('what each declaration may hide', () => {
+        expect(
+          clobbers([
+            'set altitude to 1.', // read-only variable
+            'set target to 1.', // settable: allowed
+            'set throttle to 1.', // system lock
+            'local v is 1.', // function
+            'toggle sas.', // settable: allowed
+            'ship on.', // read-only variable
+            'set ship:name to "x".', // suffix: not checked
+            'list engines in kerbin.', // body: read-only variable
+            'lock throttle to 1.', // system lock: allowed
+            'lock target to 1.', // settable variable
+            'function steering { return 1. }', // system lock
+            'function heading { return 1. }', // function
+            'local function f {',
+            '  parameter apoapsis.', // read-only variable
+            '  return apoapsis.',
+            '}',
+            'set myName to 1.', // not a builtin
+          ]),
+        ).toEqual([
+          '0: Not allowed to SET a name that hides the builtin read-only variable altitude',
+          '10: Not allowed to make a function name that hides the builtin system lock steering',
+          '11: Not allowed to make a function name that hides the builtin function heading',
+          '13: Not allowed to SET a name that hides the builtin read-only variable apoapsis',
+          '2: Not allowed to SET a name that hides the builtin system lock throttle',
+          '3: Not allowed to SET a name that hides the builtin function v',
+          '5: Not allowed to SET a name that hides the builtin read-only variable ship',
+          '7: Not allowed to SET a name that hides the builtin read-only variable kerbin',
+          '9: Not allowed to LOCK a name that hides the builtin variable target',
+        ]);
+      });
+
       const body = [
         'global ship is 1.',
         'function heading { return 1. }',
@@ -630,30 +693,40 @@ describe('resolver', () => {
         '}',
         'print f().',
       ];
-      const messages = (source: string[]) => {
-        const results = resolveSource(source.join('\n'), undefined, true);
-        expect(results.parse.diagnostics).toHaveLength(0);
-        return results.resolveDiagnostics.map((d) => d.message);
-      };
 
-      expect(messages(body)).toEqual([
-        'Function heading already exists.',
-        'Variable ship already exists.',
-        'Variable altitude already exists here. This variable shadows it.',
-      ]);
-      expect(messages(['@clobberbuiltins on.', ...body])).toEqual([]);
-      expect(messages(['@clobberbuiltins off.', ...body])).toHaveLength(3);
+      test('directive and config', () => {
+        expect(clobbers(body)).toHaveLength(3);
+        expect(clobbers(['@clobberbuiltins on.', ...body])).toEqual([]);
+        expect(clobbers(['@clobberbuiltins off.', ...body])).toHaveLength(3);
+        expect(clobbers(body, true)).toEqual([]);
+        expect(clobbers(['@clobberbuiltins off.', ...body], true)).toHaveLength(
+          3,
+        );
+        expect(
+          clobbers(['@lazyglobal off.', '@clobberbuiltins on.', ...body]),
+        ).toEqual([]);
+      });
 
-      // only at the top, with other directives
-      expect(
-        messages(['@lazyglobal off.', '@clobberbuiltins on.', ...body]),
-      ).toEqual([]);
-      expect(messages(['print 1.', '@clobberbuiltins on.'])).toEqual([
-        'Clobber builtins was not declared at top of the file',
-      ]);
-      expect(messages(['{ @clobberbuiltins on. }'])).toEqual([
-        'Clobber builtins was not declared at top of the file',
-      ]);
+      test('builtins are hidden, not conflicts or shadows', () => {
+        const results = resolveSource(
+          ['@clobberbuiltins on.', ...body].join('\n'),
+          undefined,
+          true,
+        );
+        expect(results.resolveDiagnostics.map((d) => d.message)).toEqual([]);
+        // the new symbols are declared in the file
+        const names = results.table.allSymbols().map((s) => s.name.lexeme);
+        expect(names).toEqual(expect.arrayContaining(['ship', 'heading']));
+        expect(
+          resolveSource(
+            ['print 1.', '@clobberbuiltins on.', '{ @clobberbuiltins on. }']
+              .join('\n'),
+          ).resolveDiagnostics.map((d) => d.message),
+        ).toEqual([
+          'Clobber builtins was not declared at top of the file',
+          'Clobber builtins was not declared at top of the file',
+        ]);
+      });
     });
 
     // test shadowing

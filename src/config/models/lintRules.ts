@@ -245,6 +245,12 @@ const lintTemplates: LintRule = {
           diagnostics: [DIAGNOSTICS.SYMBOL_CONFLICT],
           owned: [],
         },
+        {
+          rule: 'symbol-clobber-builtin',
+          level: 'error',
+          diagnostics: [DIAGNOSTICS.CLOBBER_BUILTIN],
+          owned: [],
+        },
       ],
     },
     {

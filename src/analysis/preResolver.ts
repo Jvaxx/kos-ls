@@ -8,6 +8,7 @@ import {
   ISuffixTermVisitor,
   IScript,
 } from '../parser/types';
+import { checkClobber, Clobber } from './clobber';
 import * as SuffixTerm from '../parser/models/suffixTerm';
 import * as Expr from '../parser/models/expr';
 import * as Stmt from '../parser/models/stmt';
@@ -71,20 +72,29 @@ export class PreResolver
   private readonly functionComments: Maybe<DocComment>[] = [];
 
   /**
+   * May declarations hide builtins (`@clobberbuiltins`)
+   */
+  private readonly clobberBuiltins: boolean;
+
+  /**
    * Pre resolver constructor
    * @param script pre resolver script
    * @param symbolTableBuilder symbol table builder
    * @param logger logger
    * @param tracer tracer
+   * @param clobberBuiltins may declarations hide builtins without the
+   * directive (kOS's `Config:CLOBBERBUILTINS`)
    */
   constructor(
     script: IScript,
     symbolTableBuilder: SymbolTableBuilder,
     logger: ILogger = mockLogger,
     tracer: ITracer = mockTracer,
+    clobberBuiltins = false,
   ) {
     this.script = script;
     this.tableBuilder = symbolTableBuilder;
+    this.clobberBuiltins = Stmt.clobbersBuiltins(script.stmts, clobberBuiltins);
     this.logger = logger;
     this.tracer = tracer;
     this.functionScan = new FunctionScan();
@@ -102,9 +112,6 @@ export class PreResolver
       this.logger.info(`Function Resolving started for ${file}.`);
 
       this.tableBuilder.rewind();
-      this.tableBuilder.clobberBuiltins = Stmt.clobbersBuiltins(
-        this.script.stmts,
-      );
       this.tableBuilder.beginScope(this.script);
 
       const resolveErrors = this.resolveStmts(this.script.stmts);
@@ -198,6 +205,11 @@ export class PreResolver
       declarationStart(decl.scope, decl.functionToken),
     );
 
+    // kOS refuses a function hiding a builtin
+    const clobberErrors = this.clobberBuiltins
+      ? []
+      : checkClobber(this.tableBuilder, decl.identifier, Clobber.function);
+
     // the docs of the parameters are known once the body is visited
     const docs: TypeDocs = {};
     const declareErrors = this.tableBuilder.declareFunction(
@@ -217,6 +229,7 @@ export class PreResolver
     if (!empty(declareErrors)) {
       stmtErrors.push(declareErrors);
     }
+    stmtErrors.push(...clobberErrors);
     return stmtErrors;
   }
 

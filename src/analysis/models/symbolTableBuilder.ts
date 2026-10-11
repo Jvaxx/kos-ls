@@ -40,6 +40,7 @@ import {
   DIAGNOSTICS,
 } from '../../utilities/diagnosticsUtils';
 import { builtIn } from '../../utilities/constants';
+import { BuiltinKind, settableBuiltin } from '../clobber';
 import { toCase } from '../../utilities/stringUtils';
 import { cleanLocation } from '../../utilities/clean';
 import { Token } from '../../models/token';
@@ -75,11 +76,6 @@ export class SymbolTableBuilder {
    * A cache from global symbols to their environment
    */
   private globalSymbolEnvironment: Map<string, Environment>;
-
-  /**
-   * Set by `@clobberbuiltins on.`: declarations may hide builtins
-   */
-  public clobberBuiltins = false;
 
   /**
    * A set of symbols tables that are dependencies of this table
@@ -1033,12 +1029,42 @@ export class SymbolTableBuilder {
   }
 
   /**
-   * Does a new symbol hide this one without a diagnostic: a builtin, when
-   * the script sets `@clobberbuiltins on.`
+   * Does a new symbol hide this one without a conflict or shadow
+   * diagnostic: a builtin. Whether kOS allows it is the resolver's
+   * clobber check.
    * @param tracker tracker of the existing symbol
    */
   private hidesBuiltin(tracker: BasicTracker): boolean {
-    return this.clobberBuiltins && tracker.declared.uri === builtIn;
+    return tracker.declared.uri === builtIn;
+  }
+
+  /**
+   * The kind of the builtin this name would hide, as kOS classifies it
+   * (`Compiler.cs` `BuiltInIdentifierType`): a function first, then a
+   * system lock, then a bound variable
+   * @param name name to look up
+   */
+  public builtinKind(name: Token): Maybe<BuiltinKind> {
+    const found = (kind: KsSymbolKind) => {
+      const tracker = this.lookupKind(name.lookup, ScopeKind.global, kind);
+      return !empty(tracker) && tracker.declared.uri === builtIn
+        ? tracker
+        : undefined;
+    };
+
+    // functions and locks share a table
+    const callable = found(KsSymbolKind.function);
+    if (!empty(callable)) {
+      return callable.declared.symbol.tag === KsSymbolKind.lock
+        ? BuiltinKind.systemLock
+        : BuiltinKind.function;
+    }
+    if (!empty(found(KsSymbolKind.variable))) {
+      return settableBuiltin(name.lookup)
+        ? BuiltinKind.settableVariable
+        : BuiltinKind.readOnlyVariable;
+    }
+    return undefined;
   }
 
   /**
