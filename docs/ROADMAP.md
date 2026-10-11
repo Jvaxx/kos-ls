@@ -102,9 +102,9 @@ The most visible feature, built on phases 1-2:
   `function` or `parameter` is its documentation, shown in hover,
   completion and signature help. Tags:
   `// @param name {Vector} description` and `// @return {Scalar} ...`.
-  To be decided: whether types given in tags feed the type checker, so
-  a parameter documented as `{Vessel}` gets suffix completion and
-  checking instead of `Structure`.
+  Types given in tags feed the type checker, so a parameter documented
+  as `{Vessel}` gets suffix completion and checking instead of
+  `Structure`.
 - Completion items with documentation (`completionItem/resolve`), signature
   help with parameter names and per-parameter docs, inlay hints for
   inferred types (optional).
