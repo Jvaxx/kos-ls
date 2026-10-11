@@ -165,9 +165,11 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
   clauses; `log x to var` (#189): file arguments of log, copy, rename,
   delete and compile use their variables, and a lone identifier naming
   no symbol is a bare file name as in kOS (`barewordOkay`);
-  `@clobberbuiltins` (#215): `Stmt.Directive`, declarations may hide
-  builtins, directives valid in the run at the top of the file.
-  Diagnostics on `parser_valid`: 2687 to 2680 (7 false warnings on bare
-  file names gone).
+  `@clobberbuiltins` (#215): `Stmt.Directive`, directives valid in the
+  run at the top of the file; kOS's check of names hiding builtins as
+  an error, off with the directive or `clobberBuiltins` in
+  `ksconfig.json`. Diagnostics on `parser_valid`: 2687 to 2680 (7
+  false warnings on bare file names gone), then 2745 (70 true clobber
+  errors on scripts older than kOS 1.4, 5 shadow warnings gone).
 - `kos-ls check`: diagnostics from the command line, for CI.
 - Maintenance: ESLint, dependency updates, remove pre-Node-10 shims.
