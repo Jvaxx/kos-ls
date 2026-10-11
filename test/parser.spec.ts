@@ -17,6 +17,7 @@ import { zip } from '../src/utilities/arrayUtils';
 import { TokenType } from '../src/models/tokentypes';
 import * as Expr from '../src/parser/models/expr';
 import * as Decl from '../src/parser/models/declare';
+import * as Stmt from '../src/parser/models/stmt';
 import { empty } from '../src/utilities/typeGuards';
 import * as SuffixTerm from '../src/parser/models/suffixTerm';
 import { walkDir } from '../src/utilities/fsUtils';
@@ -692,6 +693,51 @@ describe('Parse statement', () => {
         expect(stmt.scope.type).toBe(declaration.scope);
         expect(stmt.value instanceof declaration.value).toBe(true);
       }
+    }
+  });
+
+  test('declaration and set chains', () => {
+    const declares = parse('local a to 5, b is a + 1, c to "x".');
+    expect(declares.diagnostics).toHaveLength(0);
+    expect(declares.script.stmts).toHaveLength(1);
+
+    const [chain] = declares.script.stmts;
+    expect(chain).toBeInstanceOf(Stmt.Chain);
+    if (!(chain instanceof Stmt.Chain)) return;
+
+    const vars = chain.clauses as Decl.Var[];
+    expect(vars.map((v) => v.identifier.lexeme)).toEqual(['a', 'b', 'c']);
+    expect(vars.every((v) => v instanceof Decl.Var)).toBe(true);
+    expect(vars.every((v) => v.scope === vars[0].scope)).toBe(true);
+    expect(vars.map((v) => v.comma?.lexeme)).toEqual([undefined, ',', ',']);
+    expect(vars[1].value).toBeInstanceOf(Expr.Binary);
+    expect(vars[1].start).toEqual(vars[1].comma?.start);
+    expect(chain.toString()).toBe('local a to 5, b is a + 1, c to "x".');
+
+    const sets = parse('set a to 1, b:c to a.');
+    expect(sets.diagnostics).toHaveLength(0);
+    const [setChain] = sets.script.stmts;
+    expect(setChain).toBeInstanceOf(Stmt.Chain);
+    if (!(setChain instanceof Stmt.Chain)) return;
+    expect(setChain.clauses).toHaveLength(2);
+    expect(setChain.clauses.every((c) => c instanceof Stmt.Set)).toBe(true);
+    expect(setChain.toString()).toBe('set a to 1, b:c to a.');
+
+    // a single clause stays a plain node
+    expect(parse('set a to 1.').script.stmts[0]).toBeInstanceOf(Stmt.Set);
+    expect(parse('local a is 1.').script.stmts[0]).toBeInstanceOf(Decl.Var);
+
+    // inside an unbraced body
+    const body = parse('if true set a to 1, b to 2.');
+    expect(body.diagnostics).toHaveLength(0);
+
+    for (const invalid of [
+      'local a to 1, .',
+      'local a to 1, b.',
+      'set a to 1, b.',
+      'set a to 1,',
+    ]) {
+      expect(parse(invalid).diagnostics.length).toBeGreaterThan(0);
     }
   });
 

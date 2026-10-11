@@ -568,6 +568,33 @@ describe('resolver', () => {
       }
     });
 
+    test('declaration and set chains', () => {
+      const results = resolveSource(
+        [
+          '@lazyglobal off.',
+          'local a to 1, b is a + 1, unused is 0.',
+          'set a to b, b to a, missing to 1.',
+          'print a + b.',
+        ].join('\n'),
+      );
+
+      expect(results.parse.diagnostics).toHaveLength(0);
+      const messages = results.resolveDiagnostics.map((d) => [
+        d.range.start.line,
+        d.range.start.character,
+        d.message,
+      ]);
+      expect(messages).toEqual([
+        [
+          2,
+          20,
+          'Attempted to set missing which has not been declared. ' +
+            'Either remove lazy global directive or declare missing',
+        ],
+        [1, 26, 'Local variable unused was not used.'],
+      ]);
+    });
+
     // test shadowing
     describe('shadowed symbols', () => {
       const shadowPath = join(unitTestPath, 'shadow', 'shadowtest.ks');

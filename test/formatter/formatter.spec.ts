@@ -133,6 +133,8 @@ describe('Formatter rules', () => {
       'set x to not a and defined b.\n',
     );
     expect(format('set x to 1 e 5.')).toBe('set x to 1e5.\n');
+    expect(format('LOCAL a TO 5,b IS a+1.')).toBe('local a to 5, b is a + 1.\n');
+    expect(format('set a to 1 , b to 2.')).toBe('set a to 1, b to 2.\n');
   });
 
   test('one statement per line', () => {

@@ -381,11 +381,60 @@ export class Unlock extends Stmt {
   }
 }
 
+/**
+ * A comma separated chain of variable declarations or sets, run in
+ * order: `local a is 1, b is 2.` or `set a to 1, b to 2.`. Each clause
+ * is a full node; the ones after the first have a comma.
+ */
+export class Chain extends Stmt {
+  constructor(public readonly clauses: Stmt[]) {
+    super();
+  }
+
+  public toLines(): string[] {
+    const clauses = this.clauses.map((clause, i) => {
+      const lines = clause.toLines();
+      if (i < this.clauses.length - 1) {
+        const last = lines[lines.length - 1];
+        lines[lines.length - 1] = last.slice(0, -1);
+      }
+      return lines;
+    });
+
+    return joinLines('', ...clauses);
+  }
+
+  public get start(): Position {
+    return this.clauses[0].start;
+  }
+
+  public get end(): Position {
+    return this.clauses[this.clauses.length - 1].end;
+  }
+
+  public get ranges(): Range[] {
+    return [...this.clauses];
+  }
+
+  public accept<T extends (...args: any) => any>(
+    visitor: IStmtVisitor<T>,
+    parameters: Parameters<T>,
+  ): ReturnType<T> {
+    return visitor.visitChain(this, parameters);
+  }
+}
+
 export class Set extends Stmt {
   public readonly set: Token;
   public readonly suffix: Expr.Suffix;
   public readonly to: Token;
   public readonly value: IExpr;
+
+  /**
+   * The comma before this set when it continues a chain
+   * (`set a to 1, b to 2.`). Its set token is then the first one's.
+   */
+  public readonly comma?: Token;
 
   constructor(builder: NodeDataBuilder<Set>) {
     super();
@@ -393,20 +442,22 @@ export class Set extends Stmt {
     this.suffix = unWrap(builder.suffix);
     this.to = unWrap(builder.to);
     this.value = unWrap(builder.value);
+    this.comma = builder.comma;
   }
 
   public toLines(): string[] {
     const suffixLines = this.suffix.toLines();
     const valueLines = this.value.toLines();
 
-    suffixLines[0] = `${this.set.lexeme} ${suffixLines[0]}`;
+    const lead = empty(this.comma) ? this.set : this.comma;
+    suffixLines[0] = `${lead.lexeme} ${suffixLines[0]}`;
     const lines = joinLines(` ${this.to.lexeme} `, suffixLines, valueLines);
     lines[lines.length - 1] = `${lines[lines.length - 1]}.`;
     return lines;
   }
 
   public get start(): Position {
-    return this.set.start;
+    return empty(this.comma) ? this.set.start : this.comma.start;
   }
 
   public get end(): Position {
@@ -414,7 +465,12 @@ export class Set extends Stmt {
   }
 
   public get ranges(): Range[] {
-    return [this.set, this.suffix, this.to, this.value];
+    return [
+      empty(this.comma) ? this.set : this.comma,
+      this.suffix,
+      this.to,
+      this.value,
+    ];
   }
 
   public accept<T extends (...args: any) => any>(

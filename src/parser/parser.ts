@@ -363,32 +363,50 @@ export class Parser {
     return nodeResult(new Decl.Lock(builder), valueResult.errors);
   }
 
-  // parse a variable declaration, scoping occurs elsewhere
-  private declareVariable(scope: Decl.Scope): INodeResult<Decl.Var> {
-    const builder: NodeDataBuilder<Decl.Var> = {
-      scope,
-      identifier: undefined,
-      value: undefined,
-      toIs: undefined,
-    };
+  // parse a variable declaration, scoping occurs elsewhere; several
+  // declarations separated by commas make a chain
+  private declareVariable(
+    scope: Decl.Scope,
+  ): INodeResult<Decl.Var | Stmt.Chain> {
+    const clauses: Decl.Var[] = [];
+    const errors: ParseError[][] = [];
+    let builder: NodeDataBuilder<Decl.Var>;
 
-    builder.identifier = this.consumeIdentifierThrow(
-      'Expected identifier.',
-      Decl.Var,
-      builder,
-    );
+    do {
+      builder = {
+        scope,
+        comma: clauses.length > 0 ? this.previous() : undefined,
+        identifier: undefined,
+        value: undefined,
+        toIs: undefined,
+      };
 
-    builder.toIs = this.consumeTokensThrow(
-      'Expected keyword "to" or "is" following declare.',
-      Decl.Var,
-      [TokenType.to, TokenType.is],
-      builder,
-    );
-    const valueResult = this.expression();
-    builder.value = valueResult.value;
+      builder.identifier = this.consumeIdentifierThrow(
+        clauses.length > 0
+          ? 'Expected identifier following comma.'
+          : 'Expected identifier.',
+        Decl.Var,
+        builder,
+      );
+
+      builder.toIs = this.consumeTokensThrow(
+        'Expected keyword "to" or "is" following declare.',
+        Decl.Var,
+        [TokenType.to, TokenType.is],
+        builder,
+      );
+      const valueResult = this.expression();
+      builder.value = valueResult.value;
+
+      clauses.push(new Decl.Var(builder));
+      errors.push(valueResult.errors);
+    } while (this.matchToken(TokenType.comma));
 
     this.terminal(Decl.Var, builder);
-    return nodeResult(new Decl.Var(builder), valueResult.errors);
+    return nodeResult(
+      clauses.length === 1 ? clauses[0] : new Stmt.Chain(clauses),
+      flatten(errors),
+    );
   }
 
   // parse statement
@@ -650,32 +668,43 @@ export class Parser {
   /**
    * Parse the set statement
    */
-  private set(): INodeResult<Stmt.Set> {
-    const builder: NodeDataBuilder<Stmt.Set> = {
-      set: undefined,
-      suffix: undefined,
-      to: undefined,
-      value: undefined,
-    };
+  private set(): INodeResult<Stmt.Set | Stmt.Chain> {
+    const set = this.previous();
+    const clauses: Stmt.Set[] = [];
+    const errors: ParseError[][] = [];
+    let builder: NodeDataBuilder<Stmt.Set>;
 
-    builder.set = this.previous();
-    const suffix = this.suffixCatch(Stmt.Set, builder, 'set');
+    // several sets separated by commas make a chain
+    do {
+      builder = {
+        set,
+        comma: clauses.length > 0 ? this.previous() : undefined,
+        suffix: undefined,
+        to: undefined,
+        value: undefined,
+      };
 
-    builder.suffix = suffix.value;
-    builder.to = this.consumeTokenThrow(
-      'Expected "to" following keyword "set".',
-      Stmt.Set,
-      TokenType.to,
-      builder,
-    );
-    const valueResult = this.expression();
+      const suffix = this.suffixCatch(Stmt.Set, builder, 'set');
 
-    builder.value = valueResult.value;
+      builder.suffix = suffix.value;
+      builder.to = this.consumeTokenThrow(
+        'Expected "to" following keyword "set".',
+        Stmt.Set,
+        TokenType.to,
+        builder,
+      );
+      const valueResult = this.expression();
+
+      builder.value = valueResult.value;
+      clauses.push(new Stmt.Set(builder));
+      errors.push(suffix.errors, valueResult.errors);
+    } while (this.matchToken(TokenType.comma));
+
     this.terminal(Stmt.Set, builder);
 
     return nodeResult(
-      new Stmt.Set(builder),
-      flatten([suffix.errors, valueResult.errors]),
+      clauses.length === 1 ? clauses[0] : new Stmt.Chain(clauses),
+      flatten(errors),
     );
   }
 

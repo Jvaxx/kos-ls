@@ -298,6 +298,10 @@ export class PreResolver
     return this.resolveExpr(stmt.value);
   }
 
+  public visitChain(stmt: Stmt.Chain): Diagnostics {
+    return this.resolveStmts(stmt.clauses);
+  }
+
   public visitLazyGlobal(_: Stmt.LazyGlobal): Diagnostics {
     return [];
   }

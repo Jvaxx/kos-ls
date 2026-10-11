@@ -9,7 +9,8 @@ declaration -> ( statement
     | parameterDeclaration
 )
 
-variableDeclaration -> scope identifier ( 'to' | 'is' ) expression '.'
+variableDeclaration -> scope identifier ( 'to' | 'is' ) expression
+    (',' identifier ( 'to' | 'is' ) expression)* '.'
 lockDeclaration -> scope? 'lock' identifier 'to' expression '.'
 parameterDeclaration -> scope? 'parameter' parameters '.'
 functionDeclaration -> scope? 'function' statementBlock '.'?
@@ -77,7 +78,7 @@ toggle -> 'toggle' suffix '.'
 wait -> 'wait' 'until'? expression '.'
 
 // variables
-set -> 'set' suffix 'to' expression '.'
+set -> 'set' suffix 'to' expression (',' suffix 'to' expression)* '.'
 unset -> 'unset' ( 'all' | idenitifer ) '.'
 unlock -> 'unlock' ( 'all' | idenitifer ) '.'
 

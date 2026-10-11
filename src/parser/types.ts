@@ -324,6 +324,7 @@ export interface IStmtVisitor<T extends (...args: any) => any> {
   visitUnset(stmt: Stmt.Unset, parameters: Parameters<T>): ReturnType<T>;
   visitUnlock(stmt: Stmt.Unlock, parameters: Parameters<T>): ReturnType<T>;
   visitSet(stmt: Stmt.Set, parameters: Parameters<T>): ReturnType<T>;
+  visitChain(stmt: Stmt.Chain, parameters: Parameters<T>): ReturnType<T>;
   visitLazyGlobal(
     stmt: Stmt.LazyGlobal,
     parameters: Parameters<T>,

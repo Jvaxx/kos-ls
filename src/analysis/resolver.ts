@@ -535,6 +535,14 @@ export class Resolver
   }
 
   /**
+   * Visit a chain of declarations or sets, in order
+   * @param stmt the chain
+   */
+  public visitChain(stmt: Stmt.Chain): Diagnostics {
+    return this.resolveStmts(stmt.clauses);
+  }
+
+  /**
    * Visit the Set Stmt syntax node
    * @param stmt the syntax node
    */

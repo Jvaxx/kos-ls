@@ -105,26 +105,35 @@ export class Var extends Decl {
   public readonly value: IExpr;
   public readonly scope: Scope;
 
+  /**
+   * The comma before this declaration when it continues a chain
+   * (`local a is 1, b is 2.`). Its scope is then the first one's.
+   */
+  public readonly comma?: Token;
+
   constructor(builder: NodeDataBuilder<Var>) {
     super();
     this.identifier = unWrap(builder.identifier);
     this.toIs = unWrap(builder.toIs);
     this.value = unWrap(builder.value);
     this.scope = unWrap(builder.scope);
+    this.comma = builder.comma;
   }
 
   public toLines(): string[] {
     const lines = this.value.toLines();
+    const lead = empty(this.comma)
+      ? `${this.scope.toString()} `
+      : `${this.comma.lexeme} `;
     lines[0] =
-      `${this.scope.toString()} ${this.identifier.lexeme} ` +
-      `${this.toIs.lexeme} ${lines[0]}`;
+      `${lead}${this.identifier.lexeme} ` + `${this.toIs.lexeme} ${lines[0]}`;
 
     lines[lines.length - 1] = `${lines[lines.length - 1]}.`;
     return lines;
   }
 
   public get start(): Position {
-    return this.scope.start;
+    return empty(this.comma) ? this.scope.start : this.comma.start;
   }
 
   public get end(): Position {
@@ -132,7 +141,12 @@ export class Var extends Decl {
   }
 
   public get ranges(): Range[] {
-    return [this.scope, this.identifier, this.toIs, this.value];
+    return [
+      empty(this.comma) ? this.scope : this.comma,
+      this.identifier,
+      this.toIs,
+      this.value,
+    ];
   }
 
   public accept<T extends (...args: any) => any>(

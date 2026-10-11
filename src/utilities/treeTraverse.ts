@@ -70,6 +70,11 @@ export abstract class TreeTraverse
     this.exprAction(stmt.suffix);
     this.exprAction(stmt.value);
   }
+  public visitChain(stmt: Stmt.Chain): void {
+    for (const clause of stmt.clauses) {
+      this.stmtAction(clause);
+    }
+  }
   public visitLazyGlobal(_: Stmt.LazyGlobal): void {}
   public visitIf(stmt: Stmt.If): void {
     this.exprAction(stmt.condition);

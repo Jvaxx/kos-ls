@@ -361,6 +361,27 @@ export class ControlFlow
   }
 
   /**
+   * Visit a chain of declarations or sets, one after the other
+   * @param stmt the chain
+   * @param prevBlock current block
+   */
+  public visitChain(
+    stmt: Stmt.Chain,
+    [prevBlock]: [BasicBlock],
+  ): Maybe<BasicBlock> {
+    let currentBlock: Maybe<BasicBlock> = prevBlock;
+    for (const clause of stmt.clauses) {
+      if (empty(currentBlock)) {
+        currentBlock = this.createBlock(BlockKind.unreachableEntry);
+      }
+
+      currentBlock = this.stmtFlow(clause, currentBlock);
+    }
+
+    return currentBlock;
+  }
+
+  /**
    * Visit the set statement
    * @param stmt the set statement
    * @param prevBlock current block

@@ -479,6 +479,14 @@ export class TypeChecker
   }
 
   /**
+   * Visit a chain of declarations or sets
+   * @param stmt the chain
+   */
+  public visitChain(stmt: Stmt.Chain): Diagnostics {
+    return accumulateErrors(stmt.clauses, this.checkStmtBind);
+  }
+
+  /**
    * Visit set statement
    * @param stmt set statement
    */

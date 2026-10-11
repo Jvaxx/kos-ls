@@ -75,6 +75,9 @@ export abstract class TreeExecute<T>
   public visitSet(stmt: Stmt.Set): T {
     return this.nodeAction(stmt);
   }
+  public visitChain(stmt: Stmt.Chain): T {
+    return this.nodeAction(stmt);
+  }
   public visitLazyGlobal(stmt: Stmt.LazyGlobal): T {
     return this.nodeAction(stmt);
   }
