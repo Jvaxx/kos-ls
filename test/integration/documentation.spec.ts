@@ -108,7 +108,7 @@ describe('doc comments', () => {
     const fn = (await client.hover(file, 11, 8))!.contents as MarkupContent;
     expect(fn.value).toBe(
       '```kerboscript\n' +
-        '(function) burnTime(dv: Structure, ves?: Structure): Structure\n' +
+        '(function) burnTime(dv: Scalar, ves?: Structure): Scalar\n' +
         '```\n\n' +
         'Burn time for a maneuver.\n\n' +
         '- `dv`: delta-v in m/s\n- `ves`: the vessel\n\n' +
@@ -139,5 +139,86 @@ describe('doc comments', () => {
     expect((resolved.documentation as MarkupContent).value).toContain(
       'Burn time for a maneuver.',
     );
+  });
+});
+
+describe('types in doc comment tags', () => {
+  let client: TestClient;
+
+  beforeEach(async () => {
+    client = await TestClient.start(root);
+  });
+
+  afterEach(async () => {
+    await client?.stop();
+  });
+
+  test('type the parameters, the calls and the arguments', async () => {
+    client.open(
+      file,
+      [
+        '// @param dv {Scalar} delta-v',
+        '// @param ves {vessel} the vessel',
+        '// @return {Scalar} seconds',
+        'function burnTime {',
+        '    parameter dv, ves is ship.',
+        '    return dv / ves:availablethrust.',
+        '}',
+        'print burnTime(10, ship) + 1.',
+        'print burnTime("a", 3):foo.',
+      ].join('\n'),
+    );
+
+    expect(await client.messages(file)).toEqual([
+      '9:16 String cannot be converted to a Scalar',
+      '9:21 Scalar cannot be converted to a Vessel?',
+      '9:24 Unable to find suffix foo on type Scalar',
+    ]);
+
+    const fn = (await client.hover(file, 7, 8))!.contents as MarkupContent;
+    expect(fn.value).toContain('burnTime(dv: Scalar, ves?: Vessel): Scalar');
+
+    // suffixes of the tagged type
+    const labels = await client.completionLabels(file, 5, 20);
+    expect(labels).toContain('availableThrust');
+  });
+
+  test('unknown and malformed types are reported on the tag', async () => {
+    client.open(
+      file,
+      [
+        '// Where a parameter is documented',
+        '// @param p {Vesel} typo',
+        '// @return {List<} broken',
+        'function f {',
+        '    parameter p.',
+        '    return p.',
+        '}',
+        '// @param x {List<Part> | Scalar} parts or a count',
+        'parameter x.',
+        'print f(x).',
+      ].join('\n'),
+    );
+
+    expect(await client.messages(file)).toEqual([
+      '2:13 Unknown type Vesel: no kOS structure has this name',
+      '3:12 Malformed type List<',
+    ]);
+  });
+
+  test('untagged parameters stay Structure', async () => {
+    client.open(
+      file,
+      [
+        '// Just a description',
+        'function g {',
+        '    parameter a, b is 1.',
+        '    return a:anything + b.',
+        '}',
+        'print g("x", ship):whatever.',
+      ].join('\n'),
+    );
+
+    expect(await client.messages(file)).toEqual([]);
   });
 });

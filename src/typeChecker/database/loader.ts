@@ -9,7 +9,7 @@
  */
 import databaseJson from '../../../data/kos-1.6.0.1.json';
 import { KosDatabase, ParameterEntry, SuffixEntry, Documented } from './schema';
-import { parseType, TypeExpression } from './typeExpression';
+import { mapNames, parseType, TypeExpression } from './typeExpression';
 import { Access, IParametricType, IType, OperatorKind, TypeDocs, TypeKind } from '../types';
 import { Type } from '../models/types/type';
 import { ParametricType } from '../models/parametricTypes/parametricType';
@@ -89,6 +89,14 @@ export interface KosTypes {
 
   /** bound variables and locks */
   readonly variables: BuiltinSymbol[];
+
+  /**
+   * The type of a type expression with kOS names in any case:
+   * `vessel`, `List<Part>`, `Scalar | Vector`. Unknown names are
+   * Structure, and returned.
+   * @throws on malformed expressions
+   */
+  parse(text: string): { type: IType; unknown: string[] };
 }
 
 /**
@@ -363,5 +371,16 @@ export function loadDatabase(database: KosDatabase): KosTypes {
     },
     functions,
     variables,
+    parse: (text) => {
+      const unknown: string[] = [];
+      const expression = mapNames(parseType(text), (name) => {
+        const found = byLowerName.get(name.toLowerCase());
+        if (found === undefined) {
+          unknown.push(name);
+        }
+        return found ?? 'Structure';
+      });
+      return { type: resolve(expression), unknown };
+    },
   };
 }

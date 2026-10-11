@@ -53,12 +53,12 @@ describe('doc comments', () => {
       'function burnTime { }',
     ].join('\n');
 
-    expect(parseDocComment(first(source, TokenType.function))).toEqual({
+    expect(parseDocComment(first(source, TokenType.function))).toMatchObject({
       doc: 'Burn time for a maneuver.\n\nUses `ISP`.',
       params: [
         { name: 'dv', type: 'Scalar', doc: 'delta-v\n  in m/s' },
         { name: 'ves', type: 'Vessel', doc: 'the vessel' },
-        { name: 'bare', type: undefined, doc: undefined },
+        { name: 'bare' },
       ],
       returns: { type: 'Scalar', doc: 'seconds' },
     });
@@ -67,7 +67,15 @@ describe('doc comments', () => {
   test('type expressions in tags', () => {
     const source = '// @param p {List<Part> | Scalar} parts\nfunction f { }';
     expect(parseDocComment(first(source, TokenType.function))?.params).toEqual([
-      { name: 'p', type: 'List<Part> | Scalar', doc: 'parts' },
+      {
+        name: 'p',
+        type: 'List<Part> | Scalar',
+        typeRange: {
+          start: { line: 0, character: 12 },
+          end: { line: 0, character: 33 },
+        },
+        doc: 'parts',
+      },
     ]);
   });
 
@@ -79,11 +87,11 @@ describe('doc comments', () => {
       first('// from the statement\nparameter a.', TokenType.parameter),
     );
 
-    expect(parameterTag(statement, fn, 'A')).toEqual({
+    expect(parameterTag(statement, fn, 'A')).toMatchObject({
       doc: 'from the statement',
       type: 'Scalar',
     });
-    expect(parameterTag(undefined, fn, 'a')).toEqual({
+    expect(parameterTag(undefined, fn, 'a')).toMatchObject({
       doc: 'from the function',
       type: 'Scalar',
     });

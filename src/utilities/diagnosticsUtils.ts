@@ -108,6 +108,7 @@ export const DIAGNOSTICS = {
   TYPE_MISSING_OPERATOR: 'type-missing-operator',
   TYPE_NO_SETTER: 'type-no-setter',
   TYPE_NO_GETTER: 'type-no-getter',
+  TYPE_UNKNOWN_IN_DOC: 'type-unknown-in-doc',
 
   // directives:
   DIRECTIVE_INVALID_INCLUDE: 'directive-invalid-include',

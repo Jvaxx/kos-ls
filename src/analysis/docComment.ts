@@ -1,3 +1,4 @@
+import { Range } from 'vscode-languageserver';
 import { Token } from '../models/token';
 import type { Scope, Parameter } from '../parser/models/declare';
 import type { TypeDocs } from '../typeChecker/types';
@@ -11,6 +12,11 @@ export interface DocTag {
    * The type between braces, as written
    */
   type?: string;
+
+  /**
+   * Where the type is, braces included
+   */
+  typeRange?: Range;
 
   /**
    * Description in Markdown
@@ -59,17 +65,49 @@ const joinLines = (lines: string[]): Maybe<string> => {
 };
 
 /**
- * Read `{Type}` at the start of a text
- * @param text text after a tag or its name
+ * A line of a doc comment, without its `//`
  */
-const readType = (text: string): { type?: string; rest: string } => {
+interface DocLine {
+  /**
+   * The text, Markdown
+   */
+  text: string;
+
+  /**
+   * Line in the document
+   */
+  line: number;
+
+  /**
+   * Character where the text starts
+   */
+  character: number;
+}
+
+/**
+ * Read `{Type}` at the start of a text
+ * @param text the end of a doc line
+ * @param from the doc line
+ */
+const readType = (
+  text: string,
+  from: DocLine,
+): { type?: string; typeRange?: Range; rest: string } => {
   const match = /^\{([^{}]*)\}\s*/.exec(text);
   if (match === null) {
     return { rest: text };
   }
   const type = match[1].trim();
+  if (type === '') {
+    return { rest: text.slice(match[0].length) };
+  }
+
+  // the text is the end of the line
+  const start = from.character + from.text.length - text.length;
+  const length = match[1].length + 2;
   return {
-    type: type === '' ? undefined : type,
+    type,
+    typeRange: Range.create(from.line, start, from.line, start + length),
     rest: text.slice(match[0].length),
   };
 };
@@ -77,28 +115,32 @@ const readType = (text: string): { type?: string; rest: string } => {
 /**
  * Read a `@param` tag: `name {Type} text`, also `{Type} name text`
  * @param text text after `@param`
+ * @param from the doc line
  */
-const readParam = (text: string): Maybe<{ tag: DocParamTag; rest: string }> => {
-  let { type, rest } = readType(text);
+const readParam = (
+  text: string,
+  from: DocLine,
+): Maybe<{ tag: DocParamTag; rest: string }> => {
+  let { type, typeRange, rest } = readType(text, from);
   const name = /^([\p{L}_][\p{L}\p{N}_]*)\s*/u.exec(rest);
   if (name === null) {
     return undefined;
   }
   rest = rest.slice(name[0].length);
   if (type === undefined) {
-    ({ type, rest } = readType(rest));
+    ({ type, typeRange, rest } = readType(rest, from));
   }
-  return { tag: { name: name[1], type }, rest };
+  return { tag: { name: name[1], type, typeRange }, rest };
 };
 
 /**
- * The text of the doc comment lines above a token: the comments directly
- * above it, each on its own line, with no blank line between
+ * The doc comment lines above a token: the comments directly above it,
+ * each on its own line, with no blank line between
  * @param token first token of the declaration
  */
-export const docLines = (token: Token): string[] => {
+const docCommentLines = (token: Token): DocLine[] => {
   const comments = token.leadingComments ?? [];
-  const lines: string[] = [];
+  const lines: DocLine[] = [];
 
   let line = token.start.line - 1;
   for (let i = comments.length - 1; i >= 0; i -= 1) {
@@ -108,12 +150,17 @@ export const docLines = (token: Token): string[] => {
     }
 
     // `//` and one space, the rest is Markdown
-    lines.unshift(comment.text.replace(/^\/\/ ?/, ''));
+    const marker = /^\/\/ ?/.exec(comment.text)![0];
+    lines.unshift({
+      text: comment.text.slice(marker.length),
+      line,
+      character: comment.range.start.character + marker.length,
+    });
     line -= 1;
   }
 
   // a directive is no documentation
-  while (lines.length > 0 && /^\s*#/.test(lines[0])) {
+  while (lines.length > 0 && /^\s*#/.test(lines[0].text)) {
     lines.shift();
   }
 
@@ -121,11 +168,18 @@ export const docLines = (token: Token): string[] => {
 };
 
 /**
+ * The text of the doc comment lines above a token
+ * @param token first token of the declaration
+ */
+export const docLines = (token: Token): string[] =>
+  docCommentLines(token).map((line) => line.text);
+
+/**
  * Parse the doc comment above a declaration
  * @param token first token of the declaration
  */
 export const parseDocComment = (token: Token): Maybe<DocComment> => {
-  const lines = docLines(token);
+  const lines = docCommentLines(token);
   if (lines.length === 0) {
     return undefined;
   }
@@ -142,7 +196,8 @@ export const parseDocComment = (token: Token): Maybe<DocComment> => {
     }
   };
 
-  for (const line of lines) {
+  for (const from of lines) {
+    const line = from.text;
     const tag = /^\s*@(\w+)\s*(.*)$/.exec(line);
     if (tag === null) {
       (current?.lines ?? description).push(line);
@@ -152,7 +207,7 @@ export const parseDocComment = (token: Token): Maybe<DocComment> => {
     const [, kind, text] = tag;
     switch (kind.toLowerCase()) {
       case 'param': {
-        const param = readParam(text);
+        const param = readParam(text, from);
         if (param === undefined) {
           (current?.lines ?? description).push(line);
           continue;
@@ -165,8 +220,8 @@ export const parseDocComment = (token: Token): Maybe<DocComment> => {
       case 'return':
       case 'returns': {
         close();
-        const { type, rest } = readType(text);
-        returns = { type };
+        const { type, typeRange, rest } = readType(text, from);
+        returns = { type, typeRange };
         current = { tag: returns, lines: [rest] };
         break;
       }
@@ -227,8 +282,10 @@ export const parameterTag = (
   const own = paramTag(statement, name);
   const tag = paramTag(fn, name);
   const doc = own?.doc ?? statement?.doc ?? tag?.doc;
-  const type = own?.type ?? tag?.type;
-  return doc === undefined && type === undefined ? undefined : { doc, type };
+  const typed = own?.type !== undefined ? own : tag;
+  return doc === undefined && typed?.type === undefined
+    ? undefined
+    : { doc, type: typed?.type, typeRange: typed?.typeRange };
 };
 
 /**

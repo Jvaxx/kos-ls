@@ -315,6 +315,12 @@ const lintTemplates: LintRule = {
           diagnostics: [DIAGNOSTICS.TYPE_NO_GETTER],
           owned: [],
         },
+        {
+          rule: 'type-unknown-in-doc',
+          level: 'warning',
+          diagnostics: [DIAGNOSTICS.TYPE_UNKNOWN_IN_DOC],
+          owned: [],
+        },
       ],
     },
     {

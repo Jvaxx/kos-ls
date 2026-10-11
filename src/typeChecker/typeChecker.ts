@@ -56,7 +56,7 @@ import {
 import { delegateType } from './ksTypes/primitives/delegate';
 import { KsSymbolKind, TrackerKind, SymbolTracker } from '../analysis/types';
 import { listType } from './ksTypes/collections/list';
-import { kosType } from './initialize';
+import { kosType, kosTypes } from './initialize';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
 import { createDiagnostic, DIAGNOSTICS } from '../utilities/diagnosticsUtils';
 import { BasicTracker } from '../analysis/models/tracker';
@@ -67,6 +67,12 @@ import { VariadicType } from './models/types/variadicType';
 import { Type } from './models/types/type';
 import { CallSignature } from './models/types/callSignature';
 import { UnionType } from './models/types/unionType';
+import { FunctionScan } from '../analysis/functionScan';
+import {
+  DocTag,
+  declarationStart,
+  parseDocComment,
+} from '../analysis/docComment';
 
 type Diagnostics = Diagnostic[];
 
@@ -132,14 +138,18 @@ export class TypeChecker
 
       this.logger.info(`Type Checking started for ${file}.`);
 
+      const declareErrors: Diagnostics = [];
       for (const decl of new FunctionDeclarations().find(this.script.stmts)) {
-        this.declareFunctionType(decl);
+        declareErrors.push(...this.declareFunctionType(decl));
       }
       // the first pass types the sets of variables, so that the second
       // knows them before their location: a variable may be set in a
       // function declared below its use
       this.checkStmts(this.script.stmts);
-      const typeErrors = this.checkStmts(this.script.stmts);
+      const typeErrors = [
+        ...declareErrors,
+        ...this.checkStmts(this.script.stmts),
+      ];
 
       this.logger.info(`Type Checking finished for ${file}`);
 
@@ -236,31 +246,43 @@ export class TypeChecker
   }
 
   /**
-   * Declare the type of a function from its parameter counts and whether it
-   * returns. kOS functions can be used before their declaration
+   * Declare the type of a function from its parameters and whether it
+   * returns, typed by its doc comment. kOS functions can be used before
+   * their declaration
    * @param decl function declaration
    */
-  private declareFunctionType(decl: Decl.Func): void {
+  private declareFunctionType(decl: Decl.Func): Diagnostics {
     const { tracker } = decl.identifier;
+    const errors: Diagnostics = [];
 
     if (!empty(tracker) && tracker.kind === TrackerKind.basic) {
       const { symbol } = tracker.declared;
       if (symbol.tag === KsSymbolKind.function) {
         const paramsTypes: IType[] = [];
 
-        // TODO eventually we should tag ks parameter to the function type
+        // the types given in the doc comment, Structure without
         if (symbol.variadic) {
           paramsTypes.push(createVarType(structureType));
         } else {
-          for (let i = 0; i < symbol.requiredParameters; i += 1) {
-            paramsTypes.push(structureType);
-          }
-          for (let i = 0; i < symbol.optionalParameters; i += 1) {
-            paramsTypes.push(createUnion(true, structureType, noneType));
+          const { parameters } = new FunctionScan().scan(decl.block);
+          for (const parameter of parameters) {
+            const type = this.tagType(parameter.docTag) ?? structureType;
+            paramsTypes.push(
+              parameter instanceof Decl.DefaultParam
+                ? optionalType(type)
+                : type,
+            );
           }
         }
 
-        const returnType = symbol.returnValue ? structureType : noneType;
+        // the return tag is reported here, once
+        const comment = parseDocComment(
+          declarationStart(decl.scope, decl.functionToken),
+        );
+        const returns = this.tagType(comment?.returns, errors);
+        const returnType = symbol.returnValue
+          ? returns ?? structureType
+          : noneType;
 
         const funcType = createFunctionType(
           tracker.declared.symbol.name.lookup,
@@ -272,6 +294,46 @@ export class TypeChecker
         tracker.declareType(funcType);
       }
     }
+
+    return errors;
+  }
+
+  /**
+   * The type given in a doc comment tag. A type naming no structure, or
+   * malformed, is reported on the tag
+   * @param tag doc comment tag
+   * @param errors where to report
+   */
+  private tagType(tag: Maybe<DocTag>, errors?: Diagnostics): Maybe<IType> {
+    if (empty(tag) || empty(tag.type)) {
+      return undefined;
+    }
+
+    const range = tag.typeRange ?? Range.create(0, 0, 0, 0);
+    try {
+      const { type, unknown } = kosTypes().parse(tag.type);
+      for (const name of unknown) {
+        errors?.push(
+          createDiagnostic(
+            range,
+            `Unknown type ${name}: no kOS structure has this name`,
+            DiagnosticSeverity.Warning,
+            DIAGNOSTICS.TYPE_UNKNOWN_IN_DOC,
+          ),
+        );
+      }
+      return type;
+    } catch {
+      errors?.push(
+        createDiagnostic(
+          range,
+          `Malformed type ${tag.type}`,
+          DiagnosticSeverity.Warning,
+          DIAGNOSTICS.TYPE_UNKNOWN_IN_DOC,
+        ),
+      );
+      return undefined;
+    }
   }
 
   /**
@@ -281,12 +343,13 @@ export class TypeChecker
   visitDeclParameter(decl: Decl.Param): Diagnostics {
     let errors: Diagnostics = [];
 
-    // loop over normal parameters
+    // loop over normal parameters, typed by their doc comment
     for (const required of decl.requiredParameters) {
       const { tracker } = required.identifier;
+      const type = this.tagType(required.docTag, errors);
 
       if (this.isBasicTracker(tracker)) {
-        tracker.declareType(structureType);
+        tracker.declareType(type ?? structureType);
       }
     }
 
@@ -294,9 +357,10 @@ export class TypeChecker
     for (const optional of decl.optionalParameters) {
       const valueResult = this.checkExpr(optional.value);
       const { tracker } = optional.identifier;
+      const type = this.tagType(optional.docTag, errors);
 
       if (this.isBasicTracker(tracker)) {
-        tracker.declareType(valueResult.type.assignmentType());
+        tracker.declareType(type ?? valueResult.type.assignmentType());
       }
 
       errors = errors.concat(valueResult.errors);
@@ -1891,3 +1955,12 @@ class FunctionDeclarations extends TreeTraverse {
     super.visitDeclFunction(decl);
   }
 }
+
+/**
+ * The type of an optional parameter: its type or none
+ * @param type type of the parameter
+ */
+const optionalType = (type: IType): IType =>
+  type instanceof UnionType
+    ? createUnion(true, ...type.types, noneType)
+    : createUnion(true, type, noneType);

@@ -197,5 +197,6 @@ The `type-checking` grouping are rules related to types in kerboscript. This inc
 |type-missing-suffix|This applies to situation where the type checker determines a given type does not have a given suffix|hint|
 |type-missing-operator|This applies to situations where the type checker determines a given type does not have the request binary or unary operator|hint|
 |type-no-setter|This applies to situation where the type checker determines a given type cannot be set|hint|
+|type-unknown-in-doc|This applies to a type in a doc comment tag (`@param name {Type}`, `@return {Type}`) that names no kOS structure, or is malformed|warning|
 
 
