@@ -637,8 +637,10 @@ export class SymbolTableBuilder {
 
     // check if a variable may not be defined in a runtime situation
     // functions will always be available because they are executed
-    // during a pre pass
+    // during a pre pass. Across files the run order decides: positions
+    // of two files are not comparable
     if (
+      tracker.declared.uri === this.uri &&
       rangeBefore(token, tracker.declared.range.start) &&
       tracker.declared.symbol.tag !== KsSymbolKind.function
     ) {

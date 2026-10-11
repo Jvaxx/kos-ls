@@ -104,6 +104,12 @@ export class AnalysisService extends EventEmitter {
   private readonly dirty: Set<string>;
 
   /**
+   * Documents analysed outside a propagation, against tables that may
+   * change: everything connected to them is rebuilt at the next one
+   */
+  private readonly stale: Set<string>;
+
+  /**
    * Normalized uris of the preloaded files
    */
   private preload: string[];
@@ -163,6 +169,7 @@ export class AnalysisService extends EventEmitter {
     this.semanticCache = new Map();
     this.dependencyCache = new Map();
     this.dirty = new Set();
+    this.stale = new Set();
     this.preload = [];
     this.queue = Promise.resolve();
 
@@ -400,18 +407,7 @@ export class AnalysisService extends EventEmitter {
    * @param uri document uri
    */
   private markAffected(uri: string): void {
-    const neighbours = new Map<string, Set<string>>();
-    const link = (a: string, b: string) => {
-      neighbours.set(a, (neighbours.get(a) ?? new Set()).add(b));
-    };
-
-    for (const [source, info] of this.dependencyCache) {
-      for (const sink of this.edgesOf(info)) {
-        link(source, sink);
-        link(sink, source);
-      }
-    }
-
+    const neighbours = this.cachedNeighbours();
     const stack = [uri];
     while (stack.length > 0) {
       const current = stack.pop()!;
@@ -428,33 +424,81 @@ export class AnalysisService extends EventEmitter {
   }
 
   /**
-   * Reanalyse every dirty document, dependencies first
+   * The documents linked to each document by the dependencies of the
+   * last analyses, in both directions
+   */
+  private cachedNeighbours(): Map<string, Set<string>> {
+    const neighbours = new Map<string, Set<string>>();
+    const link = (a: string, b: string) => {
+      neighbours.set(a, (neighbours.get(a) ?? new Set()).add(b));
+    };
+
+    for (const [source, info] of this.dependencyCache) {
+      for (const sink of this.edgesOf(info)) {
+        link(source, sink);
+        link(sink, source);
+      }
+    }
+
+    return neighbours;
+  }
+
+  /**
+   * Reanalyse every dirty or stale document, and every document
+   * connected to them, dependencies first
    *
    * A document can use globals of the documents that run it, which only
    * exist once those are analysed. So when documents depend on each
    * other, all are analysed a second time in the same order: dependencies
    * see their dependents, and the usages dependents record in the symbol
    * tables of their dependencies are recorded in the final tables.
+   *
+   * Which file of a cycle declares a global set in several of them
+   * depends on which tables exist when each is analysed. So the tables of
+   * the connected documents are rebuilt from scratch, in an order that
+   * only depends on the documents: the result does not depend on what
+   * was analysed before, or in which order the client opened them.
    */
   private async analyzeDirty(): Promise<DiagnosticsByUri> {
-    const uris = [...this.dirty];
+    const neighbours = this.cachedNeighbours();
     const lexical = new Map<string, LexicalInfo>();
-    for (const uri of uris) {
+    const edges = new Map<string, Edges>();
+
+    const pending = [...this.dirty, ...this.stale];
+    const seen = new Set(pending);
+    while (pending.length > 0) {
+      const uri = pending.pop()!;
       const info = await this.lexical(uri);
-      if (!empty(info)) {
-        lexical.set(uri, info);
-      } else {
+      if (empty(info)) {
         this.forget(uri);
+        continue;
+      }
+
+      const documentEdges = await this.edges(uri, info);
+      lexical.set(uri, info);
+      edges.set(uri, documentEdges);
+      for (const next of [
+        ...documentEdges.uris,
+        ...(neighbours.get(uri) ?? []),
+      ]) {
+        if (!seen.has(next)) {
+          seen.add(next);
+          pending.push(next);
+        }
       }
     }
 
-    // dependency graph of the dirty documents
-    const graph = new Graph(...lexical.keys());
-    const edges = new Map<string, Edges>();
-    for (const [uri, info] of lexical) {
-      const documentEdges = await this.edges(uri, info);
-      edges.set(uri, documentEdges);
-      for (const sink of documentEdges.uris) {
+    const uris = [...lexical.keys()].sort();
+    for (const uri of uris) {
+      this.semanticCache.get(uri)?.symbolTable.removeSelf();
+      this.semanticCache.delete(uri);
+      this.dirty.add(uri);
+    }
+
+    // dependency graph of the documents
+    const graph = new Graph(...uris);
+    for (const uri of uris) {
+      for (const sink of edges.get(uri)!.uris) {
         if (graph.hasNode(sink)) {
           graph.addEdge(uri, sink);
         }
@@ -477,6 +521,7 @@ export class AnalysisService extends EventEmitter {
       results.set(uri, this.documentInfoDiagnostics(info));
     }
 
+    this.stale.clear();
     return results;
   }
 
@@ -540,6 +585,7 @@ export class AnalysisService extends EventEmitter {
     this.dependencyCache.set(uri, dependencyInfo);
     this.semanticCache.set(uri, semanticInfo);
     this.dirty.delete(uri);
+    this.stale.add(uri);
     visiting.delete(uri);
 
     return { lexicalInfo, semanticInfo, dependencyInfo };
@@ -742,6 +788,7 @@ export class AnalysisService extends EventEmitter {
     this.semanticCache.delete(uri);
     this.dependencyCache.delete(uri);
     this.dirty.delete(uri);
+    this.stale.delete(uri);
   }
 
   /**

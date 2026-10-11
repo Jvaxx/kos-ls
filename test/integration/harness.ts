@@ -190,6 +190,21 @@ export class TestClient {
   }
 
   /**
+   * Wait for the server to settle, then return the last diagnostics
+   * published for every document, as `uri line:col message` lines
+   */
+  async allMessages(): Promise<string[]> {
+    await this.settle();
+    return [...this.diagnostics].flatMap(([uri, diagnostics]) =>
+      diagnostics.map(
+        (d) =>
+          `${uri} ${d.range.start.line + 1}:${d.range.start.character + 1} ` +
+          d.message,
+      ),
+    ).sort();
+  }
+
+  /**
    * Labels of the completions at a position
    * @param path path relative to the workspace root
    */
