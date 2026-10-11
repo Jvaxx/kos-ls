@@ -21,6 +21,13 @@ export type KeywordCase = 'Lower' | 'Upper' | 'Preserve';
 export type BinaryOperatorBreak = 'None' | 'All';
 
 /**
+ * Which anonymous functions may stay on one line when they fit: `None`
+ * expands every one with statements, `Empty` keeps only `{}` (always one
+ * line), `All` any short one, `{ return 1. }`
+ */
+export type ShortLambdaStyle = 'None' | 'Empty' | 'All';
+
+/**
  * Formatter options, named like their clang-format counterparts
  */
 export interface FormatOptions {
@@ -68,6 +75,23 @@ export interface FormatOptions {
    * Align the comments that follow code on consecutive lines
    */
   AlignTrailingComments: boolean;
+
+  /**
+   * Pack the arguments of a call that does not fit on one line several to
+   * a line; otherwise they are all on one line or one per line
+   */
+  BinPackArguments: boolean;
+
+  /**
+   * Anonymous functions kept on one line when they fit
+   */
+  AllowShortLambdasOnASingleLine: ShortLambdaStyle;
+
+  /**
+   * Break comments longer than the column limit at spaces, the rest joining
+   * the next line of the comment when it is plain text
+   */
+  ReflowComments: boolean;
 }
 
 /**
@@ -83,6 +107,9 @@ export const defaultFormatOptions: FormatOptions = {
   MaxEmptyLinesToKeep: 1,
   SpacesBeforeTrailingComments: 1,
   AlignTrailingComments: true,
+  BinPackArguments: true,
+  AllowShortLambdasOnASingleLine: 'All',
+  ReflowComments: true,
 };
 
 type OptionKind = 'count' | 'boolean' | readonly string[];
@@ -97,6 +124,9 @@ const optionKinds: { [K in keyof FormatOptions]: OptionKind } = {
   MaxEmptyLinesToKeep: 'count',
   SpacesBeforeTrailingComments: 'count',
   AlignTrailingComments: 'boolean',
+  BinPackArguments: 'boolean',
+  AllowShortLambdasOnASingleLine: ['None', 'Empty', 'All'],
+  ReflowComments: 'boolean',
 };
 
 /**

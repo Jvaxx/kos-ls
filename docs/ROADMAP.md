@@ -153,6 +153,9 @@ with syntax errors are not formatted. Options (clang-format names, plus
 `kos-ls format [--check]`. Every fixture is tested in two styles:
 idempotence, same tokens and tree, comments kept, edits. Diagnostics on
 `parser_valid` are unchanged (2687).
+Later (phase 5): `BinPackArguments`, short anonymous functions on one
+line (`AllowShortLambdasOnASingleLine`) and comment reflow
+(`ReflowComments`), LLVM defaults.
 
 ## Phase 5: more
 

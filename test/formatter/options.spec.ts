@@ -11,6 +11,9 @@ describe('Formatter options', () => {
     expect(defaultFormatOptions.IndentWidth).toBe(4);
     expect(defaultFormatOptions.ColumnLimit).toBe(80);
     expect(defaultFormatOptions.BreakBeforeBraces).toBe('Attach');
+    expect(defaultFormatOptions.BinPackArguments).toBe(true);
+    expect(defaultFormatOptions.AllowShortLambdasOnASingleLine).toBe('All');
+    expect(defaultFormatOptions.ReflowComments).toBe(true);
     expect(resolveOptions({ IndentWidth: 2 }, undefined).IndentWidth).toBe(2);
   });
 
@@ -24,6 +27,9 @@ describe('Formatter options', () => {
         'BreakBeforeBraces: allman',
         "KeywordCase: 'Upper'",
         'AlignTrailingComments: false',
+        'BinPackArguments: false',
+        'AllowShortLambdasOnASingleLine: none',
+        'ReflowComments: false',
       ].join('\n'),
     );
     expect(errors).toEqual([]);
@@ -33,6 +39,9 @@ describe('Formatter options', () => {
       BreakBeforeBraces: 'Allman',
       KeywordCase: 'Upper',
       AlignTrailingComments: false,
+      BinPackArguments: false,
+      AllowShortLambdasOnASingleLine: 'None',
+      ReflowComments: false,
     });
   });
 
@@ -49,11 +58,12 @@ describe('Formatter options', () => {
       ColumnLimit: 1.5,
       BreakBeforeBraces: 'GNU',
       AlignTrailingComments: 'yes',
+      AllowShortLambdasOnASingleLine: 'Inline',
       Unknown: 1,
       MaxEmptyLinesToKeep: 2,
     });
     expect(options).toEqual({ MaxEmptyLinesToKeep: 2 });
-    expect(errors.length).toBe(5);
+    expect(errors.length).toBe(6);
     expect(validateOptions([]).errors.length).toBe(1);
     expect(parseFormatFile('IndentWidth 2').errors.length).toBe(1);
   });

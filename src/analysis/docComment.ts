@@ -135,19 +135,29 @@ const readParam = (
 
 /**
  * The doc comment lines above a token: the comments directly above it,
- * each on its own line, with no blank line between
+ * each on its own line, with no blank line between. Lines aligned under a
+ * comment trailing code continue it, and are no documentation.
  * @param token first token of the declaration
  */
 const docCommentLines = (token: Token): DocLine[] => {
   const comments = token.leadingComments ?? [];
   const lines: DocLine[] = [];
+  const starts: number[] = [];
 
   let line = token.start.line - 1;
   for (let i = comments.length - 1; i >= 0; i -= 1) {
     const comment = comments[i];
     if (comment.range.start.line !== line || comment.trailing) {
+      if (comment.range.start.line === line && comment.trailing) {
+        const { character } = comment.range.start;
+        while (starts.length > 0 && starts[0] === character) {
+          starts.shift();
+          lines.shift();
+        }
+      }
       break;
     }
+    starts.unshift(comment.range.start.character);
 
     // `//` and one space, the rest is Markdown
     const marker = /^\/\/ ?/.exec(comment.text)![0];

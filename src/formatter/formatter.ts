@@ -137,6 +137,11 @@ interface Roles {
    * inside a group continues aligned with its start.
    */
   groups: [number, number][];
+
+  /**
+   * Anonymous functions laid out on one line, as indexes of their braces
+   */
+  shortLambdas: [number, number][];
 }
 
 /**
@@ -154,6 +159,11 @@ interface Item {
    * A comment ending the line it is on
    */
   trailing?: boolean;
+
+  /**
+   * The lines continuing a trailing comment, aligned under it
+   */
+  continuation?: string[];
 
   /**
    * Space before the item when it follows another one on its line
@@ -175,6 +185,11 @@ interface Item {
    */
   open?: boolean;
   close?: boolean;
+
+  /**
+   * The item opens the arguments of a call
+   */
+  call?: boolean;
 
   /**
    * The body of an expanded anonymous function: its lines go between the
@@ -212,6 +227,7 @@ interface Piece {
   sep: number;
   token?: number;
   trailing?: boolean;
+  continuation?: string[];
 }
 
 interface PhysicalLine {
@@ -300,6 +316,70 @@ const costBracket = 25;
  * @param options formatter options
  */
 function format(source: string, options: FormatOptions): FormatResult {
+  const first = render(source, options);
+  if ('error' in first) {
+    return first;
+  }
+
+  // reflowed comment lines can change the layout around them: formatted
+  // again, they fit and stay
+  let final = first;
+  for (let pass = 0; final.reflowed && pass < 2; pass += 1) {
+    const next = render(final.text, options);
+    if ('error' in next) {
+      return next;
+    }
+    final = next;
+  }
+
+  const { tokens, texts, trailingComments } = first;
+  const check = sameContent(
+    tokens,
+    texts,
+    trailingComments,
+    final.text,
+    options.ReflowComments,
+  );
+  if (check !== undefined) {
+    return { error: `Formatting would change the file (${check}).` };
+  }
+
+  return {
+    text: final.text,
+    edits: edits(source, tokens, texts, final.text, final.starts, final.ends),
+  };
+}
+
+/**
+ * A source laid out once
+ */
+interface Rendered {
+  tokens: Token[];
+  texts: string[];
+  trailingComments: Comment[];
+  text: string;
+
+  /**
+   * Offsets of each token in the text
+   */
+  starts: number[];
+  ends: number[];
+
+  /**
+   * Whether a comment was reflowed
+   */
+  reflowed: boolean;
+}
+
+/**
+ * Lay out a source once
+ * @param source the source
+ * @param options formatter options
+ */
+function render(
+  source: string,
+  options: FormatOptions,
+): Rendered | { error: string } {
   const scanned = new Scanner(source).scanTokens();
   if (scanned.diagnostics.length > 0) {
     return syntaxError(scanned.diagnostics);
@@ -311,22 +391,48 @@ function format(source: string, options: FormatOptions): FormatResult {
     return syntaxError(ast.diagnostics);
   }
 
-  const roles = annotate(ast.script, tokens);
-  const texts = tokens.map(token =>
-    roles.names.has(token) ? token.lexeme : tokenText(token, options),
-  );
-  const lines = buildLines(tokens, texts, trailingComments, roles, options);
+  // a short anonymous function on one line that does not fit is expanded,
+  // and the ones holding it
+  const expanded = new Set<number>();
+  let roles: Roles;
+  let texts: string[];
+  let physical: PhysicalLine[];
+  for (;;) {
+    roles = annotate(ast.script, tokens, expanded, options);
+    const current = roles;
+    texts = tokens.map(token =>
+      current.names.has(token) ? token.lexeme : tokenText(token, options),
+    );
+    const lines = buildLines(tokens, texts, trailingComments, roles, options);
 
-  const physical: PhysicalLine[] = [];
-  const groups = new Map<number, number[]>();
-  for (const [first, last] of roles.groups) {
-    groups.set(first, [...(groups.get(first) ?? []), last]);
-  }
-  for (const line of lines) {
-    physical.push(...layout(line, 0, groups, options));
+    physical = [];
+    const groups = new Map<number, number[]>();
+    for (const [first, last] of roles.groups) {
+      groups.set(first, [...(groups.get(first) ?? []), last]);
+    }
+    for (const line of lines) {
+      physical.push(...layout(line, 0, groups, options));
+    }
+
+    const misfits = misfitLambdas(physical, roles.shortLambdas, options);
+    if (misfits.length === 0) {
+      break;
+    }
+    for (const [open, close] of roles.shortLambdas) {
+      if (misfits.some(([o, c]) => open <= o && c <= close)) {
+        expanded.add(open);
+      }
+    }
   }
   if (options.AlignTrailingComments) {
     alignTrailingComments(physical, options.SpacesBeforeTrailingComments);
+  }
+  let reflowed = false;
+  if (options.ReflowComments && options.ColumnLimit > 0) {
+    ({ lines: physical, reflowed } = reflowComments(
+      physical,
+      options.ColumnLimit,
+    ));
   }
 
   const eol = source.includes('\r\n') ? '\r\n' : '\n';
@@ -334,24 +440,25 @@ function format(source: string, options: FormatOptions): FormatResult {
   const ends: number[] = [];
   let text = '';
   for (const line of physical) {
-    text += eol.repeat(line.blank) + ' '.repeat(line.indent);
+    text += eol.repeat(line.blank);
+    const lineStart = text.length;
+    text += ' '.repeat(line.indent);
     for (const piece of line.pieces) {
       text += ' '.repeat(piece.sep);
       if (piece.token !== undefined) {
         starts[piece.token] = text.length;
         ends[piece.token] = text.length + piece.text.length;
       }
+      const column = text.length - lineStart;
       text += piece.text;
+      for (const continuation of piece.continuation ?? []) {
+        text += eol + ' '.repeat(column) + continuation;
+      }
     }
     text += eol;
   }
 
-  const check = sameContent(tokens, texts, trailingComments, text);
-  if (check !== undefined) {
-    return { error: `Formatting would change the file (${check}).` };
-  }
-
-  return { text, edits: edits(source, tokens, texts, text, starts, ends) };
+  return { tokens, texts, trailingComments, text, starts, ends, reflowed };
 }
 
 /**
@@ -376,14 +483,23 @@ function syntaxError(diagnostics: Diagnostic[]): { error: string } {
  * Find what the AST knows about the tokens
  * @param script the parsed script
  * @param tokens the tokens of the script
+ * @param expanded the open braces of anonymous functions too long for one
+ * line
+ * @param options formatter options
  */
-function annotate(script: NodeBase, tokens: Token[]): Roles {
+function annotate(
+  script: NodeBase,
+  tokens: Token[],
+  expanded: Set<number>,
+  options: FormatOptions,
+): Roles {
   const roles: Roles = {
     names: new Set(),
     unary: new Set(),
     callOpen: new Set(),
     blocks: new Map(),
     groups: [],
+    shortLambdas: [],
   };
   const groups: NodeBase[] = [];
   const chained = new Set<unknown>();
@@ -475,28 +591,39 @@ function annotate(script: NodeBase, tokens: Token[]): Roles {
     }
   }
 
+  // statement blocks, which are always expanded
+  const statementOpens = blocks
+    .filter(block => !headers.has(block) && !lambdas.has(block))
+    .map(block => index.get(block.open) ?? -1);
+
   for (const block of blocks) {
-    const open = index.get(block.open);
-    const close = index.get(block.close);
+    const open = index.get(block.open) ?? -1;
+    const close = index.get(block.close) ?? -1;
     let comments = false;
-    if (open !== undefined && close !== undefined) {
-      for (let i = open + 1; i <= close; i += 1) {
-        if ((tokens[i].leadingComments?.length ?? 0) > 0) {
-          comments = true;
-          break;
-        }
+    for (let i = open + 1; i <= close; i += 1) {
+      if ((tokens[i].leadingComments?.length ?? 0) > 0) {
+        comments = true;
+        break;
       }
     }
 
     const header = headers.has(block);
     const lambda = lambdas.has(block);
+    const short =
+      lambda &&
+      options.AllowShortLambdasOnASingleLine === 'All' &&
+      !expanded.has(open) &&
+      !statementOpens.some(i => open < i && i < close);
+    if (short && !comments && block.stmts.length > 0) {
+      roles.shortLambdas.push([open, close]);
+    }
     const info: BlockInfo = {
       open: block.open,
       close: block.close,
       layout:
         block.stmts.length === 0 && !comments
           ? 'empty'
-          : header && !comments
+          : (header || short) && !comments
           ? 'inline'
           : 'expanded',
       continues: header || lambda,
@@ -572,6 +699,10 @@ function buildLines(
   let lastEndLine = -1;
   let breakNext = false;
 
+  // the trailing comment the next comment line may continue, aligned under
+  // it
+  let continued: Maybe<{ item: Item; line: number; character: number }>;
+
   // blank lines kept before a line starting on a source line
   const blankBefore = (line: number): number => {
     const last = ctx.lines[ctx.lines.length - 1];
@@ -615,6 +746,23 @@ function buildLines(
   const comments = (list: Maybe<Comment[]>): void => {
     for (const comment of list ?? []) {
       const text = comment.text.trimEnd();
+      const { start } = comment.range;
+      if (
+        continued !== undefined &&
+        !comment.trailing &&
+        start.line === continued.line + 1 &&
+        start.character === continued.character
+      ) {
+        continued.item.continuation = [
+          ...(continued.item.continuation ?? []),
+          text,
+        ];
+        continued.line = start.line;
+        lastEndLine = comment.range.end.line;
+        continue;
+      }
+      continued = undefined;
+
       const { current } = ctx;
       const last: Maybe<LogicalLine> =
         current !== undefined && current.items.length > 0
@@ -622,7 +770,14 @@ function buildLines(
           : ctx.lines[ctx.lines.length - 1];
 
       if (comment.trailing && last !== undefined) {
-        push(last, { text, trailing: true, space: true, mustBreak: false });
+        const item: Item = {
+          text,
+          trailing: true,
+          space: true,
+          mustBreak: false,
+        };
+        push(last, item);
+        continued = { item, line: start.line, character: start.character };
         if (last === current) {
           breakNext = true;
         }
@@ -647,6 +802,7 @@ function buildLines(
     const block = roles.blocks.get(token);
 
     comments(token.leadingComments);
+    continued = undefined;
 
     const line = (blank: number): LogicalLine =>
       ctx.current ?? startLine(blank);
@@ -669,6 +825,7 @@ function buildLines(
         close:
           token.type === TokenType.bracketClose ||
           token.type === TokenType.squareClose,
+        call: roles.callOpen.has(token),
       };
     };
 
@@ -828,6 +985,12 @@ interface Frame {
    * An operand group rather than a bracket
    */
   group: boolean;
+
+  /**
+   * The arguments of a call not bin-packed: whether the line broke at its
+   * commas, which it then does at all of them, or at none
+   */
+  commas?: 'unknown' | 'broken' | 'joined';
 }
 
 /**
@@ -866,6 +1029,13 @@ const penaltyKind = 4;
 const penaltyBracket = 30;
 const penaltyGroup = 15;
 const penaltyShortLine = 4;
+const penaltyRefused = 1e7;
+
+/**
+ * Fewest columns a trailing comment is reflowed to: one starting further
+ * right is left long rather than cut into a column of words
+ */
+const minTrailingWidth = 20;
 const searchLimit = 5000;
 
 /**
@@ -924,6 +1094,31 @@ function layout(
     const frames = state.frames.slice();
     let atStart = k === 0;
 
+    // arguments not bin-packed break at all their commas or none, and at
+    // all of them when one breaks inside (not right after its bracket)
+    const previous = items[k - 1];
+    if (previous !== undefined && (choice(k) || items[k].mustBreak)) {
+      const broken = breakFirst || items[k].mustBreak;
+      const comma = previous.token !== undefined && previous.text === ',';
+      const top = frames.map(frame => !frame.group).lastIndexOf(true);
+      frames.forEach((frame, j) => {
+        if (frame.commas === undefined || (j === top && previous.open)) {
+          return;
+        }
+        const commas = broken ? 'broken' : 'joined';
+        if (j !== top || !comma) {
+          if (!broken) {
+            return;
+          }
+        }
+        if (frame.commas === 'unknown') {
+          frames[j] = { ...frame, commas };
+        } else if (frame.commas !== commas && choice(k)) {
+          penalty += penaltyRefused;
+        }
+      });
+    }
+
     for (let first = true; k < items.length; first = false, k += 1) {
       const item = items[k];
       if (!first && choice(k)) {
@@ -966,6 +1161,7 @@ function layout(
         sep,
         token: item.token,
         trailing: item.trailing,
+        continuation: item.continuation,
       });
       const newline = item.text.indexOf('\n');
       const end =
@@ -986,6 +1182,7 @@ function layout(
           align: column + (item.text === '{' ? 1 : 0),
           indent,
           group: false,
+          commas: item.call && !options.BinPackArguments ? 'unknown' : undefined,
         });
       }
       if (item.close) {
@@ -1120,7 +1317,10 @@ function search(
     }
 
     const key = `${state.next} ${state.column} ${state.indent} ${state.frames
-      .map(frame => `${frame.align},${frame.indent},${frame.group}`)
+      .map(
+        frame =>
+          `${frame.align},${frame.indent},${frame.group},${frame.commas ?? ''}`,
+      )
       .join(' ')}`;
     const best = seen.get(key);
     if (best !== undefined && best <= state.penalty) {
@@ -1265,6 +1465,205 @@ function splitGroups(items: Item[]): void {
 }
 
 /**
+ * Break the comments that go past the column limit: comments on their own
+ * lines, as blocks of consecutive lines at the same indentation, and
+ * trailing comments with the lines continuing them (when enough columns are
+ * left for them)
+ * @param lines the laid out lines
+ * @param limit the column limit
+ */
+function reflowComments(
+  lines: PhysicalLine[],
+  limit: number,
+): { lines: PhysicalLine[]; reflowed: boolean } {
+  let reflowed = false;
+  const reflow = (texts: string[], width: number): string[] => {
+    const result = reflowLines(texts, width);
+    reflowed ||=
+      result.length !== texts.length || result.some((t, n) => t !== texts[n]);
+    return result;
+  };
+
+  const own = (line: PhysicalLine) =>
+    line.pieces.length === 1 &&
+    line.pieces[0].token === undefined &&
+    !line.pieces[0].trailing;
+
+  const out: PhysicalLine[] = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (own(line)) {
+      let end = i + 1;
+      while (
+        end < lines.length &&
+        own(lines[end]) &&
+        lines[end].blank === 0 &&
+        lines[end].indent === line.indent
+      ) {
+        end += 1;
+      }
+      const texts = lines.slice(i, end).map(block => block.pieces[0].text);
+      reflow(texts, limit - line.indent).forEach((text, n) =>
+        out.push({
+          blank: n === 0 ? line.blank : 0,
+          indent: line.indent,
+          pieces: [{ text, sep: 0 }],
+        }),
+      );
+      i = end - 1;
+      continue;
+    }
+
+    let column = line.indent;
+    for (const piece of line.pieces) {
+      column += piece.sep;
+      if (piece.trailing && limit - column >= minTrailingWidth) {
+        const [first, ...rest] = reflow(
+          [piece.text, ...(piece.continuation ?? [])],
+          limit - column,
+        );
+        piece.text = first;
+        piece.continuation = rest.length > 0 ? rest : undefined;
+      }
+      column += piece.text.length;
+    }
+    out.push(line);
+  }
+  return { lines: out, reflowed };
+}
+
+/**
+ * Reflow the lines of a comment to a width. A line too long breaks at the
+ * last space that fits; the rest joins the next line when it is plain text
+ * and does not end a sentence, else gets lines of its own. Left as they
+ * are: blank comment lines, directives, fenced code, indented text, and
+ * words longer than the width.
+ * List items and tags (`- `, `1. `, `@param`) start a line of their own.
+ * @param texts the comment lines, `//` included
+ * @param width columns available, `//` included
+ */
+function reflowLines(texts: string[], width: number): string[] {
+  const out: string[] = [];
+  let carry: Maybe<{ marker: string; content: string }>;
+
+  // a content broken to the width: the line that fits, and the rest
+  const split = (marker: string, content: string): [string, Maybe<string>] => {
+    if (marker.length + content.length <= width) {
+      return [content, undefined];
+    }
+    // no break before a `//` inside the comment: its line would start `////`
+    const breaks = (at: number) =>
+      at > 0 && !content.startsWith('//', at + 1);
+    let at = content.lastIndexOf(' ', width - marker.length);
+    while (at > 0 && !breaks(at)) {
+      at = content.lastIndexOf(' ', at - 1);
+    }
+    if (at <= 0) {
+      at = content.indexOf(' ', 1);
+      while (at > 0 && !breaks(at)) {
+        at = content.indexOf(' ', at + 1);
+      }
+    }
+    if (at <= 0) {
+      return [content, undefined];
+    }
+    const rest = content.slice(at + 1).trimStart();
+    return [content.slice(0, at).trimEnd(), rest === '' ? undefined : rest];
+  };
+
+  const flush = () => {
+    while (carry !== undefined) {
+      const [fits, rest] = split(carry.marker, carry.content);
+      out.push(carry.marker + fits);
+      carry = rest === undefined ? undefined : { ...carry, content: rest };
+    }
+  };
+
+  let fence = false;
+  for (const text of texts) {
+    const [, slashes, space, rest] = /^(\/\/)(\s*)(.*)$/.exec(text) ?? [
+      '',
+      '',
+      '',
+      text,
+    ];
+    let content = rest;
+    const marker = slashes + space;
+    const fenceLine = content.startsWith('```');
+    const verbatim =
+      fence ||
+      fenceLine ||
+      slashes === '' ||
+      content === '' ||
+      content.startsWith('#') ||
+      space.length > 1;
+    if (fenceLine) {
+      fence = !fence;
+    }
+
+    // as clang-format, a line starting with a tag, a list marker or two
+    // punctuation characters takes no text from the line above; nor does
+    // any line after a sentence or a statement (commented out code)
+    const joins =
+      !verbatim &&
+      !/^(@|\\|TODO|FIXME|XXX|[-*+]\s|\d+[.)]\s|>|\|)/.test(content) &&
+      !/^[\p{P}\p{S}]{2}/u.test(content) &&
+      carry !== undefined &&
+      !carry.content.endsWith('.');
+    if (carry !== undefined && joins) {
+      content = `${carry.content} ${content}`;
+      carry = undefined;
+    } else {
+      flush();
+    }
+
+    if (verbatim) {
+      out.push(text);
+      continue;
+    }
+
+    const [fits, overflow] = split(marker, content);
+    out.push(marker + fits);
+    carry = overflow === undefined ? undefined : { marker, content: overflow };
+  }
+  flush();
+  return out;
+}
+
+/**
+ * The anonymous functions on one line that do not fit: broken across
+ * lines, or on a line past the column limit
+ * @param lines the laid out lines
+ * @param lambdas indexes of the braces of the short anonymous functions
+ * @param options formatter options
+ */
+function misfitLambdas(
+  lines: PhysicalLine[],
+  lambdas: [number, number][],
+  options: FormatOptions,
+): [number, number][] {
+  const limit = options.ColumnLimit > 0 ? options.ColumnLimit : Infinity;
+  const lineOf = new Map<number, number>();
+  const tooLong = lines.map((line, n) => {
+    let column = line.indent;
+    for (const piece of line.pieces) {
+      if (piece.token !== undefined) {
+        lineOf.set(piece.token, n);
+      }
+      if (!piece.trailing) {
+        column += piece.sep + piece.text.length;
+      }
+    }
+    return column > limit;
+  });
+
+  return lambdas.filter(([open, close]) => {
+    const line = lineOf.get(open);
+    return line === undefined || line !== lineOf.get(close) || tooLong[line];
+  });
+}
+
+/**
  * Align the comments ending consecutive lines of code
  */
 function alignTrailingComments(lines: PhysicalLine[], spaces: number): void {
@@ -1318,6 +1717,7 @@ function sameContent(
   texts: string[],
   trailingComments: Comment[],
   text: string,
+  reflowed: boolean,
 ): Maybe<string> {
   const scanned = new Scanner(text).scanTokens();
   if (scanned.diagnostics.length > 0) {
@@ -1327,11 +1727,18 @@ function sameContent(
     return 'token count';
   }
 
-  const commentsOf = (list: Token[], trailing: Comment[]) =>
-    list
+  // reflowed comments keep their words, not their lines
+  const commentsOf = (list: Token[], trailing: Comment[]) => {
+    const comments = list
       .flatMap(token => token.leadingComments ?? [])
       .concat(trailing)
       .map(comment => comment.text.trimEnd());
+    return reflowed
+      ? comments.flatMap(comment =>
+          comment.replace(/^\/\//, '').split(/\s+/).filter(word => word !== ''),
+        )
+      : comments;
+  };
 
   for (let i = 0; i < tokens.length; i += 1) {
     const before = tokens[i];

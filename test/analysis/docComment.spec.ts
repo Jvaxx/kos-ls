@@ -30,6 +30,19 @@ describe('doc comments', () => {
     ]);
   });
 
+  test('lines aligned under a trailing comment continue it', () => {
+    const source = [
+      'print 1. // trailing',
+      '         // continued',
+      '// first',
+      'function f { }',
+    ].join('\n');
+    expect(docLines(first(source, TokenType.function))).toEqual(['first']);
+
+    const only = 'print 1. // trailing\n         // continued\nfunction f { }';
+    expect(parseDocComment(first(only, TokenType.function))).toBeUndefined();
+  });
+
   test('a blank line breaks the attachment', () => {
     const source = '// above\n\nfunction f { }';
     expect(parseDocComment(first(source, TokenType.function))).toBeUndefined();

@@ -72,6 +72,9 @@ describe('Formatter on every fixture', () => {
         MaxEmptyLinesToKeep: 2,
         SpacesBeforeTrailingComments: 2,
         AlignTrailingComments: false,
+        BinPackArguments: false,
+        AllowShortLambdasOnASingleLine: 'None',
+        ReflowComments: false,
       },
     ],
   ];
@@ -96,8 +99,16 @@ describe('Formatter on every fixture', () => {
       expect(tokensOf(once)).toEqual(tokensOf(source));
       expect(astOf(once)).toBe(astOf(source));
 
-      // every comment kept, in order
-      expect(commentsOf(once)).toEqual(commentsOf(source));
+      // every comment kept, in order; reflowed, its words
+      const words = (comments: string[]) =>
+        comments.flatMap(comment =>
+          comment.replace(/^\/\//, '').split(/\s+/).filter(word => word),
+        );
+      if (options.ReflowComments === false) {
+        expect(commentsOf(once)).toEqual(commentsOf(source));
+      } else {
+        expect(words(commentsOf(once))).toEqual(words(commentsOf(source)));
+      }
 
       // the edits give the same text
       const result = formatText(source, options);
@@ -176,14 +187,64 @@ describe('Formatter rules', () => {
     );
   });
 
+  test('short anonymous functions stay on one line', () => {
+    expect(format('local f is {parameter x. return x.}.')).toBe(
+      'local f is { parameter x. return x. }.\n',
+    );
+    expect(format('foo(1, {\nreturn 1.\n}, 2).')).toBe(
+      'foo(1, { return 1. }, 2).\n',
+    );
+    expect(format('local n is { return { return 1. }. }.')).toBe(
+      'local n is { return { return 1. }. }.\n',
+    );
+    expect(format('local e is {}.')).toBe('local e is {}.\n');
+
+    // too long, or holding a statement block or a comment: expanded, with
+    // the ones holding it
+    expect(
+      format(
+        'local h is { parameter aLongParameterName. return aLongParameterName * aLongParameterName. }.',
+      ),
+    ).toBe(
+      [
+        'local h is {',
+        '    parameter aLongParameterName.',
+        '    return aLongParameterName * aLongParameterName.',
+        '}.',
+        '',
+      ].join('\n'),
+    );
+    expect(format('local g is { return { if a { return 1. } return 2. }. }.')).toBe(
+      [
+        'local g is {',
+        '    return {',
+        '        if a {',
+        '            return 1.',
+        '        }',
+        '        return 2.',
+        '    }.',
+        '}.',
+        '',
+      ].join('\n'),
+    );
+    expect(format('local c is { return 1. // one\n}.')).toBe(
+      'local c is {\n    return 1. // one\n}.\n',
+    );
+  });
+
   test('anonymous functions', () => {
-    expect(format('local f is { parameter x. return x. }.')).toBe(
+    const expand = (source: string) =>
+      format(source, { AllowShortLambdasOnASingleLine: 'None' });
+    expect(expand('local f is { parameter x. return x. }.')).toBe(
       'local f is {\n    parameter x.\n    return x.\n}.\n',
     );
-    expect(format('foo(1, { return 1. }, 2).')).toBe(
+    expect(expand('foo(1, { return 1. }, 2).')).toBe(
       'foo(1, {\n    return 1.\n}, 2).\n',
     );
-    expect(format('set l to list(list("a", { return 1. }), list("b", { return 2. })).')).toBe(
+    expect(format('local e is {}.', { AllowShortLambdasOnASingleLine: 'Empty' })).toBe(
+      'local e is {}.\n',
+    );
+    expect(expand('set l to list(list("a", { return 1. }), list("b", { return 2. })).')).toBe(
       [
         'set l to list(',
         '    list("a", {',
@@ -216,6 +277,147 @@ describe('Formatter rules', () => {
     );
     expect(format('print 1.\n// last   ')).toBe('print 1.\n// last\n');
     expect(format('// only')).toBe('// only\n');
+  });
+
+  test('arguments not bin-packed: all on one line or one per line', () => {
+    const source =
+      'set x to outerFunction(innerCall(alpha, beta, gamma), anotherArgument, finalArgumentHere).';
+    expect(format(source)).toBe(
+      [
+        'set x to outerFunction(innerCall(alpha, beta, gamma), anotherArgument,',
+        '                       finalArgumentHere).',
+        '',
+      ].join('\n'),
+    );
+    expect(format(source, { BinPackArguments: false })).toBe(
+      [
+        'set x to outerFunction(innerCall(alpha, beta, gamma),',
+        '                       anotherArgument,',
+        '                       finalArgumentHere).',
+        '',
+      ].join('\n'),
+    );
+
+    // a break inside an argument breaks the arguments around it, or puts
+    // them all on the next line
+    expect(
+      format(
+        'set x to outerFunction(innerCall(alpha, beta), anotherArgument, finalArgumentHere, last).',
+        { BinPackArguments: false },
+      ),
+    ).toBe(
+      [
+        'set x to outerFunction(',
+        '    innerCall(alpha, beta), anotherArgument, finalArgumentHere, last).',
+        '',
+      ].join('\n'),
+    );
+    expect(format('print f(1, 2).', { BinPackArguments: false })).toBe(
+      'print f(1, 2).\n',
+    );
+  });
+
+  test('comments reflowed to the column limit', () => {
+    const long =
+      '// This comment is long enough to go past the eighty column limit of the formatter';
+    expect(format(`${long}\n// and it goes on.\nprint 1.`)).toBe(
+      [
+        '// This comment is long enough to go past the eighty column limit of the',
+        '// formatter and it goes on.',
+        'print 1.',
+        '',
+      ].join('\n'),
+    );
+
+    // a sentence or a statement ends: what follows is not joined
+    expect(
+      format(
+        '//set a to list(firstArgument, secondArgument, thirdArgument, fourthArgument, fifth).\n//set b to 2.',
+      ),
+    ).toBe(
+      [
+        '//set a to list(firstArgument, secondArgument, thirdArgument, fourthArgument,',
+        '//fifth).',
+        '//set b to 2.',
+        '',
+      ].join('\n'),
+    );
+    // no line starts with the `//` of a comment inside the comment
+    expect(
+      format(
+        '//(3.0, 0.2, 3.0, -10, 30, 3.0, 0.2, 3.0, -10, 30, 3.0, 0.2, 3.0, 0.2). //outputs',
+      ),
+    ).toBe(
+      [
+        '//(3.0, 0.2, 3.0, -10, 30, 3.0, 0.2, 3.0, -10, 30, 3.0, 0.2, 3.0,',
+        '//0.2). //outputs',
+        '',
+      ].join('\n'),
+    );
+    expect(format(`${long}\n// <- arrow\nprint 1.`)).toBe(
+      [
+        '// This comment is long enough to go past the eighty column limit of the',
+        '// formatter',
+        '// <- arrow',
+        'print 1.',
+        '',
+      ].join('\n'),
+    );
+
+    // blank comment lines, list items, tags, directives, indented text and
+    // fenced code are kept apart
+    const kept = [
+      '// - a list item that is long enough to go past the eighty column limit of the formatter',
+      '// @param x the parameter, with a description long enough to be broken by the formatter',
+      '// #region a directive that is long enough to go past the column limit, kept',
+      '//     indented text that is long enough to go past the column limit, kept',
+      '// ```',
+      '// print "fenced code that is long enough to go past the column limit, kept".',
+      '// ```',
+      '//',
+      '// end',
+      'print 1.',
+    ].join('\n');
+    expect(format(kept)).toBe(
+      [
+        '// - a list item that is long enough to go past the eighty column limit of the',
+        '// formatter',
+        '// @param x the parameter, with a description long enough to be broken by the',
+        '// formatter',
+        '// #region a directive that is long enough to go past the column limit, kept',
+        '//     indented text that is long enough to go past the column limit, kept',
+        '// ```',
+        '// print "fenced code that is long enough to go past the column limit, kept".',
+        '// ```',
+        '//',
+        '// end',
+        'print 1.',
+        '',
+      ].join('\n'),
+    );
+
+    // a trailing comment continues aligned under itself, read back as such
+    const trailing =
+      'local y is x * 2. // a trailing comment long enough to go past the column limit here';
+    const once = format(trailing);
+    expect(once).toBe(
+      [
+        'local y is x * 2. // a trailing comment long enough to go past the column limit',
+        '                  // here',
+        '',
+      ].join('\n'),
+    );
+    expect(format(once)).toBe(once);
+    expect(format('print 1. // a\n         // b\nprint 22.')).toBe(
+      'print 1. // a\n         // b\nprint 22.\n',
+    );
+
+    // a word longer than the line stays whole; off, nothing changes
+    const word = `// ${'x'.repeat(90)}`;
+    expect(format(word)).toBe(`${word}\n`);
+    expect(format(`${long}\nprint 1.`, { ReflowComments: false })).toBe(
+      `${long}\nprint 1.\n`,
+    );
   });
 
   test('blank lines', () => {
