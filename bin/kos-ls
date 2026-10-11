@@ -2,8 +2,8 @@
 const command = process.argv[2];
 if (command === 'format') {
   process.exitCode = require('../dist/format.js').main(process.argv.slice(3));
-} else if (command === 'check') {
-  require('../dist/check.js')
+} else if (command === 'check' || command === 'size') {
+  require(`../dist/${command}.js`)
     .main(process.argv.slice(3))
     .then((status) => (process.exitCode = status));
 } else {

@@ -3,6 +3,7 @@ import { join } from 'path';
 import { PassThrough } from 'stream';
 import {
   CodeAction,
+  CodeLens,
   CompletionItem,
   createConnection,
   Diagnostic,
@@ -44,6 +45,16 @@ export interface StartOptions {
 export class TestClient {
   private readonly diagnostics = new Map<string, Diagnostic[]>();
   private readonly versions = new Map<string, number>();
+
+  /**
+   * Messages the server showed (`window/showMessage`)
+   */
+  public readonly shown: string[] = [];
+
+  /**
+   * How many times the server asked to refresh the code lenses
+   */
+  public codeLensRefreshes = 0;
 
   private constructor(
     public readonly root: string,
@@ -88,6 +99,13 @@ export class TestClient {
         client.diagnostics.set(params.uri, params.diagnostics),
     );
     connection.onNotification('window/logMessage', () => {});
+    connection.onNotification('window/showMessage', (params) =>
+      client.shown.push(params.message),
+    );
+    connection.onRequest('workspace/codeLens/refresh', () => {
+      client.codeLensRefreshes += 1;
+      return null;
+    });
     connection.onRequest('workspace/configuration', (params) =>
       params.items.map(({ section }: { section?: string }) =>
         section === (options.section ?? 'kos-ls')
@@ -104,6 +122,7 @@ export class TestClient {
       capabilities: {
         workspace: {
           configuration: true,
+          codeLens: { refreshSupport: true },
           didChangeWatchedFiles: { dynamicRegistration: true },
         },
       },
@@ -275,6 +294,29 @@ export class TestClient {
       );
     }
     return tokens;
+  }
+
+  /**
+   * The code lenses of a document
+   * @param path path relative to the workspace root
+   */
+  async codeLenses(path: string): Promise<CodeLens[]> {
+    await this.settle();
+    return this.connection.sendRequest('textDocument/codeLens', {
+      textDocument: { uri: this.uri(path) },
+    });
+  }
+
+  /**
+   * Run a server command
+   * @param command the command
+   * @param args its arguments
+   */
+  executeCommand(command: string, ...args: unknown[]): Promise<unknown> {
+    return this.connection.sendRequest('workspace/executeCommand', {
+      command,
+      arguments: args,
+    });
   }
 
   /**

@@ -196,6 +196,51 @@ directory up, else the current directory. Each diagnostic is printed as
 error. Exit status: 0 when no diagnostic reaches the `--fail-on` severity,
 1 when one does, 2 on a usage error or a path that cannot be checked.
 
+## Disk size
+
+A probe's disk holds a few KB, so each script gets a code lens on its
+first line with the space it needs once stripped of comments and
+indentation, alone and with every file it runs (the preloaded files of
+`ksconfig.json` included, each file counted once):
+
+```
+685 B on disk (1323 B source) · 1353 B with the 2 files it runs
+```
+
+Running the lens shows the size of each of those files. In Neovim 0.12:
+
+```lua
+vim.lsp.codelens.enable()                              -- show the lenses
+vim.keymap.set("n", "<leader>l", vim.lsp.codelens.run) -- run the one on the cursor line
+```
+
+The lens follows edits and the files a script runs (the server asks for
+a refresh, `workspace/codeLens/refresh`).
+
+`kos-ls size` prints the same for the whole workspace, or for files and
+directories:
+
+```sh
+kos-ls size                     # every script of the workspace
+kos-ls size --files src/mission # with the files counted in each total
+kos-ls size --max 5000          # exit 1 when a total is larger
+```
+
+```
+path                 stripped   source    total files
+src/boot/main.ks         1442     3299     1629     2  (2 runs not followed)
+src/mission/hello.ks      685     1323     1353     3
+```
+
+Stripped means each line without its `//` comment and the whitespace
+around it, lines kept (an emptied line still costs its line break, so
+the line numbers of kOS errors match the source), blank lines at the
+end dropped, `\n` line breaks; kOS counts UTF-8 bytes. A string over
+several lines keeps its whitespace. A run whose file is not known (a
+path built at runtime, a missing file) is not counted, and reported as
+not followed. Compiled `.ksm` sizes are not computed, and a boot file
+is counted only when a script runs it.
+
 ## Developer tools
 
 `npm run probe -- <root> [files...]` starts the server headlessly, opens the

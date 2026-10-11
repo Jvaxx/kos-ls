@@ -7,6 +7,11 @@ export const iterator = 'iterator';
 export const serverName = 'kos-ls';
 
 /**
+ * The command of the disk usage lens: shows the size of each file
+ */
+export const diskUsageCommand = 'kos-ls.diskUsage';
+
+/**
  * Settings sections read when the client has none for serverName: the
  * one kos-language-server used
  */

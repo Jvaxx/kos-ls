@@ -27,6 +27,12 @@ import { ControlFlow } from '../controlFlow/controlFlow';
 import { runPath, normalizeExtensions } from '../utilities/pathUtils';
 import { ResolverService } from './resolverService';
 import { Graph } from '../models/graph';
+import {
+  byteSize,
+  DiskUsage,
+  FileSize,
+  strippedText,
+} from '../analysis/diskSize';
 import { scc } from '../utilities/graphUtils';
 import {
   DIAGNOSTICS,
@@ -626,41 +632,132 @@ export class AnalysisService extends EventEmitter {
    * @param lexicalInfo its lexical information
    */
   private async edges(uri: string, lexicalInfo: LexicalInfo): Promise<Edges> {
-    const uris = new Set<string>();
-    const diagnostics: DiagnosticUri[] = [];
+    const { uris, diagnostics } = await this.runTargets(uri, lexicalInfo);
 
-    const follow = async (location: Location, path: string) => {
-      const target = await this.resolveDocument(location, path);
+    // includes before the preloaded files: the order of the tables
+    // decides which declaration of a name a lookup finds
+    for (const include of lexicalInfo.directives.include) {
+      const target = await this.resolveDocument(
+        include.directive,
+        include.includePath(),
+      );
       if (typeof target === 'string') {
         uris.add(target);
       } else if (!empty(target)) {
         diagnostics.push(target);
       }
-    };
-
-    for (const runStmt of lexicalInfo.script.runStmts) {
-      const path = runPath(runStmt);
-      if (typeof path === 'string') {
-        await follow(runStmt.toLocation(uri), path);
-      } else {
-        diagnostics.push(addDiagnosticsUri(path, uri));
-      }
     }
 
-    for (const include of lexicalInfo.directives.include) {
-      await follow(include.directive, include.includePath());
-    }
-
-    if (!(await this.inPreloadClosure(uri))) {
-      for (const preload of this.preload) {
-        if (!empty(await this.documentService.loadDocument(preload))) {
-          uris.add(preload);
-        }
-      }
+    for (const preload of await this.preloadTargets(uri)) {
+      uris.add(preload);
     }
 
     uris.delete(uri);
     return { uris: [...uris], diagnostics };
+  }
+
+  /**
+   * The documents a document runs, in the order of its run statements,
+   * with diagnostics for the runs that cannot be followed
+   * @param uri document uri
+   * @param lexicalInfo its lexical information
+   */
+  private async runTargets(
+    uri: string,
+    lexicalInfo: LexicalInfo,
+  ): Promise<{ uris: Set<string>; diagnostics: DiagnosticUri[] }> {
+    const uris = new Set<string>();
+    const diagnostics: DiagnosticUri[] = [];
+
+    for (const runStmt of lexicalInfo.script.runStmts) {
+      const path = runPath(runStmt);
+      if (typeof path !== 'string') {
+        diagnostics.push(addDiagnosticsUri(path, uri));
+        continue;
+      }
+
+      const target = await this.resolveDocument(runStmt.toLocation(uri), path);
+      if (typeof target === 'string') {
+        uris.add(target);
+      } else if (!empty(target)) {
+        diagnostics.push(target);
+      }
+    }
+
+    uris.delete(uri);
+    return { uris, diagnostics };
+  }
+
+  /**
+   * The preloaded files a document depends on: all of them, unless it is
+   * one, or run by one
+   * @param uri document uri
+   */
+  private async preloadTargets(uri: string): Promise<string[]> {
+    if (await this.inPreloadClosure(uri)) {
+      return [];
+    }
+
+    const found: string[] = [];
+    for (const preload of this.preload) {
+      if (preload !== uri && !empty(await this.documentService.loadDocument(preload))) {
+        found.push(preload);
+      }
+    }
+    return found;
+  }
+
+  /**
+   * The disk space a document needs on a probe: its stripped size, and
+   * that of every file it runs, the preloaded files included
+   * @param uri document uri
+   */
+  public diskUsage(uri: string): Promise<Maybe<DiskUsage>> {
+    return this.enqueue(async () => {
+      try {
+        const files: FileSize[] = [];
+        let unresolved = 0;
+        const seen = new Set<string>();
+
+        const visit = async (current: string): Promise<void> => {
+          if (seen.has(current)) {
+            return;
+          }
+          seen.add(current);
+
+          const document =
+            this.documentService.getDocument(current) ??
+            (await this.documentService.loadDocument(current));
+          const info = await this.lexical(current);
+          if (empty(document) || empty(info)) {
+            return;
+          }
+
+          const text = document.getText();
+          files.push({
+            uri: current,
+            source: byteSize(text),
+            stripped: byteSize(strippedText(text)),
+          });
+
+          const targets = await this.runTargets(current, info);
+          unresolved += targets.diagnostics.length;
+          for (const target of targets.uris) {
+            await visit(target);
+          }
+        };
+
+        // the preloaded files run first, but the script is the subject
+        await visit(uri);
+        for (const preload of await this.preloadTargets(uri)) {
+          await visit(preload);
+        }
+        return files.length === 0 ? undefined : { files, unresolved };
+      } catch (err) {
+        logException(this.logger, this.tracer, err, LogLevel.error);
+        return undefined;
+      }
+    });
   }
 
   /**

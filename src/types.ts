@@ -75,4 +75,5 @@ export interface IClientCapabilities {
   hasConfiguration: boolean;
   hasWorkspaceFolder: boolean;
   hasWatchedFiles?: boolean;
+  hasCodeLensRefresh?: boolean;
 }

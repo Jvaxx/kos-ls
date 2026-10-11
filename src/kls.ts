@@ -29,7 +29,15 @@ import {
   SemanticTokens,
   SemanticTokensParams,
   SemanticTokensRangeParams,
+  CodeLens,
+  CodeLensParams,
+  CodeLensRefreshRequest,
+  ExecuteCommandParams,
+  MessageType,
+  ShowMessageNotification,
 } from 'vscode-languageserver';
+import { DiskUsage, usageDetails, usageSummary } from './analysis/diskSize';
+import { relative } from 'path';
 import { semanticTokens, semanticTokensLegend } from './services/semanticTokens';
 import { codeActions } from './services/codeActions';
 import { ClientConfiguration } from './types';
@@ -41,6 +49,7 @@ import * as Expr from './parser/models/expr';
 import * as Stmt from './parser/models/stmt';
 import {
   builtIn,
+  diskUsageCommand,
   serverName,
   legacyServerNames,
   keywordCompletions,
@@ -265,6 +274,8 @@ export class KLS {
     this.connection.languages.inlayHint.on(this.onInlayHint.bind(this));
     this.connection.onDocumentFormatting(this.onFormatting.bind(this));
     this.connection.onCodeAction(this.onCodeAction.bind(this));
+    this.connection.onCodeLens(this.onCodeLens.bind(this));
+    this.connection.onExecuteCommand(this.onExecuteCommand.bind(this));
     this.connection.languages.semanticTokens.on((params, cancellation) =>
       this.onSemanticTokens(params, cancellation),
     );
@@ -286,9 +297,10 @@ export class KLS {
     this.documentService.on('diskChange', (uri) =>
       this.analysisService.invalidateDocument(uri),
     );
-    this.analysisService.on('propagate', (diagnostics) =>
-      this.publishDiagnostics(diagnostics),
-    );
+    this.analysisService.on('propagate', (diagnostics) => {
+      this.publishDiagnostics(diagnostics);
+      this.refreshCodeLenses();
+    });
     this.configurationService.on('change', (change) =>
       this.track(this.onConfigChange(change)),
     );
@@ -331,6 +343,10 @@ export class KLS {
     // can file watchers be registered
     clientCapability.hasWatchedFiles =
       !!capabilities.workspace?.didChangeWatchedFiles?.dynamicRegistration;
+
+    // can code lenses be refreshed when other files change
+    clientCapability.hasCodeLensRefresh =
+      !!capabilities.workspace?.codeLens?.refreshSupport;
 
     // only the first workspace folder is supported
     const workspaceUri = workspaceFolders?.[0]?.uri ?? rootUri;
@@ -392,6 +408,8 @@ export class KLS {
           full: true,
           range: true,
         },
+        codeLensProvider: { resolveProvider: false },
+        executeCommandProvider: { commands: [diskUsageCommand] },
       },
     };
   }
@@ -686,6 +704,92 @@ export class KLS {
   }
 
   /**
+   * This handler gives a lens at the top of a document with the disk
+   * space it needs on a probe, stripped, with the files it runs
+   * @param params the document
+   * @param cancellation request cancellation token
+   */
+  private async onCodeLens(
+    params: CodeLensParams,
+    cancellation: CancellationToken,
+  ): Promise<CodeLens[]> {
+    try {
+      const { uri } = params.textDocument;
+      const usage = await this.analysisService.diskUsage(uri);
+      if (cancellation.isCancellationRequested || empty(usage)) {
+        return [];
+      }
+
+      return [
+        {
+          range: Range.create(0, 0, 0, 0),
+          command: {
+            title: usageSummary(usage),
+            command: diskUsageCommand,
+            arguments: [uri],
+          },
+        },
+      ];
+    } catch (err) {
+      logException(this.logger, this.tracer, err, LogLevel.error);
+      return [];
+    }
+  }
+
+  /**
+   * This handler runs the server's commands: the disk usage command shows
+   * the size of each file a document needs
+   * @param params the command and its arguments
+   */
+  private async onExecuteCommand(params: ExecuteCommandParams): Promise<void> {
+    try {
+      const [uri] = params.arguments ?? [];
+      if (params.command !== diskUsageCommand || typeof uri !== 'string') {
+        return;
+      }
+
+      const usage = await this.analysisService.diskUsage(uri);
+      if (empty(usage)) {
+        return;
+      }
+
+      const root = this.configurationService.serverConfiguration.workspaceUri;
+      const name = (file: string) => {
+        const path = URI.parse(file).fsPath;
+        return empty(root) ? path : relative(root.fsPath, path);
+      };
+      // a notification: the request form asks the client for a choice,
+      // which some clients show as a prompt that waits for an answer
+      this.connection.sendNotification(ShowMessageNotification.type, {
+        type: MessageType.Info,
+        message: usageDetails(usage, name),
+      });
+    } catch (err) {
+      logException(this.logger, this.tracer, err, LogLevel.error);
+    }
+  }
+
+  /**
+   * The uris of the workspace's scripts, excluded ones left out, sorted
+   */
+  public workspaceScripts(): string[] {
+    const { workspaceConfiguration } = this.configurationService;
+    return this.documentService
+      .getAllDocuments()
+      .map((document) => document.uri)
+      .filter((uri) => !workspaceConfiguration.isExcluded(URI.parse(uri)))
+      .sort();
+  }
+
+  /**
+   * The disk space a script needs on a probe
+   * @param uri script uri
+   */
+  public diskUsage(uri: string): Promise<Maybe<DiskUsage>> {
+    return this.analysisService.diskUsage(uri);
+  }
+
+  /**
    * The edits renaming the symbol at a position everywhere
    * @param uri document uri
    * @param position position of the symbol
@@ -830,6 +934,20 @@ export class KLS {
    */
   private async reloadWorkspace() {
     this.publishDiagnostics(await this.analysisService.loadDirectory());
+    this.refreshCodeLenses();
+  }
+
+  /**
+   * Ask the client to request the code lenses again: the disk usage of a
+   * file depends on the files it runs
+   */
+  private refreshCodeLenses(): void {
+    const { clientCapability } = this.configurationService.serverConfiguration;
+    if (clientCapability.hasCodeLensRefresh) {
+      this.connection
+        .sendRequest(CodeLensRefreshRequest.type)
+        .catch((err) => logException(this.logger, this.tracer, err, LogLevel.warn));
+    }
   }
 
   /**

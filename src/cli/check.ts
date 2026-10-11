@@ -1,24 +1,15 @@
-import { existsSync, statSync } from 'fs';
-import { dirname, join, relative, resolve, sep } from 'path';
-import { PassThrough } from 'stream';
+import { relative, resolve } from 'path';
+import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver/node';
 import {
-  createConnection,
-  Diagnostic,
-  DiagnosticSeverity,
-  PublishDiagnosticsParams,
-} from 'vscode-languageserver/node';
-import {
-  createMessageConnection,
-  StreamMessageReader,
-  StreamMessageWriter,
-} from 'vscode-jsonrpc/node';
-import { URI } from 'vscode-uri';
-import { KLS } from '../kls';
-import { mockLogger, mockTracer } from '../models/logger';
-import { typeInitializer } from '../typeChecker/initialize';
-import { defaultServerConfiguration } from '../config/models/serverConfiguration';
-import { defaultWorkspaceConfiguration } from '../config/models/workspaceConfiguration';
-import { configFileName } from '../services/documentService';
+  checkPaths,
+  findRoot,
+  openWorkspace,
+  Output,
+  processOutput,
+  selected,
+} from './workspace';
+
+export { Output } from './workspace';
 
 const usage = `Usage: kos-ls check [--root dir] [--fail-on severity] [file or directory...]
 
@@ -40,19 +31,6 @@ paths relative to the current directory; a summary goes to standard error.
 
 Exit status: 0 when no diagnostic reaches the --fail-on severity, 1 when
 one does, 2 on a usage error or a path that cannot be checked.`;
-
-/**
- * Where the command writes, replaceable for tests
- */
-export interface Output {
-  out: (text: string) => void;
-  err: (text: string) => void;
-}
-
-const processOutput: Output = {
-  out: (text) => process.stdout.write(text),
-  err: (text) => process.stderr.write(text),
-};
 
 const severityNames: Record<DiagnosticSeverity, string> = {
   [DiagnosticSeverity.Error]: 'error',
@@ -111,34 +89,16 @@ export async function main(
   }
 
   root = root ?? findRoot(cwd);
-  if (!isDirectory(root)) {
-    io.err(`${root}: not a directory\n`);
-    return 2;
-  }
-
-  let status = 0;
-  for (const path of paths) {
-    if (!existsSync(path)) {
-      io.err(`${relative(cwd, path)}: no such file or directory\n`);
-      status = 2;
-    } else if (!within(path, root)) {
-      io.err(
-        `${relative(cwd, path)}: outside the workspace root ${root} (see --root)\n`,
-      );
-      status = 2;
-    }
-  }
+  let status = checkPaths(root, paths, io, cwd);
   if (status !== 0) {
     return status;
   }
 
-  const reported = (await workspaceDiagnostics(root))
-    .filter(
-      ({ path }) =>
-        paths.length === 0
-          ? within(path, root!)
-          : paths.some((limit) => within(path, limit)),
-    )
+  const workspace = await openWorkspace(root);
+  await workspace.close();
+  const reported = [...workspace.diagnostics]
+    .map(([path, diagnostics]) => ({ path, diagnostics }))
+    .filter(({ path }) => selected(path, root!, paths))
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 
   const counts = new Map<DiagnosticSeverity, number>();
@@ -177,102 +137,6 @@ export async function main(
   );
 
   return status;
-}
-
-/**
- * Analyse a workspace with an in-process language server, as a client
- * would see it after opening the folder
- * @param root workspace root
- * @returns the last diagnostics published for each file
- */
-async function workspaceDiagnostics(
-  root: string,
-): Promise<{ path: string; diagnostics: Diagnostic[] }[]> {
-  typeInitializer();
-
-  const up = new PassThrough();
-  const down = new PassThrough();
-  const server = new KLS(
-    CaseKind.camelCase,
-    mockLogger,
-    mockTracer,
-    createConnection(up, down),
-    'check',
-    defaultServerConfiguration,
-    defaultWorkspaceConfiguration,
-  );
-  server.listen();
-
-  const client = createMessageConnection(
-    new StreamMessageReader(down),
-    new StreamMessageWriter(up),
-  );
-  const published = new Map<string, Diagnostic[]>();
-  client.onNotification(
-    'textDocument/publishDiagnostics',
-    (params: PublishDiagnosticsParams) =>
-      published.set(params.uri, params.diagnostics),
-  );
-  client.onNotification('window/logMessage', () => {});
-  client.listen();
-
-  // no parent process: with one, the server's watchdog polls it with an
-  // interval that keeps this process alive
-  await client.sendRequest('initialize', {
-    processId: null,
-    rootUri: URI.file(root).toString(),
-    capabilities: {},
-  });
-  client.sendNotification('initialized', {});
-
-  // once a request is answered, the server has received what was sent
-  // before it; once idle, the diagnostics it sent before the next answer
-  // have arrived
-  const roundTrip = () => client.sendRequest('workspace/symbol', { query: '' });
-  await roundTrip();
-  await server.whenIdle();
-  await roundTrip();
-
-  await client.sendRequest('shutdown');
-  client.dispose();
-
-  return [...published].map(([uri, diagnostics]) => ({
-    path: URI.parse(uri).fsPath,
-    diagnostics,
-  }));
-}
-
-/**
- * The nearest directory with a ksconfig.json, from a directory up, else
- * the directory itself
- */
-function findRoot(start: string): string {
-  for (let dir = start; ; dir = dirname(dir)) {
-    if (existsSync(join(dir, configFileName))) {
-      return dir;
-    }
-    if (dirname(dir) === dir) {
-      return start;
-    }
-  }
-}
-
-function isDirectory(path: string): boolean {
-  try {
-    return statSync(path).isDirectory();
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Is a path a directory or file inside another, or the same
- */
-function within(path: string, container: string): boolean {
-  return (
-    path === container ||
-    path.startsWith(container.endsWith(sep) ? container : container + sep)
-  );
 }
 
 function sortDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {

@@ -175,8 +175,16 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
   parameter`. Not done: the deprecated `copy`/`rename`/`delete` (their
   file and volume rules differ from `copyPath`/`movePath`/`deletePath`
   in ways a rewrite could get wrong).
-- Disk size: stripped size of a file and of everything it runs, for
-  probes with a few KB of disk.
+- Disk size (done): a code lens with the stripped size of a script and
+  of everything it runs (preloaded files included, each once); running
+  it shows each file (`kos-ls.diskUsage`, a `window/showMessage`
+  notification: the request form makes Neovim prompt for a choice);
+  `workspace/codeLens/refresh` after each propagation; `kos-ls size`
+  with `--max` for a build or CI. Stripping is the one of the user's
+  `tools/kbuild.py` in the Ships/Script repository (comments and surrounding whitespace removed, lines
+  kept), checked byte for byte on their library files; kbuild also
+  rewrites `"0:/src/` to `"1:/`, 4 bytes less per path, which the server
+  does not know about. Not done: `.ksm` sizes.
 - Parser gaps (done): multiple declarations (#214) and declare/set
   chains (#205) are one rule, `Stmt.Chain` of full `Decl.Var`/`Stmt.Set`
   clauses; `log x to var` (#189): file arguments of log, copy, rename,
