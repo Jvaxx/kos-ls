@@ -4,6 +4,7 @@ import {
   ICallSignature,
   IParametricType,
   TypeMap,
+  TypeKind,
 } from '../../types';
 import { CallBinder } from '../../binders/callBinder';
 import { empty } from '../../../utilities/typeGuards';
@@ -124,12 +125,13 @@ export class GenericCallSignature implements IParametricCallSignature {
   }
 
   /**
-   * The required number of parameters
+   * The number of parameters that need an argument: optional (`| None`)
+   * and variadic ones do not
    */
   public requiredParams(): number {
     let count = 0;
     for (const param of this.paramMaps?.values() ?? []) {
-      if (!param.type.noneType) {
+      if (!param.type.noneType && param.type.kind !== TypeKind.variadic) {
         count += 1;
       }
     }

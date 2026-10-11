@@ -1,4 +1,4 @@
-import { ICallSignature, IType, IParametricType } from '../../types';
+import { ICallSignature, IType, IParametricType, TypeKind } from '../../types';
 
 /**
  * This call represents a call signature for a type. This could likely be rolled up into
@@ -38,10 +38,14 @@ export class CallSignature implements ICallSignature {
     return this.paramTypes;
   }
 
+  /**
+   * The number of parameters that need an argument: optional (`| None`)
+   * and variadic ones do not
+   */
   public requiredParams(): number {
     let count = 0;
     for (const param of this.paramTypes) {
-      if (!param.noneType) {
+      if (!param.noneType && param.kind !== TypeKind.variadic) {
         count += 1;
       }
     }
