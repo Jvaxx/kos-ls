@@ -13,10 +13,11 @@ import { FormatOptions, resolveOptions } from './options';
  * The formatter works from the token stream: every token and every comment
  * of the source is written once, in order, so nothing can be lost. The AST
  * only tells what some tokens are (a unary minus, the parenthesis of a
- * call, the kind of a block). Statements are cut into logical lines, and a
- * logical line too long for the column limit is broken at the place with the
- * lowest cost (commas, then operators, then keywords, then after a bracket;
- * outer brackets before inner ones).
+ * call, the kind of a block, the operand groups of expressions).
+ * Statements are cut into logical lines, and a logical line too long for
+ * the column limit is broken where the whole layout costs least: at the
+ * outermost level, at operators of low priority, keeping groups whole; a
+ * broken line continues aligned with its operand group or bracket.
  */
 
 /**
@@ -128,6 +129,14 @@ interface Roles {
   unary: Set<Token>;
   callOpen: Set<Token>;
   blocks: Map<Token, BlockInfo>;
+
+  /**
+   * Operand groups, as indexes of their first and last tokens: every
+   * binary or ternary expression, except the left operand of an operator
+   * of the same precedence (`a + b + c` is one group). A line broken
+   * inside a group continues aligned with its start.
+   */
+  groups: [number, number][];
 }
 
 /**
@@ -283,8 +292,7 @@ const noSpaceAfter = new Set([
 
 const costComma = 0;
 const costKeyword = 2;
-const costBracket = 5;
-const costDepth = 10;
+const costBracket = 25;
 
 /**
  * Format a source with complete options
@@ -310,8 +318,12 @@ function format(source: string, options: FormatOptions): FormatResult {
   const lines = buildLines(tokens, texts, trailingComments, roles, options);
 
   const physical: PhysicalLine[] = [];
+  const groups = new Map<number, number[]>();
+  for (const [first, last] of roles.groups) {
+    groups.set(first, [...(groups.get(first) ?? []), last]);
+  }
   for (const line of lines) {
-    physical.push(...layout(line, 0, options));
+    physical.push(...layout(line, 0, groups, options));
   }
   if (options.AlignTrailingComments) {
     alignTrailingComments(physical, options.SpacesBeforeTrailingComments);
@@ -371,7 +383,10 @@ function annotate(script: NodeBase, tokens: Token[]): Roles {
     unary: new Set(),
     callOpen: new Set(),
     blocks: new Map(),
+    groups: [],
   };
+  const groups: NodeBase[] = [];
+  const chained = new Set<unknown>();
   const headers = new Set<Stmt.Block>();
   const lambdas = new Set<Stmt.Block>();
   const blocks: Stmt.Block[] = [];
@@ -403,6 +418,20 @@ function annotate(script: NodeBase, tokens: Token[]): Roles {
 
     if (node instanceof SuffixTerm.Identifier) {
       roles.names.add(node.token);
+    } else if (node instanceof Expr.Binary) {
+      const left = node.left;
+      if (
+        left instanceof Expr.Binary &&
+        binaryOperators.get(left.operator.type) ===
+          binaryOperators.get(node.operator.type)
+      ) {
+        chained.add(left);
+      }
+      if (!chained.has(node)) {
+        groups.push(node);
+      }
+    } else if (node instanceof Expr.Ternary) {
+      groups.push(node);
     } else if (node instanceof Expr.Unary) {
       roles.unary.add(node.operator);
     } else if (node instanceof SuffixTerm.Call) {
@@ -430,6 +459,21 @@ function annotate(script: NodeBase, tokens: Token[]): Roles {
 
   const index = new Map<Token, number>();
   tokens.forEach((token, i) => index.set(token, i));
+
+  const key = (position: Position) => `${position.line}:${position.character}`;
+  const starts = new Map<string, number>();
+  const ends = new Map<string, number>();
+  tokens.forEach((token, i) => {
+    starts.set(key(token.start), i);
+    ends.set(key(token.end), i);
+  });
+  for (const group of groups) {
+    const first = starts.get(key(group.start));
+    const last = ends.get(key(group.end));
+    if (first !== undefined && last !== undefined && first < last) {
+      roles.groups.push([first, last]);
+    }
+  }
 
   for (const block of blocks) {
     const open = index.get(block.open);
@@ -766,152 +810,401 @@ function breakCost(
   return undefined;
 }
 
-interface Bracket {
+/**
+ * An open bracket or operand group while a line is laid out
+ */
+interface Frame {
   /**
-   * Column of what follows the bracket
+   * Column a broken line continues at inside it
    */
   align: number;
 
   /**
-   * Indentation of the line holding the bracket
+   * Indentation of the line holding its start
    */
   indent: number;
+
+  /**
+   * An operand group rather than a bracket
+   */
+  group: boolean;
 }
 
 /**
- * Place a logical line on physical lines, breaking it where it goes past the
- * column limit
+ * A partial layout of a logical line: the items before `next` are placed
+ */
+interface State {
+  next: number;
+  column: number;
+  indent: number;
+  frames: Frame[];
+  penalty: number;
+
+  /**
+   * Indexes of the items a line break precedes, by choice, latest first
+   */
+  breaks: Maybe<BreakList>;
+}
+
+interface BreakList {
+  item: number;
+  rest: Maybe<BreakList>;
+}
+
+/**
+ * Receives the layout chosen, line by line
+ */
+interface Sink {
+  line(indent: number): void;
+  piece(piece: Piece): void;
+  body(body: BlockBody, indent: number): void;
+}
+
+const penaltyExcess = 1000;
+const penaltyBreak = 20;
+const penaltyKind = 4;
+const penaltyBracket = 30;
+const penaltyGroup = 15;
+const penaltyShortLine = 4;
+const searchLimit = 5000;
+
+/**
+ * Place a logical line on physical lines. Each item that allows a line
+ * break before it is a choice; the layout chosen is the one with the
+ * lowest penalty: every column past the limit costs much, every line
+ * break a little more for each bracket and operand group it is inside, so
+ * breaks go to the outermost level and a group that fits on the next line
+ * is kept whole. A broken line continues aligned with the start of the
+ * innermost operand group, or after the innermost open bracket.
  * @param line the logical line
  * @param base indentation of block level 0
+ * @param groups operand groups by first token: their last tokens
  * @param options formatter options
  */
 function layout(
   line: LogicalLine,
   base: number,
+  groups: Map<number, number[]>,
   options: FormatOptions,
 ): PhysicalLine[] {
   const lineIndent = base + line.level * options.IndentWidth;
   const limit = options.ColumnLimit > 0 ? options.ColumnLimit : Infinity;
   const { items } = line;
-  const out: PhysicalLine[] = [];
   splitGroups(items);
 
-  let start = 0;
-  let indent = lineIndent;
-  let stack: Bracket[] = [];
+  // operand groups opening and closing at each item
+  const itemOf = new Map<number, number>();
+  items.forEach((item, k) => {
+    if (item.token !== undefined) {
+      itemOf.set(item.token, k);
+    }
+  });
+  const opens: number[] = items.map(() => 0);
+  const closes: number[] = items.map(() => 0);
+  items.forEach((item, k) => {
+    for (const last of groups.get(item.token ?? -1) ?? []) {
+      const end = itemOf.get(last);
+      if (end !== undefined) {
+        opens[k] += 1;
+        closes[end] += 1;
+      }
+    }
+  });
 
-  while (start < items.length) {
-    const brackets = stack.map(bracket => ({ ...bracket }));
-    const snapshots: Bracket[][] = [];
-    const pieces: Piece[] = [];
-    let column = indent;
-    let breakAt = items.length;
+  const choice = (k: number) =>
+    k > 0 &&
+    items[k].cost !== undefined &&
+    !items[k].mustBreak &&
+    items[k].block === undefined;
 
-    for (let k = start; k < items.length; k += 1) {
+  // place items from state.next, breaking before the first if asked, up
+  // to the next choice
+  const step = (state: State, breakFirst: boolean, sink?: Sink): State => {
+    let { next: k, column, indent, penalty } = state;
+    const frames = state.frames.slice();
+    let atStart = k === 0;
+
+    for (let first = true; k < items.length; first = false, k += 1) {
       const item = items[k];
-      snapshots[k] = brackets.map(bracket => ({ ...bracket }));
-      if ((k > start && item.mustBreak) || item.block !== undefined) {
-        breakAt = k;
+      if (!first && choice(k)) {
         break;
       }
 
-      const sep =
-        k === start
-          ? 0
-          : item.trailing
-          ? options.SpacesBeforeTrailingComments
-          : item.space
-          ? 1
-          : 0;
-      const firstLine = item.text.split('\n')[0];
-      if (
-        !item.trailing &&
-        k > start &&
-        column + sep + firstLine.length > limit
-      ) {
-        let best = -1;
-        let bestCost = Infinity;
-        for (let j = start + 1; j <= k; j += 1) {
-          const cost = items[j].cost;
-          if (cost === undefined) {
-            continue;
-          }
-          const total = cost + costDepth * snapshots[j].length;
-          if (total <= bestCost) {
-            best = j;
-            bestCost = total;
-          }
-        }
-        if (best !== -1) {
-          breakAt = best;
-          break;
-        }
+      if (item.block !== undefined) {
+        // the body of an anonymous function, then its `}` where the line began
+        sink?.body(item.block, indent);
+        sink?.line(indent);
+        column = indent;
+        atStart = true;
+        continue;
       }
 
-      pieces.push({
+      if (k > 0 && !atStart && (item.mustBreak || (first && breakFirst))) {
+        if (first && breakFirst) {
+          penalty += breakPenalty(k, column, frames);
+        }
+        indent = breakIndent(k, frames);
+        column = indent;
+        atStart = true;
+        sink?.line(indent);
+      }
+
+      const sep = atStart
+        ? 0
+        : item.trailing
+        ? options.SpacesBeforeTrailingComments
+        : item.space
+        ? 1
+        : 0;
+      const start = column + sep;
+      for (let g = 0; g < opens[k]; g += 1) {
+        frames.push({ align: start, indent, group: true });
+      }
+
+      sink?.piece({
         text: item.text,
         sep,
         token: item.token,
         trailing: item.trailing,
       });
-      const newline = item.text.lastIndexOf('\n');
+      const newline = item.text.indexOf('\n');
+      const end =
+        newline === -1 ? start + item.text.length : start + newline;
+      if (!item.trailing) {
+        penalty +=
+          penaltyExcess *
+          (Math.max(0, end - limit) - Math.max(0, column - limit));
+      }
       column =
         newline === -1
-          ? column + sep + item.text.length
-          : item.text.length - newline - 1;
+          ? end
+          : item.text.length - item.text.lastIndexOf('\n') - 1;
+      atStart = false;
 
       if (item.open) {
-        brackets.push({ align: column + (item.text === '{' ? 1 : 0), indent });
+        frames.push({
+          align: column + (item.text === '{' ? 1 : 0),
+          indent,
+          group: false,
+        });
       }
       if (item.close) {
-        brackets.pop();
+        while (frames.length > 0 && frames[frames.length - 1].group) {
+          frames.pop();
+        }
+        frames.pop();
+      }
+      for (let g = 0; g < closes[k]; g += 1) {
+        if (frames.length > 0 && frames[frames.length - 1].group) {
+          frames.pop();
+        }
       }
     }
 
-    const physical: PhysicalLine = {
-      blank: start === 0 ? line.blank : 0,
+    return {
+      next: k,
+      column,
       indent,
-      pieces: pieces.slice(0, breakAt - start),
+      frames,
+      penalty,
+      breaks: breakFirst ? { item: state.next, rest: state.breaks } : state.breaks,
     };
-    out.push(physical);
-    if (breakAt >= items.length) {
-      break;
-    }
+  };
 
-    stack = snapshots[breakAt];
-    const body = items[breakAt].block;
-    if (body !== undefined) {
-      // the body of an anonymous function, then its `}` where the line began
+  const breakPenalty = (k: number, column: number, frames: Frame[]) => {
+    const brackets = frames.filter(frame => !frame.group).length;
+    const operandGroups = frames.length - brackets;
+    const short = limit === Infinity ? 0 : (limit - column) / limit;
+    return (
+      penaltyBreak +
+      penaltyKind * (items[k].cost ?? 0) +
+      penaltyBracket * brackets +
+      penaltyGroup * Math.max(0, operandGroups - 1) +
+      penaltyShortLine * Math.max(0, short)
+    );
+  };
+
+  // where a line broken before item k continues; may move the alignment
+  // of the innermost bracket
+  const breakIndent = (k: number, frames: Frame[]): number => {
+    const top = frames[frames.length - 1];
+    if (top === undefined) {
+      return lineIndent + options.ContinuationIndentWidth;
+    }
+    if (items[k].ownLine) {
+      const bracket = [...frames].reverse().find(frame => !frame.group);
+      return bracket?.indent ?? lineIndent;
+    }
+    if (!top.group && items[k - 1].open) {
+      const indent = top.indent + options.ContinuationIndentWidth;
+      frames[frames.length - 1] = { ...top, align: indent };
+      return indent;
+    }
+    return top.align;
+  };
+
+  const initial: State = {
+    next: 0,
+    column: lineIndent,
+    indent: lineIndent,
+    frames: [],
+    penalty: 0,
+    breaks: undefined,
+  };
+  const chosen = search(initial, items.length, step, choice) ?? firstFit(
+    initial,
+    items.length,
+    step,
+  );
+
+  // replay the chosen breaks
+  const breaks = new Set<number>();
+  for (let list = chosen.breaks; list !== undefined; list = list.rest) {
+    breaks.add(list.item);
+  }
+  const out: PhysicalLine[] = [];
+  let current: PhysicalLine = { blank: line.blank, indent: lineIndent, pieces: [] };
+  out.push(current);
+  const sink: Sink = {
+    line: indent => {
+      current = { blank: 0, indent, pieces: [] };
+      out.push(current);
+    },
+    piece: piece => current.pieces.push(piece),
+    body: (body, indent) => {
       if (body.comment !== undefined) {
-        physical.pieces.push({
+        current.pieces.push({
           text: body.comment,
           sep: options.SpacesBeforeTrailingComments,
           trailing: true,
         });
       }
       for (const child of body.lines) {
-        out.push(...layout(child, indent + options.IndentWidth, options));
+        out.push(
+          ...layout(child, indent + options.IndentWidth, groups, options),
+        );
       }
-      start = breakAt + 1;
+    },
+  };
+
+  let state = initial;
+  while (state.next < items.length) {
+    state = step(state, breaks.has(state.next), sink);
+  }
+  return out;
+}
+
+/**
+ * Best-first search of the layout with the lowest penalty, undefined if it
+ * takes too long
+ */
+function search(
+  initial: State,
+  count: number,
+  step: (state: State, breakFirst: boolean) => State,
+  choice: (k: number) => boolean,
+): Maybe<State> {
+  const queue = new Heap<State>(
+    (a, b) => a.penalty - b.penalty || b.next - a.next,
+  );
+  const seen = new Map<string, number>();
+  queue.push(step(initial, false));
+
+  for (let popped = 0; popped < searchLimit; popped += 1) {
+    const state = queue.pop();
+    if (state === undefined) {
+      return undefined;
+    }
+    if (state.next >= count) {
+      return state;
+    }
+
+    const key = `${state.next} ${state.column} ${state.indent} ${state.frames
+      .map(frame => `${frame.align},${frame.indent},${frame.group}`)
+      .join(' ')}`;
+    const best = seen.get(key);
+    if (best !== undefined && best <= state.penalty) {
       continue;
     }
+    seen.set(key, state.penalty);
 
-    // the next line: aligned after the innermost open bracket, or indented
-    const top = stack[stack.length - 1];
-    if (top === undefined) {
-      indent = lineIndent + options.ContinuationIndentWidth;
-    } else if (items[breakAt].ownLine) {
-      indent = top.indent;
-    } else if (items[breakAt - 1].open) {
-      indent = top.indent + options.ContinuationIndentWidth;
-      top.align = indent;
-    } else {
-      indent = top.align;
+    queue.push(step(state, false));
+    if (choice(state.next)) {
+      queue.push(step(state, true));
     }
-    start = breakAt;
+  }
+  return undefined;
+}
+
+/**
+ * Layout breaking only where the next item would go past the limit, for
+ * lines too costly to search
+ */
+function firstFit(
+  initial: State,
+  count: number,
+  step: (state: State, breakFirst: boolean) => State,
+): State {
+  let state = step(initial, false);
+  while (state.next < count) {
+    const stay = step(state, false);
+    const broken = step(state, true);
+    state =
+      stay.penalty - state.penalty > broken.penalty - state.penalty
+        ? broken
+        : stay;
+  }
+  return state;
+}
+
+/**
+ * A binary heap, smallest first
+ */
+class Heap<T> {
+  private readonly items: T[] = [];
+
+  constructor(private readonly compare: (a: T, b: T) => number) {}
+
+  public push(item: T): void {
+    const { items } = this;
+    items.push(item);
+    let i = items.length - 1;
+    while (i > 0) {
+      const parent = (i - 1) >> 1;
+      if (this.compare(items[i], items[parent]) >= 0) {
+        break;
+      }
+      [items[i], items[parent]] = [items[parent], items[i]];
+      i = parent;
+    }
   }
 
-  return out;
+  public pop(): Maybe<T> {
+    const { items } = this;
+    const top = items[0];
+    const last = items.pop();
+    if (items.length > 0 && last !== undefined) {
+      items[0] = last;
+      let i = 0;
+      for (;;) {
+        const left = 2 * i + 1;
+        const right = left + 1;
+        let smallest = i;
+        if (left < items.length && this.compare(items[left], items[smallest]) < 0) {
+          smallest = left;
+        }
+        if (right < items.length && this.compare(items[right], items[smallest]) < 0) {
+          smallest = right;
+        }
+        if (smallest === i) {
+          break;
+        }
+        [items[i], items[smallest]] = [items[smallest], items[i]];
+        i = smallest;
+      }
+    }
+    return top;
+  }
 }
 
 /**

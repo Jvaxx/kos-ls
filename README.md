@@ -98,10 +98,12 @@ kos-ls format < in.ks > out.ks  # standard input to standard output
 The style is clang-format's LLVM style with 4-space indentation: attached
 braces, 80 columns, one statement per line, one space around binary
 operators, lowercase keywords. Every comment is kept: one following code
-stays on its line (consecutive ones are aligned). Long lines are broken
-at commas, then operators, then keywords, outer brackets first, and
-continue aligned after the open bracket. The header blocks of a `from`
-loop stay on one line. A file with syntax errors is not formatted.
+stays on its line (consecutive ones are aligned). A long statement is broken where the
+whole layout costs least, like clang-format: at the outermost level, at
+the operator of lowest priority (`or` before `and` before `+` before
+`*`), keeping a parenthesis or call whole when it fits on the next line;
+broken lines continue aligned with their operand group or after the open
+bracket. The header blocks of a `from` loop stay on one line. A file with syntax errors is not formatted.
 
 Options are read from the nearest `.kos-format` file, or `format` section
 of a `ksconfig.json`, from the file's directory up (editor tab settings

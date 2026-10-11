@@ -202,7 +202,9 @@ describe('Formatter rules', () => {
     expect(format('if a { // why\nprint 1.\n// end\n}')).toBe(
       'if a { // why\n    print 1.\n    // end\n}\n',
     );
-    expect(format('set x to 1 + // one\n2.')).toBe('set x to 1 + // one\n    2.\n');
+    expect(format('set x to 1 + // one\n2.')).toBe(
+      'set x to 1 + // one\n         2.\n',
+    );
     expect(format('if a { print 1. } // done\nelse { print 2. }')).toBe(
       'if a {\n    print 1.\n} // done\nelse {\n    print 2.\n}\n',
     );
@@ -233,7 +235,7 @@ describe('Formatter rules', () => {
       ),
     ).toBe(
       'set result to firstFunction(argumentOne, argumentTwo) +\n' +
-        '    secondFunction(argumentThree).\n',
+        '              secondFunction(argumentThree).\n',
     );
     expect(
       format('print foo(argumentOne, argumentTwo, argumentThree).', {
@@ -245,14 +247,45 @@ describe('Formatter rules', () => {
         '          argumentThree).\n',
     );
     expect(format('set x to a * b + c * d.', { ColumnLimit: 18 })).toBe(
-      'set x to a * b +\n    c * d.\n',
+      'set x to a * b +\n         c * d.\n',
     );
     expect(
       format('set x to a * b + c * d.', {
         ColumnLimit: 18,
         BreakBeforeBinaryOperators: 'All',
       }),
-    ).toBe('set x to a * b\n    + c * d.\n');
+    ).toBe('set x to a * b\n         + c * d.\n');
+    // breaks at the operator of lowest priority, groups kept whole
+    expect(
+      format(
+        'set total to (alpha + beta) * gamma + delta * (epsilon - zeta) + eta.',
+        { ColumnLimit: 40 },
+      ),
+    ).toBe(
+      'set total to (alpha + beta) * gamma +\n' +
+        '             delta * (epsilon - zeta) +\n' +
+        '             eta.\n',
+    );
+    expect(
+      format(
+        'if altitude > 1000 and verticalspeed < 0 or ship:status = "FLYING" and not done { print 1. }',
+        { ColumnLimit: 50 },
+      ),
+    ).toBe(
+      'if altitude > 1000 and verticalspeed < 0 or\n' +
+        '   ship:status = "FLYING" and not done {\n' +
+        '    print 1.\n' +
+        '}\n',
+    );
+    // a whole call moves to the next line rather than being split
+    expect(
+      format(
+        'set vd_relative_v to vecdraw(v(0, 0, 0), v(0, 0, 0), blue, "relative v", 1, true, 0.2).',
+      ),
+    ).toBe(
+      'set vd_relative_v to\n' +
+        '    vecdraw(v(0, 0, 0), v(0, 0, 0), blue, "relative v", 1, true, 0.2).\n',
+    );
     const long = `print ${'a + '.repeat(40)}b.`;
     expect(format(long, { ColumnLimit: 0 })).toBe(`${long}\n`);
   });
