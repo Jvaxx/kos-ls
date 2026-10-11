@@ -424,3 +424,17 @@ describe('When scanning comments', () => {
     });
   });
 });
+
+describe('When scanning strings', () => {
+  test('positions after a line break in a string are right', () => {
+    const { tokens } = scan('print "ab\ncd" + 1.');
+
+    expect(tokens.map((t) => [t.lexeme, t.start, t.end])).toEqual([
+      ['print', { line: 0, character: 0 }, { line: 0, character: 5 }],
+      ['"ab\ncd"', { line: 0, character: 6 }, { line: 1, character: 3 }],
+      ['+', { line: 1, character: 4 }, { line: 1, character: 5 }],
+      ['1', { line: 1, character: 6 }, { line: 1, character: 7 }],
+      ['.', { line: 1, character: 7 }, { line: 1, character: 8 }],
+    ]);
+  });
+});

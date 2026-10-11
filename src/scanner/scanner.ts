@@ -431,11 +431,14 @@ export class Scanner {
     // while closing " not found increment new lines
     while (this.peek() !== '"' && !this.isAtEnd()) {
       if (this.peek() === '\n') {
-        if (multiline) {
-          this.incrementLine();
-        } else {
+        if (!multiline) {
           return this.generateError('Expected closing " for string');
         }
+
+        // past the line break, the next line starts at character 0
+        this.increment();
+        this.incrementLine();
+        continue;
       }
       this.increment();
     }
