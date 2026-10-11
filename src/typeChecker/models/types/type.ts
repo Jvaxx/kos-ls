@@ -7,6 +7,7 @@ import {
   OperatorKind,
   TypeMap,
   IIndexer,
+  TypeDocs,
 } from '../../types';
 import { TypeTracker } from '../../../analysis/models/typeTracker';
 import { Operator } from './operator';
@@ -28,6 +29,16 @@ export class Type implements IType {
    * (e.g. `stageDeltaV`), to present it in the requested case
    */
   public displayName: string;
+
+  /**
+   * Documentation from the kOS database
+   */
+  public docs?: TypeDocs;
+
+  /**
+   * Whether suffixes can be added at runtime, see IParametricType.dynamic
+   */
+  public dynamic?: boolean;
 
   /**
    * What is the access level of this type

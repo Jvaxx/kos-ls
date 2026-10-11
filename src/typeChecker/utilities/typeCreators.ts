@@ -47,6 +47,22 @@ export const createParametricType = (
   );
 };
 
+/**
+ * A number for each type, so that caches key types by identity: types
+ * of different structures can share a display name (`int` and `double`
+ * are both `Scalar`)
+ */
+const typeIds = new WeakMap<object, number>();
+let nextTypeId = 0;
+export const typeId = (type: object): number => {
+  let id = typeIds.get(type);
+  if (id === undefined) {
+    id = nextTypeId++;
+    typeIds.set(type, id);
+  }
+  return id;
+};
+
 const unionCache = new Map<string, IType>();
 
 /**
@@ -65,7 +81,7 @@ export const createUnion = (isParameter: boolean, ...types: IType[]): IType => {
       return 1;
     }
 
-    return 0;
+    return typeId(a) - typeId(b);
   });
 
   const reducedTypes: IType[] = [];
@@ -92,7 +108,7 @@ export const createUnion = (isParameter: boolean, ...types: IType[]): IType => {
     return reducedTypes[0];
   }
 
-  const unionString = reducedTypes.map(type => type.toString()).join(' or ');
+  const unionString = `${isParameter}:${reducedTypes.map(typeId).join(',')}`;
   const cacheHit = unionCache.get(unionString);
   if (!empty(cacheHit)) {
     return cacheHit;
@@ -111,7 +127,7 @@ const indexerCache = new Map<string, Indexer>();
  * @param returns the return type
  */
 export const createIndexer = (index: IType, returns: IType): Indexer => {
-  const indexerString = `[${index.toString()}]: ${returns.toString()}`;
+  const indexerString = `${typeId(index)}:${typeId(returns)}`;
   const cacheHit = indexerCache.get(indexerString);
   if (!empty(cacheHit)) {
     return cacheHit;

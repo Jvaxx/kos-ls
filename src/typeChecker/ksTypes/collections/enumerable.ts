@@ -13,7 +13,7 @@ import { stringType } from '../primitives/string';
 import { noneType } from '../primitives/none';
 import { serializableType } from '../primitives/serializeableStructure';
 
-export const enumerableType = createParametricType('enumerable', ['T']);
+export const enumerableType = createParametricType('Enumerable', ['T']);
 enumerableType.addSuper(noMap(serializableType));
 
 const containsSuffix = createParametricArgSuffixType(
@@ -42,7 +42,7 @@ enumerableType.addSuffixes(
   noMap(createArgSuffixType('dump', stringType)),
 );
 
-export const collectionType = createParametricType('collection', ['T']);
+export const collectionType = createParametricType('Collection', ['T']);
 collectionType.addSuper(mapTypes(collectionType, enumerableType));
 
 collectionType.addSuffixes(noMap(createArgSuffixType('clear', noneType)));

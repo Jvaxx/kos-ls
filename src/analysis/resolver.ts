@@ -20,7 +20,7 @@ import { TokenType } from '../models/tokentypes';
 import { Script } from '../models/script';
 import { mockLogger, mockTracer, logException } from '../models/logger';
 import { SymbolTableBuilder } from './models/symbolTableBuilder';
-import { IDeferred } from './types';
+import { IDeferred, KsSymbolKind } from './types';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
 import { createDiagnostic, DIAGNOSTICS } from '../utilities/diagnosticsUtils';
 import Denque from 'denque';
@@ -260,7 +260,12 @@ export class Resolver
   private useTokens(tokens: Token[]): Diagnostics {
     const errors: Diagnostics = [];
     for (const token of tokens) {
-      const { error } = this.tableBuilder.useSymbol(token);
+      const { error } = this.tableBuilder.useSymbol(
+        token,
+        this.localResolver.called.has(token)
+          ? KsSymbolKind.function
+          : KsSymbolKind.variable,
+      );
       if (!empty(error)) {
         errors.push(error);
       }

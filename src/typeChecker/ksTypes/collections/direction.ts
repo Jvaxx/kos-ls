@@ -1,3 +1,3 @@
 import { createType } from '../../utilities/typeCreators';
 
-export const directionType = createType('direction');
+export const directionType = createType('Direction');

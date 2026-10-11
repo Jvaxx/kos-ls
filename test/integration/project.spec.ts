@@ -150,7 +150,7 @@ describe('project model', () => {
     const hover = await client.hover('src/mission/hello.ks', 3, 16);
     const contents = hover?.contents as MarkupContent | { value: string };
     expect(contents.value).toContain('state_get');
-    expect(contents.value).toContain('(structure, structure, structure)');
+    expect(contents.value).toContain('(Structure, Structure, Structure)');
   });
 
   test('excluded files are not reported unless open', async () => {

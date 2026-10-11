@@ -2,7 +2,7 @@ import { TypeKind } from '../../types';
 import { Type } from '../../models/types/type';
 
 export const noneType = new Type(
-  'none',
+  'None',
   { get: false, set: false },
   new Map(),
   TypeKind.basic,

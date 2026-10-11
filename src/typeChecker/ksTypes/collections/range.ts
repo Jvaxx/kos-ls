@@ -6,7 +6,7 @@ import {
 import { enumerableType } from './enumerable';
 import { scalarType } from '../primitives/scalar';
 
-export const rangeType = createType('range');
+export const rangeType = createType('Range');
 rangeType.addSuper(noMap(enumerableType.apply(scalarType)));
 
 rangeType.addSuffixes(

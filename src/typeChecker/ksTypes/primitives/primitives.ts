@@ -1,3 +1,3 @@
 import { createType } from '../../utilities/typeCreators';
 
-export const primitiveType = createType('primitive');
+export const primitiveType = createType('Primitive');

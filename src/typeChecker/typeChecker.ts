@@ -25,7 +25,6 @@ import { empty, notEmpty } from '../utilities/typeGuards';
 import { structureType } from './ksTypes/primitives/structure';
 import { iterator } from '../utilities/constants';
 import { TokenType } from '../models/tokentypes';
-import { nodeType } from './ksTypes/node';
 import { createFunctionType, createUnion } from './utilities/typeCreators';
 import { zip } from '../utilities/arrayUtils';
 import {
@@ -52,7 +51,7 @@ import {
 import { delegateType } from './ksTypes/primitives/delegate';
 import { KsSymbolKind, TrackerKind, SymbolTracker } from '../analysis/types';
 import { listType } from './ksTypes/collections/list';
-import { pathType } from './ksTypes/io/path';
+import { kosType } from './initialize';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
 import { createDiagnostic, DIAGNOSTICS } from '../utilities/diagnosticsUtils';
 import { BasicTracker } from '../analysis/models/tracker';
@@ -348,7 +347,7 @@ export class TypeChecker
       case TokenType.remove:
         // commands for adding and removing nodes
         // expression must be a node type for node commands
-        this.checkGetter(stmt.expr, errors, result.type, nodeType);
+        this.checkGetter(stmt.expr, errors, result.type, kosType('Node'));
         break;
       case TokenType.edit:
         // command to edit a file
@@ -702,7 +701,7 @@ export class TypeChecker
       stmt.volume,
       errors,
       volumeResult.type,
-      createUnion(false, stringType, pathType),
+      createUnion(false, stringType, kosType('Path')),
     );
 
     errors.push(...volumeResult.errors);
@@ -719,7 +718,7 @@ export class TypeChecker
       stmt.path,
       errors,
       pathResult.type,
-      createUnion(false, stringType, pathType),
+      createUnion(false, stringType, kosType('Path')),
     );
 
     return errors;
@@ -732,7 +731,7 @@ export class TypeChecker
       stmt.path,
       errors,
       pathResult.type,
-      createUnion(false, stringType, pathType),
+      createUnion(false, stringType, kosType('Path')),
     );
 
     return errors;
@@ -770,7 +769,7 @@ export class TypeChecker
     }
 
     // determine the type that list returns
-    const finalType = listTypeMap.get(collection.lookup) ?? structureType;
+    const finalType = listTypeMap().get(collection.lookup) ?? structureType;
     const errors: Diagnostics = [];
 
     if (finalType.anyType) {
@@ -1045,7 +1044,7 @@ export class TypeChecker
     }
 
     if (
-      callSignature.params.length === 0 &&
+      callSignature.requiredParams() === 0 &&
       !(trailer instanceof SuffixTerm.Call)
     ) {
       builder.nodes.push(currentType.assignmentType());

@@ -7,7 +7,7 @@ import { noneType } from '../primitives/none';
 import { collectionType } from './enumerable';
 import { booleanType } from '../primitives/boolean';
 
-export const uniqueSetType = createParametricType('uniqueSet', ['T']);
+export const uniqueSetType = createParametricType('UniqueSet', ['T']);
 uniqueSetType.addSuper(mapTypes(uniqueSetType, collectionType));
 
 const copySuffix = createParametricArgSuffixType('copy', ['T'], uniqueSetType);

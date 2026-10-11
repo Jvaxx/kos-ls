@@ -20,6 +20,12 @@ export class LocalResolver
   private isTrailer: boolean;
 
   /**
+   * The identifiers that are called or taken as delegates (`stage()`,
+   * `print@`), which name a function before a variable of the same name
+   */
+  public readonly called = new WeakSet<Token>();
+
+  /**
    * local resolver constructor
    */
   constructor() {
@@ -143,6 +149,14 @@ export class LocalResolver
    */
   public visitSuffixTerm(suffixTerm: SuffixTerm.SuffixTerm): Token[] {
     const tokens = this.resolveSuffixTerm(suffixTerm.atom);
+
+    const [first] = suffixTerm.trailers;
+    if (
+      suffixTerm.atom instanceof SuffixTerm.Identifier &&
+      (first instanceof SuffixTerm.Call || first instanceof SuffixTerm.Delegate)
+    ) {
+      this.called.add(suffixTerm.atom.token);
+    }
 
     for (const trailer of suffixTerm.trailers) {
       tokens.push(...this.resolveSuffixTerm(trailer));

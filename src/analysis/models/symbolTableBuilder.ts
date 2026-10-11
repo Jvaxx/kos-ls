@@ -277,9 +277,15 @@ export class SymbolTableBuilder {
   /**
    * Use a symbol in the symbol table
    * @param name token for the current symbol
+   * @param preferred kind looked up first: function for a call
    */
-  public useSymbol(name: Token): UseResult {
-    const tracker = this.lookup(name.lookup, ScopeKind.global);
+  public useSymbol(name: Token, preferred?: KsSymbolKind): UseResult {
+    // a function and a variable can share a name (`stage()` and `stage`):
+    // the use decides which one, else the first found
+    const tracker =
+      (preferred !== undefined
+        ? this.lookupKind(name.lookup, ScopeKind.global, preferred)
+        : undefined) ?? this.lookup(name.lookup, ScopeKind.global);
 
     // check if symbols exists
     if (empty(tracker)) {

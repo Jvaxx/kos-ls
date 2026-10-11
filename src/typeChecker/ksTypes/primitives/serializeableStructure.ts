@@ -1,3 +1,3 @@
 import { createType } from '../../utilities/typeCreators';
 
-export const serializableType = createType('serializableStructure');
+export const serializableType = createType('SerializableStructure');

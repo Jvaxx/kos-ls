@@ -1,8 +1,6 @@
 import { stringType } from '../../src/typeChecker/ksTypes/primitives/string';
 import { booleanType } from '../../src/typeChecker/ksTypes/primitives/boolean';
 import { structureType } from '../../src/typeChecker/ksTypes/primitives/structure';
-import { partType } from '../../src/typeChecker/ksTypes/parts/part';
-import { dockingPortType } from '../../src/typeChecker/ksTypes/parts/dockingPort';
 import {
   createType,
   createSuffixType,
@@ -12,7 +10,7 @@ import {
   mapTypes,
   createUnion,
 } from '../../src/typeChecker/utilities/typeCreators';
-import { typeInitializer } from '../../src/typeChecker/initialize';
+import { kosType, typeInitializer } from '../../src/typeChecker/initialize';
 import { userListType } from '../../src/typeChecker/ksTypes/collections/userList';
 import { listType } from '../../src/typeChecker/ksTypes/collections/list';
 import { collectionType } from '../../src/typeChecker/ksTypes/collections/enumerable';
@@ -27,6 +25,8 @@ import { delegateType } from '../../src/typeChecker/ksTypes/primitives/delegate'
 import { CallSignature } from '../../src/typeChecker/models/types/callSignature';
 
 typeInitializer();
+const partType = kosType('Part');
+const dockingPortType = kosType('DockingPort');
 
 describe('Type', () => {
   test('Basic Attributes', () => {
@@ -271,7 +271,7 @@ describe('Parametric Type', () => {
     expect(exampleType.anyType).toBe(false);
     expect(exampleType.super()).toBeUndefined();
     expect(exampleType.indexer()).toBeUndefined();
-    expect(exampleType.toString()).toBe('example<string>');
+    expect(exampleType.toString()).toBe('example<String>');
 
     const typeParameters = exampleType.getTypeParameters();
     expect(typeParameters).toHaveLength(1);
@@ -323,9 +323,9 @@ describe('Union Type', () => {
     expect(unionType.super()).toBeUndefined();
     expect(unionType.indexer()).toBeUndefined();
 
-    expect(unionType.toString()).toBe('part or string');
+    expect(unionType.toString()).toBe('Part or String');
     expect(new UnionType(true, stringType, noneType).toString()).toBe(
-      'string?',
+      'String?',
     );
 
     const exampleType = unionType.apply(stringType);

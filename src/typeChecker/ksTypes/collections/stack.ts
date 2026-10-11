@@ -8,7 +8,7 @@ import {
 import { enumerableType } from './enumerable';
 import { noneType } from '../primitives/none';
 
-export const stackType = createParametricType('stack', ['T']);
+export const stackType = createParametricType('Stack', ['T']);
 stackType.addSuper(mapTypes(stackType, enumerableType));
 
 const copySuffix = createParametricArgSuffixType('copy', ['T'], stackType);

@@ -11,7 +11,7 @@ import { scalarType, integerType } from '../primitives/scalar';
 import { collectionType } from './enumerable';
 import { stringType } from '../primitives/string';
 
-export const listType = createParametricType('list', ['T']);
+export const listType = createParametricType('List', ['T']);
 listType.addSuper(mapTypes(listType, collectionType));
 
 const indexer = createParametricIndexer(['T'], scalarType, 'T');

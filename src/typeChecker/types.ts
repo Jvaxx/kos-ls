@@ -157,6 +157,24 @@ export interface ITypeMappable<T = {}> {
 }
 
 /**
+ * Documentation of a type, suffix, function or variable, from the kOS
+ * database
+ */
+export interface TypeDocs {
+  /** description in Markdown */
+  doc?: string;
+
+  /** absolute url of the kOS documentation */
+  url?: string;
+
+  /** units of the value, e.g. `m/s` */
+  units?: string;
+
+  /** names and descriptions of the call parameters, in order */
+  params?: { name?: string; doc?: string }[];
+}
+
+/**
  * A parameterized type. These are used by Kerboscript's collection types
  */
 export interface IParametricType extends ITypeMappable<IType> {
@@ -165,6 +183,17 @@ export interface IParametricType extends ITypeMappable<IType> {
    * in any case; the name when absent
    */
   displayName?: string;
+
+  /**
+   * Documentation from the kOS database
+   */
+  docs?: TypeDocs;
+
+  /**
+   * Whether suffixes can be added at runtime (lexicon keys, addons, skin
+   * styles): unknown suffixes are then not reported
+   */
+  dynamic?: boolean;
 
   /**
    * What access does this type possess

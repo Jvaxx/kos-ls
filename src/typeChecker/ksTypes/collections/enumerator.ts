@@ -9,7 +9,7 @@ import { structureType } from '../primitives/structure';
 import { booleanType } from '../primitives/boolean';
 import { scalarType } from '../primitives/scalar';
 
-export const enumeratorType = createParametricType('enumerator', ['T']);
+export const enumeratorType = createParametricType('Iterator', ['T']);
 enumeratorType.addSuper(noMap(structureType));
 
 const valueSuffix = createParametricArgSuffixType('value', ['T'], 'T');

@@ -1,3 +1,3 @@
 import { createType } from '../../utilities/typeCreators';
 
-export const vectorType = createType('vector');
+export const vectorType = createType('Vector');

@@ -5,7 +5,7 @@ import { CallSignature } from '../../models/types/callSignature';
 import { structureType } from './structure';
 
 export const delegateType = new Type(
-  'delegate',
+  'Delegate',
   { get: true, set: true },
   new Map(),
   TypeKind.basic,

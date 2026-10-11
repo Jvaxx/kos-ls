@@ -5,19 +5,7 @@ import { booleanType } from '../ksTypes/primitives/boolean';
 import { integerType, doubleType } from '../ksTypes/primitives/scalar';
 import { stringType } from '../ksTypes/primitives/string';
 import { OperatorKind, IType, IParametricType } from '../types';
-import { bodyTargetType } from '../ksTypes/orbital/bodyTarget';
-import { vesselTargetType } from '../ksTypes/orbital/vesselTarget';
-import { elementType } from '../ksTypes/parts/element';
-import { listType } from '../ksTypes/collections/list';
-import { aggregateResourceType } from '../ksTypes/parts/aggregateResource';
-import { partType } from '../ksTypes/parts/part';
-import { vesselSensorsType } from '../ksTypes/vessel/vesselSensors';
-import { dockingPortType } from '../ksTypes/parts/dockingPort';
-import { engineType } from '../ksTypes/parts/engine';
-import { volumeItemType } from '../ksTypes/io/volumeItem';
-import { volumeType } from '../ksTypes/io/volume';
-import { kosProcessorFieldsType } from '../ksTypes/kosProcessorFields';
-import { rcsType } from '../ksTypes/parts/rcs';
+import { kosType } from '../initialize';
 
 /**
  * This map token types to binary operator kinds
@@ -49,23 +37,34 @@ export const unaryOperatorMap: Map<TokenType, OperatorKind> = new Map([
 ]);
 
 /**
- * This maps list target to types
+ * The kOS structure of the elements of each `list X in v.` target, from
+ * kOS's BuildList
  */
-export const listTypeMap: Map<string, IType> = new Map([
-  ['bodies', bodyTargetType],
-  ['targets', vesselTargetType],
-  ['elements', elementType],
-  ['resources', listType.apply(aggregateResourceType)],
-  ['parts', partType],
-  ['sensors', vesselSensorsType],
-  ['dockingports', dockingPortType],
-  ['rcs', rcsType],
-  ['engines', engineType],
-  ['files', volumeItemType],
-  ['fonts', stringType],
-  ['volumes', volumeType],
-  ['processors', kosProcessorFieldsType],
-]);
+const listElements: [string, string][] = [
+  ['bodies', 'Body'],
+  ['targets', 'Vessel'],
+  ['resources', 'AggregateResource'],
+  ['parts', 'Part'],
+  ['engines', 'Engine'],
+  ['rcs', 'RCS'],
+  ['sensors', 'Sensor'],
+  ['elements', 'Element'],
+  ['dockingports', 'DockingPort'],
+  ['files', 'VolumeItem'],
+  ['volumes', 'Volume'],
+  ['processors', 'KOSProcessor'],
+  ['fonts', 'String'],
+];
+
+let listTypes: Maybe<Map<string, IType>>;
+
+/**
+ * The element type of a `list X in v.` target, by lower case name
+ */
+export const listTypeMap = (): Map<string, IType> => {
+  listTypes ??= new Map(listElements.map(([target, name]) => [target, kosType(name)]));
+  return listTypes;
+};
 
 /**
  * Retrieve the type of the follow token

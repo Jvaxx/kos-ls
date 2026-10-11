@@ -28,12 +28,9 @@ import { vectorType } from '../../src/typeChecker/ksTypes/collections/vector';
 import { directionType } from '../../src/typeChecker/ksTypes/collections/direction';
 import { Marker } from '../../src/scanner/models/marker';
 import { zip } from '../../src/utilities/arrayUtils';
-import { typeInitializer } from '../../src/typeChecker/initialize';
-import { bodyAtmosphereType } from '../../src/typeChecker/ksTypes/bodyatmosphere';
+import { kosType, typeInitializer } from '../../src/typeChecker/initialize';
 import { listType } from '../../src/typeChecker/ksTypes/collections/list';
-import { partType } from '../../src/typeChecker/ksTypes/parts/part';
 import { IType } from '../../src/typeChecker/types';
-import { pathType } from '../../src/typeChecker/ksTypes/io/path';
 import { KsFunction } from '../../src/models/function';
 import { createUnion } from '../../src/typeChecker/utilities/typeCreators';
 import { noneType } from '../../src/typeChecker/ksTypes/primitives/none';
@@ -43,6 +40,9 @@ import { timeStampType } from '../../src/typeChecker/ksTypes/time/timestamp';
 const fakeUri = 'C:\\fake.ks';
 
 typeInitializer();
+const bodyAtmosphereType = kosType('Atmosphere');
+const partType = kosType('Part');
+const pathType = kosType('Path');
 
 interface ITypeCheckResults {
   scan: Tokenized;
@@ -779,29 +779,17 @@ describe('typeChecker', () => {
 
   describe('diagnostics', () => {
     describe('wrong access', () => {
-      const noGetterLocations: Range[] = [
-        { start: new Marker(1, 6), end: new Marker(1, 29) },
-        { start: new Marker(2, 6), end: new Marker(2, 28) },
-      ];
-
+      // kOS 1.6 has no set-only suffix: NEUTRALIZE is an alias of the
+      // get/set NEUTRAL, and RESETTRIM no longer exists
       describe('no getter', () => {
-        test('it produces TYPE_NO_GETTER', () => {
+        test('reads aliases and reports removed suffixes', () => {
           const results = checkSource(noGetterSource, true);
           noResolverErrors(results);
 
-          const sortedErrors = results.typeCheckDiagnostics.sort(
-            (a, b) => a.range.start.line - b.range.start.line,
-          );
-
-          for (const [error, location] of zip(
-            sortedErrors,
-            noGetterLocations,
-          )) {
-            expect(error.severity).toBe(DiagnosticSeverity.Hint);
-            expect(error.code).toBe(DIAGNOSTICS.TYPE_NO_GETTER);
-            expect(location.start).toEqual(error.range.start);
-            expect(location.end).toEqual(error.range.end);
-          }
+          const errors = results.typeCheckDiagnostics;
+          expect(errors).toHaveLength(1);
+          expect(errors[0].code).toBe(DIAGNOSTICS.TYPE_MISSING_SUFFIX);
+          expect(errors[0].range.start.line).toBe(2);
         });
       });
 

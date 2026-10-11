@@ -14,7 +14,7 @@ import { serializableType } from '../primitives/serializeableStructure';
 import { Indexer } from '../../models/types/indexer';
 import { CallSignature } from '../../models/types/callSignature';
 
-export const lexiconType = createType('lexicon');
+export const lexiconType = createType('Lexicon');
 lexiconType.addSuper(noMap(serializableType));
 
 lexiconType.addIndexer(

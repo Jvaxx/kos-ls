@@ -8,6 +8,7 @@ import {
   IType,
   IParametricIndexer,
   ITypeMappable,
+  TypeDocs,
 } from '../../types';
 import { Operator } from '../types/operator';
 import { TypeBinder } from '../../binders/typeBinder';
@@ -26,6 +27,11 @@ export class ParametricType implements IParametricType {
    * The name as written in the definitions, see Type.displayName
    */
   public displayName: string;
+
+  /**
+   * Documentation from the kOS database
+   */
+  public docs?: TypeDocs;
 
   /**
    * What is the access of this type

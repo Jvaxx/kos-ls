@@ -8,7 +8,7 @@ import {
 import { enumerableType } from './enumerable';
 import { noneType } from '../primitives/none';
 
-export const queueType = createParametricType('queue', ['T']);
+export const queueType = createParametricType('Queue', ['T']);
 queueType.addSuper(mapTypes(queueType, enumerableType));
 
 const copySuffix = createParametricArgSuffixType('copy', ['T'], queueType);
