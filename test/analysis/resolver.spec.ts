@@ -595,6 +595,31 @@ describe('resolver', () => {
       ]);
     });
 
+    test('file arguments', () => {
+      const results = resolveSource(
+        [
+          '{',
+          '  local outFile is "0:/out.txt".',
+          '  log "yay" to outFile.',
+          '  local src is "a". local dst is "b".',
+          '  copy src to dst.',
+          '  local obj is "c".',
+          '  compile obj to obj.',
+          '}',
+          'log "x" to bareName.',
+          'delete otherName.',
+          'compile prog to prog.ksm.',
+          'log "x" to missing:name.',
+        ].join('\n'),
+      );
+
+      expect(results.parse.diagnostics).toHaveLength(0);
+      const messages = results.resolveDiagnostics
+        .filter((d) => !d.message.includes('deprecated'))
+        .map((d) => [d.range.start.line, d.message]);
+      expect(messages).toEqual([[11, 'Symbol missing may not exist']]);
+    });
+
     // test shadowing
     describe('shadowed symbols', () => {
       const shadowPath = join(unitTestPath, 'shadow', 'shadowtest.ks');

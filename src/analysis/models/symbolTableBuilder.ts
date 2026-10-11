@@ -308,6 +308,14 @@ export class SymbolTableBuilder {
   }
 
   /**
+   * Is a symbol of this name visible from the current scope
+   * @param name name to look up
+   */
+  public symbolExists(name: Token): boolean {
+    return !empty(this.lookup(name.lookup, ScopeKind.global));
+  }
+
+  /**
    * Set a variable symbol
    * @param token token for the variable to set
    */

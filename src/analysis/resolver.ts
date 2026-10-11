@@ -107,6 +107,7 @@ export class Resolver
    * Cached bound method for using locals in an expression
    */
   private readonly useExprLocalsBind = this.useExprLocals.bind(this);
+  private readonly useFileLocalsBind = this.useFileLocals.bind(this);
 
   /**
    * Cached bound method for resolving an expression
@@ -251,6 +252,26 @@ export class Resolver
    */
   private useExprLocals(expr: IExpr): Diagnostics {
     return this.useTokens(this.localResolver.resolveExpr(expr));
+  }
+
+  /**
+   * Use the locals of a file argument (log, copy, rename, delete,
+   * compile). kOS takes a lone identifier that names no variable as the
+   * file name itself (`log x to out.`), so it is not reported missing.
+   * @param expr file argument
+   */
+  private useFileLocals(expr: IExpr): Diagnostics {
+    if (
+      expr instanceof Expr.Suffix &&
+      empty(expr.trailer) &&
+      expr.suffixTerm.trailers.length === 0 &&
+      expr.suffixTerm.atom instanceof SuffixTerm.Identifier &&
+      !this.tableBuilder.symbolExists(expr.suffixTerm.atom.token)
+    ) {
+      return [];
+    }
+
+    return this.useExprLocals(expr);
   }
 
   /**
@@ -807,6 +828,7 @@ export class Resolver
   public visitLog(stmt: Stmt.Log): Diagnostics {
     const errors = this.useExprLocalsBind(stmt.expr);
     errors.push(
+      ...this.useFileLocalsBind(stmt.target),
       ...this.resolveExpr(stmt.expr),
       ...this.resolveExpr(stmt.target),
     );
@@ -818,13 +840,14 @@ export class Resolver
    * @param stmt the syntax node
    */
   public visitCopy(stmt: Stmt.Copy): Diagnostics {
-    return this.useExprLocalsBind(stmt.target).concat(
+    return this.useFileLocalsBind(stmt.target).concat(
       createDiagnostic(
         stmt,
         'Copy is deprecated as of 1.0.0',
         DiagnosticSeverity.Warning,
         DIAGNOSTICS.COPY_DEPRECATED,
       ),
+      this.useFileLocalsBind(stmt.destination),
       this.resolveExpr(stmt.target),
       this.resolveExpr(stmt.destination),
     );
@@ -835,14 +858,14 @@ export class Resolver
    * @param stmt the syntax node
    */
   public visitRename(stmt: Stmt.Rename): Diagnostics {
-    return this.useExprLocalsBind(stmt.target).concat(
+    return this.useFileLocalsBind(stmt.target).concat(
       createDiagnostic(
         stmt,
         'Rename is deprecated as of 1.0.0',
         DiagnosticSeverity.Warning,
         DIAGNOSTICS.RENAME_DEPRECATED,
       ),
-      this.useExprLocalsBind(stmt.alternative),
+      this.useFileLocalsBind(stmt.alternative),
       this.resolveExpr(stmt.target),
       this.resolveExpr(stmt.alternative),
     );
@@ -861,15 +884,15 @@ export class Resolver
     );
 
     if (empty(stmt.volume)) {
-      return this.useExprLocalsBind(stmt.target).concat(
+      return this.useFileLocalsBind(stmt.target).concat(
         deprecated,
         this.resolveExpr(stmt.target),
       );
     }
 
-    return this.useExprLocalsBind(stmt.target).concat(
+    return this.useFileLocalsBind(stmt.target).concat(
       deprecated,
-      this.useExprLocalsBind(stmt.volume),
+      this.useFileLocalsBind(stmt.volume),
       this.resolveExpr(stmt.target),
       this.resolveExpr(stmt.volume),
     );
@@ -945,13 +968,13 @@ export class Resolver
    */
   public visitCompile(stmt: Stmt.Compile): Diagnostics {
     if (empty(stmt.destination)) {
-      return this.useExprLocalsBind(stmt.target).concat(
+      return this.useFileLocalsBind(stmt.target).concat(
         this.resolveExpr(stmt.target),
       );
     }
 
-    return this.useExprLocalsBind(stmt.target).concat(
-      this.useExprLocalsBind(stmt.destination),
+    return this.useFileLocalsBind(stmt.target).concat(
+      this.useFileLocalsBind(stmt.destination),
       this.resolveExpr(stmt.target),
       this.resolveExpr(stmt.destination),
     );
