@@ -150,7 +150,9 @@ const { database, report } = merge({
   docsBase: options.docsBase,
   classes,
   docs,
-  previous: previousDefinitions(JSON.parse(readFileSync(options.previous, 'utf8'))),
+  previous: previousDefinitions(
+    JSON.parse(readFileSync(options.previous, 'utf8')) as KosDatabase,
+  ),
   shipShortcuts: shipShortcuts(kos),
   prose: pages.map((page) => page.text),
   overrides: existsSync(options.overrides)

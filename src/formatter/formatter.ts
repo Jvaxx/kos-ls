@@ -1,7 +1,7 @@
 import { Diagnostic, Position, Range, TextEdit } from 'vscode-languageserver';
 import { Scanner } from '../scanner/scanner';
 import { Parser } from '../parser/parser';
-import { Token, Comment } from '../models/token';
+import { Token, Comment, isToken } from '../models/token';
 import { TokenType } from '../models/tokentypes';
 import { NodeBase } from '../parser/models/base';
 import * as Expr from '../parser/models/expr';
@@ -410,8 +410,8 @@ function annotate(script: NodeBase, tokens: Token[]): Roles {
     }
 
     for (const key of nameProperties) {
-      const value = (node as any)[key];
-      if (value instanceof Token) {
+      const value: unknown = Reflect.get(node, key);
+      if (isToken(value)) {
         roles.names.add(value);
       }
     }

@@ -1,6 +1,7 @@
 import { TestClient, workspaces } from './harness';
 import { join } from 'path';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { TextEdit } from 'vscode-languageserver';
 
 const root = join(workspaces, 'archive');
 const file = 'src/scratch.ks';
@@ -16,10 +17,10 @@ describe('formatting', () => {
     await client?.stop();
   });
 
-  const apply = (text: string, edits: any) =>
+  const apply = (text: string, edits: TextEdit[] | null) =>
     TextDocument.applyEdits(
       TextDocument.create('file:///a.ks', 'kos', 1, text),
-      edits,
+      edits ?? [],
     );
 
   test('a document is formatted with the defaults, not the editor tabs', async () => {

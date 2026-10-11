@@ -9,7 +9,7 @@ export const mapper = <TKey, TValue>(map: Map<TKey, TValue>, name: string) =>
 (key: TKey): TValue => {
   const value = map.get(key);
   if (empty(value)) {
-    throw new Error(`No mapping for ${key} in ${name}`);
+    throw new Error(`No mapping for ${String(key)} in ${name}`);
   }
 
   return value;

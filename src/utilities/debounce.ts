@@ -5,7 +5,7 @@ import { empty } from './typeGuards';
  * @param timeout timeout before the function is called
  * @param func function to call
  */
-export function debounce<T extends (...params: any[]) => void>(
+export function debounce<T extends (...params: never[]) => void>(
   timeout: number,
   func: T,
 ): (...args: Parameters<T>) => void {

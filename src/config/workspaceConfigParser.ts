@@ -56,29 +56,32 @@ export function parseWorkspaceConfiguration(
 
       for (const prop of root.children) {
         switch (prop.type) {
-          case 'property':
+          case 'property': {
             if (empty(prop.children)) {
               break;
             }
 
             const [key, value] = prop.children;
             switch (key.value) {
-              case 'archive':
+              case 'archive': {
                 const volumeResult = parseArchive(value, text, uri);
                 rootVolumePath = volumeResult.archive;
                 diagnostics.push(...volumeResult.diagnostics);
                 break;
-              case 'bodies':
+              }
+              case 'bodies': {
                 const bodiesResult = parseBodies(value, text, uri);
                 bodies = bodiesResult.bodies;
                 diagnostics.push(...bodiesResult.diagnostics);
                 break;
-              case 'volumes':
+              }
+              case 'volumes': {
                 const volumesResult = parseVolumes(value, text, uri);
                 volumes = volumesResult.volumes;
                 diagnostics.push(...volumesResult.diagnostics);
                 break;
-              case 'preload':
+              }
+              case 'preload': {
                 const preloadResult = parseStringArray(
                   value,
                   text,
@@ -88,7 +91,8 @@ export function parseWorkspaceConfiguration(
                 preload = preloadResult.values;
                 diagnostics.push(...preloadResult.diagnostics);
                 break;
-              case 'exclude':
+              }
+              case 'exclude': {
                 const excludeResult = parseStringArray(
                   value,
                   text,
@@ -98,9 +102,10 @@ export function parseWorkspaceConfiguration(
                 exclude = excludeResult.values;
                 diagnostics.push(...excludeResult.diagnostics);
                 break;
+              }
               case 'clobberBuiltins':
                 if (value.type === 'boolean') {
-                  clobberBuiltins = value.value;
+                  clobberBuiltins = value.value === true;
                 } else {
                   diagnostics.push(
                     createConfigDiagnostic(
@@ -126,11 +131,12 @@ export function parseWorkspaceConfiguration(
                   );
                 }
                 break;
-              case 'linting':
+              case 'linting': {
                 const lintResult = parseLintRules(value, text, uri);
                 lintRules = lintResult.rules;
                 diagnostics.push(...lintResult.diagnostics);
                 break;
+              }
               default:
                 // invalid property diagnostic
                 diagnostics.push(
@@ -153,6 +159,7 @@ export function parseWorkspaceConfiguration(
             }
 
             break;
+          }
           default:
             break;
         }
@@ -226,7 +233,7 @@ function parseVolumes(
         ),
       );
     } else {
-      volumes.set(volume, value.value);
+      volumes.set(volume, String(value.value));
     }
   }
 
@@ -262,7 +269,7 @@ function parseStringArray(
   const values: string[] = [];
   for (const item of node.children ?? []) {
     if (item.type === 'string') {
-      values.push(item.value);
+      values.push(String(item.value));
     } else {
       diagnostics.push(
         createConfigDiagnostic(
@@ -376,7 +383,7 @@ function parseLintRules(
         const [key, value] = prop.children!;
 
         // check if rule exists
-        const rule = lintRules.get(key.value);
+        const rule = lintRules.get(String(key.value));
         if (!empty(rule)) {
           if (value.type === 'string' && typeof value.value === 'string') {
             // check if correct level was provided
@@ -387,7 +394,7 @@ function parseLintRules(
               case 'hint':
               case 'off':
                 rules.set(
-                  key.value,
+                  String(key.value),
                   LintRule.from({ ...rule, level: value.value }),
                 );
                 break;

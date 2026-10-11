@@ -88,9 +88,9 @@ export class Binder<T extends ITypeMappable> {
     typeArguments: Map<IParametricType, IType>,
   ) {
     // check if type is actually a parameter
-    if (this.typeParameters.has(type as any)) {
+    if (this.typeParameters.has(type)) {
       // if found get arguments for parameter
-      const argument = typeArguments.get(type as any);
+      const argument = typeArguments.get(type);
       if (empty(argument)) {
         throw new Error(
           `Did not provide a type argument for type parameter for ${

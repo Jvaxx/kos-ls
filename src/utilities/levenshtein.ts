@@ -4,9 +4,9 @@
  * @param b second string
  */
 export function levenshteinDistance(a: string, b: string) {
-  const distanceMatrix: number[][] = Array(b.length + 1)
-    .fill(0)
-    .map(() => Array(a.length + 1).fill(0));
+  const distanceMatrix = Array.from({ length: b.length + 1 }, () =>
+    new Array<number>(a.length + 1).fill(0),
+  );
 
   for (let i = 0; i <= a.length; i += 1) {
     distanceMatrix[0][i] = i;

@@ -292,7 +292,7 @@ const lineAt = (source: string, index: number) =>
   source.slice(0, index).split('\n').length;
 
 const classPattern =
-  /((?:\[[^\[\]]*(?:\[[^\[\]]*\][^\[\]]*)*\]\s*)*)((?:(?:public|internal|private|protected|abstract|sealed|static|partial|new)\s+)*)class\s+(\w+)\s*(<[^>{]*>)?\s*(?::\s*([^{]+?))?\s*(?:where\s[^{]*)?\{/g;
+  /((?:\[[^[\]]*(?:\[[^[\]]*\][^[\]]*)*\]\s*)*)((?:(?:public|internal|private|protected|abstract|sealed|static|partial|new)\s+)*)class\s+(\w+)\s*(<[^>{]*>)?\s*(?::\s*([^{]+?))?\s*(?:where\s[^{]*)?\{/g;
 
 /**
  * Extract the classes of one C# file
@@ -306,7 +306,7 @@ export function extractClasses(source: string, file: string): CsClass[] {
   const usings = [...code.matchAll(/^\s*using\s+([\w.]+)\s*;/gm)].map((m) => m[1]);
   const namespaces: { name: string; start: number; end: number }[] = [];
   for (const match of code.matchAll(/\bnamespace\s+([\w.]+)\s*([{;])/g)) {
-    const open = match.index! + match[0].length - 1;
+    const open = match.index + match[0].length - 1;
     namespaces.push({
       name: match[1],
       start: open,
@@ -321,7 +321,7 @@ export function extractClasses(source: string, file: string): CsClass[] {
 
   for (const match of code.matchAll(classPattern)) {
     const [whole, attributes, , name, generics, base] = match;
-    const open = match.index! + whole.length - 1;
+    const open = match.index + whole.length - 1;
     const end = matchBracket(code, open);
 
     const kosNames: KosName[] = [];
@@ -365,10 +365,10 @@ export function extractClasses(source: string, file: string): CsClass[] {
         binding: /\bBinding\s*\(/.test(attributes),
         suffixes: [],
         getters: [],
-        namespace: namespaceAt(match.index!),
+        namespace: namespaceAt(match.index),
         usings,
         file,
-        line: lineAt(code, match.index! + attributes.length),
+        line: lineAt(code, match.index + attributes.length),
       },
       start: open,
       end: end === -1 ? code.length : end,
@@ -391,9 +391,9 @@ export function extractClasses(source: string, file: string): CsClass[] {
   for (const call of code.matchAll(
     /\b(AddSuffix|AddGlobalSuffix\s*<\s*(\w+)\s*>)\s*\(/g,
   )) {
-    const open = call.index! + call[0].length - 1;
+    const open = call.index + call[0].length - 1;
     const close = matchBracket(code, open);
-    const cls = owner(call.index!);
+    const cls = owner(call.index);
     if (close === -1 || cls === undefined) {
       continue;
     }
@@ -433,16 +433,16 @@ export function extractClasses(source: string, file: string): CsClass[] {
           }
         : {}),
       file,
-      line: lineAt(code, call.index!),
+      line: lineAt(code, call.index),
     });
   }
 
   // config keys: new ConfigKey(property, NAME, description, default,
   // min, max, typeof(type)) are settable suffixes of the Config
   for (const call of code.matchAll(/\bnew\s+ConfigKey\s*\(/g)) {
-    const open = call.index! + call[0].length - 1;
+    const open = call.index + call[0].length - 1;
     const close = matchBracket(code, open);
-    const cls = owner(call.index!);
+    const cls = owner(call.index);
     if (close === -1 || cls === undefined) {
       continue;
     }
@@ -462,16 +462,16 @@ export function extractClasses(source: string, file: string): CsClass[] {
       generics: [type],
       description: args[2] && stringLiteral(args[2]),
       file,
-      line: lineAt(code, call.index!),
+      line: lineAt(code, call.index),
     });
   }
 
   for (const call of code.matchAll(
     /\b(AddGetter|AddSetter|AddBoundVariable)\s*\(/g,
   )) {
-    const open = call.index! + call[0].length - 1;
+    const open = call.index + call[0].length - 1;
     const close = matchBracket(code, open);
-    const cls = owner(call.index!);
+    const cls = owner(call.index);
     if (close === -1 || cls === undefined) {
       continue;
     }
@@ -482,7 +482,7 @@ export function extractClasses(source: string, file: string): CsClass[] {
     }
 
     const names = parseNames(args[0]);
-    const line = lineAt(code, call.index!);
+    const line = lineAt(code, call.index);
     // AddBoundVariable(name, getter, setter) registers both
     const setters =
       call[1] === 'AddBoundVariable'

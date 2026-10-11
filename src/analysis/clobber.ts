@@ -8,7 +8,6 @@ import { builtIn } from '../utilities/constants';
 import { createDiagnostic, DIAGNOSTICS } from '../utilities/diagnosticsUtils';
 import { empty } from '../utilities/typeGuards';
 import type { SymbolTableBuilder } from './models/symbolTableBuilder';
-import type { BasicTracker } from './models/tracker';
 import { KsSymbolKind, SymbolTracker, TrackerKind } from './types';
 
 /**
@@ -101,7 +100,7 @@ export const trackerBuiltinKind = (
     return undefined;
   }
 
-  const { symbol } = (tracker as BasicTracker).declared;
+  const { symbol } = tracker.declared;
   switch (symbol.tag) {
     case KsSymbolKind.function:
       return BuiltinKind.function;

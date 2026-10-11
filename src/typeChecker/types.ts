@@ -138,7 +138,7 @@ export enum OperatorKind {
  * interface for an entity with type parameters that may need to be
  * mapped to another entity
  */
-export interface ITypeMappable<T = {}> {
+export interface ITypeMappable<T = object> {
   /**
    * name of this mappable type
    */

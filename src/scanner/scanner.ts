@@ -17,6 +17,7 @@ import { DIAGNOSTICS, createDiagnosticUri } from '../utilities/diagnosticsUtils'
 import { MutableMarker, Marker } from './models/marker';
 import { DirectiveTokens } from '../directives/types';
 import { DiagnosticUri } from '../types';
+import { Literal } from '../models/types';
 
 /**
  * Class for scanning kerboscript files
@@ -554,7 +555,7 @@ export class Scanner {
   private generateNumber(isFloat: boolean): ScanToken {
     const numberString = this.source
       .substr(this.start, this.current - this.start)
-      .replace(/(\_)/g, '');
+      .replace(/_/g, '');
 
     return isFloat
       ? this.generateToken(TokenType.double, parseFloat(numberString))
@@ -567,7 +568,7 @@ export class Scanner {
    * @param literal optional literal
    * @param toLower should the lexeme be lowered
    */
-  private generateToken(type: TokenType, literal?: any): ScanToken {
+  private generateToken(type: TokenType, literal?: Literal): ScanToken {
     const text = this.source.substr(this.start, this.current - this.start);
 
     const token = new Token(

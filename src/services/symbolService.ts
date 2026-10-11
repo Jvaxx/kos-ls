@@ -314,7 +314,7 @@ export class SymbolService extends EventEmitter {
     ];
 
     for (const location of editLocations) {
-      if (!changes.hasOwnProperty(location.uri)) {
+      if (!Object.hasOwn(changes, location.uri)) {
         changes[location.uri] = [];
       }
 

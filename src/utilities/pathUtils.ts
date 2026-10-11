@@ -17,7 +17,7 @@ export const runPath = (stmt: RunStmtType): string | Diagnostic => {
 
     switch (identifier.type) {
       case TokenType.string:
-        return identifier.literal;
+        return String(identifier.literal);
       case TokenType.fileIdentifier:
       case TokenType.identifier:
         return identifier.lexeme;
@@ -46,7 +46,7 @@ const literalPath = (expr: SuffixTerm.Literal): string | undefined => {
 
   switch (token.type) {
     case TokenType.string:
-      return token.literal;
+      return String(token.literal);
     case TokenType.fileIdentifier:
       return token.lexeme;
   }

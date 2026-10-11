@@ -15,6 +15,7 @@ import { Parser } from '../src/parser/parser';
 import { TokenCheck } from '../src/parser/tokenCheck';
 import { zip } from '../src/utilities/arrayUtils';
 import { TokenType } from '../src/models/tokentypes';
+import { Literal } from '../src/models/types';
 import * as Expr from '../src/parser/models/expr';
 import * as Decl from '../src/parser/models/declare';
 import * as Stmt from '../src/parser/models/stmt';
@@ -118,10 +119,10 @@ describe('Parse all test files', () => {
 interface IAtomTest {
   source: string;
   type: TokenType;
-  literal: any;
+  literal: Literal;
 }
 
-const atomTest = (source: string, type: TokenType, literal: any): IAtomTest => {
+const atomTest = (source: string, type: TokenType, literal: Literal): IAtomTest => {
   return {
     source,
     type,
@@ -144,7 +145,7 @@ const testAtom = (value: IExpr, testFunct: (atom: Atom) => void) => {
 interface ICallTest {
   source: string;
   callee: string;
-  args: Function[];
+  args: Constructor<SuffixTerm.SuffixTermBase>[];
 }
 
 const testSuffixTerm = (
@@ -178,7 +179,7 @@ const callTest = (
 
 interface ExpressionComponent {
   expr: Constructor<SuffixTerm.SuffixTermBase | Expr.Expr>;
-  literal: any;
+  literal: Literal;
 }
 
 interface IUnaryTest {
@@ -191,7 +192,7 @@ const unaryTest = (
   source: string,
   operator: TokenType,
   base: Constructor<SuffixTerm.SuffixTermBase | Expr.Expr>,
-  baseLiteral: any,
+  baseLiteral: Literal,
 ): IUnaryTest => {
   return {
     source,
@@ -214,9 +215,9 @@ const binaryTest = (
   source: string,
   operator: TokenType,
   left: Constructor<SuffixTerm.SuffixTermBase | Expr.Expr>,
-  leftLiteral: any,
+  leftLiteral: Literal,
   right: Constructor<SuffixTerm.SuffixTermBase | Expr.Expr>,
-  rightLiteral: any,
+  rightLiteral: Literal,
 ): IBinaryTest => {
   return {
     source,
@@ -242,11 +243,11 @@ interface ITernaryTest {
 const ternaryTest = (
   source: string,
   trueArm: Constructor<SuffixTerm.SuffixTermBase | Expr.Expr>,
-  trueLiteral: any,
+  trueLiteral: Literal,
   condition: Constructor<SuffixTerm.SuffixTermBase | Expr.Expr>,
-  conditionLiteral: any,
+  conditionLiteral: Literal,
   falseArm: Constructor<SuffixTerm.SuffixTermBase | Expr.Expr>,
-  falseLiteral: any,
+  falseLiteral: Literal,
 ): ITernaryTest => {
   return {
     source,

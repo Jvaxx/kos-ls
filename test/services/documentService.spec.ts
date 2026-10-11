@@ -54,9 +54,9 @@ function mockCloseDocNotification(uri: string): DidCloseTextDocumentParams {
 }
 
 describe('document service', () => {
-  test('ready work', async () => {
+  test('ready work', () => {
     const { server } = createMockConnection();
-    const files = new Map();
+    const files = new Map<string, string>();
     const mockIoService = createMockIoService(files);
 
     const baseUri = URI.file('/example/folder');
@@ -76,7 +76,7 @@ describe('document service', () => {
 
   test('getDocument work', () => {
     const { server } = createMockConnection();
-    const files = new Map();
+    const files = new Map<string, string>();
     const mockIoService = createMockIoService(files);
 
     const baseUri = URI.file('/example/folder');
@@ -142,7 +142,7 @@ describe('document service', () => {
 
   test('getAllDocuments work', () => {
     const { server } = createMockConnection();
-    const files = new Map();
+    const files = new Map<string, string>();
     const mockIoService = createMockIoService(files);
 
     const baseUri = URI.file('/example/folder');
@@ -182,7 +182,7 @@ describe('document service', () => {
 
   test('load from client', () => {
     const { client, server } = createMockConnection();
-    const files = new Map();
+    const files = new Map<string, string>();
     const mockIoService = createMockIoService(files);
 
     const docService = new DocumentService(
@@ -226,7 +226,7 @@ describe('document service', () => {
     });
 
     for (let i = 0; i < uris.length; i += 1) {
-      client.sendNotification(
+      void client.sendNotification(
         DidOpenTextDocumentNotification.type,
         mockOpenDocNotification({
           uri: uris[i].toString(),
@@ -250,7 +250,7 @@ describe('document service', () => {
 
   test('loadDocument works', async () => {
     const { server } = createMockConnection();
-    const files = new Map();
+    const files = new Map<string, string>();
     const mockIoResponse = createMockIoService(files);
 
     const baseUri = URI.file('/example/folder').toString();
@@ -286,7 +286,7 @@ describe('document service', () => {
       expect(loadedDoc).toBeDefined();
       if (!empty(loadedDoc)) {
         expect(TextDocument.is(loadedDoc)).toBe(true);
-        expect((loadedDoc as TextDocument).getText()).toBe(doc);
+        expect(loadedDoc.getText()).toBe(doc);
       }
 
       expect(clientDocs.size).toBe(0);
@@ -319,9 +319,9 @@ describe('document service', () => {
     }
   });
 
-  test('on change event', async () => {
+  test('on change event', () => {
     const { client, server } = createMockConnection();
-    const files = new Map();
+    const files = new Map<string, string>();
     const mockIoService = createMockIoService(files);
 
     const baseUri = URI.file('/example/folder').toString();
@@ -387,7 +387,7 @@ describe('document service', () => {
       }
     });
 
-    client.sendNotification(
+    void client.sendNotification(
       DidOpenTextDocumentNotification.type,
       mockOpenDocNotification({
         uri: uri.toString(),
@@ -395,7 +395,7 @@ describe('document service', () => {
       }),
     );
 
-    client.sendNotification(
+    void client.sendNotification(
       DidChangeTextDocumentNotification.type,
       mockChangeDocNotification({
         uri: uri.toString(),
@@ -409,7 +409,7 @@ describe('document service', () => {
       }),
     );
 
-    client.sendNotification(
+    void client.sendNotification(
       DidCloseTextDocumentNotification.type,
       mockCloseDocNotification(uri.toString()),
     );
@@ -417,7 +417,7 @@ describe('document service', () => {
 
   test('load extension', async () => {
     const { server } = createMockConnection();
-    const files = new Map();
+    const files = new Map<string, string>();
     const mockUriResponse = createMockIoService(files);
 
     const baseUri = URI.file('/example/folder').toString();
@@ -470,7 +470,7 @@ describe('document service', () => {
       expect(loadedDoc).toBeDefined();
       if (!empty(loadedDoc)) {
         expect(TextDocument.is(loadedDoc)).toBe(true);
-        expect((loadedDoc as TextDocument).getText()).toBe(doc);
+        expect(loadedDoc.getText()).toBe(doc);
       }
 
       expect(clientDocs.size).toBe(0);
@@ -484,7 +484,7 @@ describe('document service', () => {
   describe('configChange Event', () => {
     test('when config is opened', () => {
       const { client, server } = createMockConnection();
-      const files = new Map();
+      const files = new Map<string, string>();
       const mockIoService = createMockIoService(files);
 
       const baseUri = URI.file('/example/folder');
@@ -505,7 +505,7 @@ describe('document service', () => {
         expect(text.getText()).toBe(configContents);
       });
 
-      client.sendNotification(
+      void client.sendNotification(
         DidOpenTextDocumentNotification.type,
         mockOpenDocNotification({
           uri: configUri.toString(),
@@ -516,7 +516,7 @@ describe('document service', () => {
 
     test('when config is changed', () => {
       const { client, server } = createMockConnection();
-      const files = new Map();
+      const files = new Map<string, string>();
       const mockIoService = createMockIoService(files);
 
       const baseUri = URI.file('/example/folder');
@@ -551,12 +551,12 @@ describe('document service', () => {
       docService.on('configChange', document => {
         expect(document.getText()).toBe(
           TextDocument.applyEdits(configDoc, [
-            { range: (edits[0] as any).range, newText: edits[0].text },
+            { range: (edits[0] as { range: Range }).range, newText: edits[0].text },
           ]),
         );
       });
 
-      client.sendNotification(
+      void client.sendNotification(
         DidChangeTextDocumentNotification.type,
         mockChangeDocNotification({
           uri: configUri.toString(),

@@ -116,7 +116,7 @@ describe('analysis service', () => {
     }
   });
 
-  test('set case', async () => {
+  test('set case', () => {
     const uri = URI.file('/example/folder/example.ks').toString();
 
     const documents = new Map([

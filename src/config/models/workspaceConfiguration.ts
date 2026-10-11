@@ -185,7 +185,7 @@ export class WorkspaceConfiguration {
  * @param config configuration to serialize
  */
 function serialize(config: WorkspaceConfiguration): string {
-  return JSON.stringify(config, (_, value) =>
+  return JSON.stringify(config, (_, value: unknown) =>
     value instanceof Map ? [...value] : value,
   );
 }

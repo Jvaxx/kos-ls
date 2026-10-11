@@ -11,7 +11,7 @@ import {
 } from '../parser/types';
 import { TokenType } from '../models/tokentypes';
 import { keywords } from '../utilities/constants';
-const jStat = require('jstat').jStat;
+import { jStat } from 'jstat';
 
 const ALPHA_CHARSET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const ALPHA_NUMERIC_CHARSET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -40,7 +40,7 @@ export class Generator implements IExprClassVisitor<string> {
       const exprClass = exprType || this.randomEntity(Expr.validExprTypes);
       return this.genExpr(exprClass);
     } catch (err) {
-      this.logger.error(`Error occured in resolver ${err}`);
+      this.logger.error(`Error occured in resolver ${String(err)}`);
       if (typeof err === 'string') {
         this.tracer.log(err);
       }
@@ -58,15 +58,18 @@ export class Generator implements IExprClassVisitor<string> {
     switch (dist.tag) {
       case 'constant':
         return dist.value;
-      case 'exp':
-        const expDraw = jStat.exponential.sample(dist.rate) as number;
+      case 'exp': {
+        const expDraw = jStat.exponential.sample(dist.rate);
         return expDraw > 0 ? expDraw : 0;
-      case 'gamma':
-        const grammDraw = jStat.gamma.sample(dist.shape, dist.scale) as number;
+      }
+      case 'gamma': {
+        const grammDraw = jStat.gamma.sample(dist.shape, dist.scale);
         return grammDraw > 0 ? grammDraw : 0;
-      case 'normal':
-        const normalDraw = jStat.normal.sample(dist.mean, dist.std) as number;
+      }
+      case 'normal': {
+        const normalDraw = jStat.normal.sample(dist.mean, dist.std);
         return normalDraw > 0 ? normalDraw : 0;
+      }
       default:
         throw new Error('Unsupported distribution');
     }
@@ -113,7 +116,7 @@ export class Generator implements IExprClassVisitor<string> {
     return this.generateGrammarNodes(exprClass.grammar);
   }
   visitSuffixTerm(exprClass: ISuffixTermClass<SuffixTerm.SuffixTerm>): string {
-    throw this.generateGrammarNodes(exprClass.grammar);
+    return this.generateGrammarNodes(exprClass.grammar);
   }
   visitCall(exprClass: ISuffixTermClass<SuffixTerm.Call>): string {
     return this.generateGrammarNodes(exprClass.grammar);
@@ -201,12 +204,12 @@ export class Generator implements IExprClassVisitor<string> {
   }
 
   private generateDouble(): string {
-    const number = jStat.lognormal.sample(DOUBLE_LOGNORM_MEAN, DOUBLE_LOGNORM_SIGMA) as number;
+    const number = jStat.lognormal.sample(DOUBLE_LOGNORM_MEAN, DOUBLE_LOGNORM_SIGMA);
     let numberStr = number.toExponential(getRandomInt(20));
 
     const removeSign = Math.random();
     if (removeSign < 0.1) {
-      numberStr = numberStr.replace(/(\+|\-)/gi, '');
+      numberStr = numberStr.replace(/(\+|-)/gi, '');
     }
 
     return numberStr;
@@ -223,7 +226,7 @@ export class Generator implements IExprClassVisitor<string> {
   }
 
   private generateIdentifier(): string {
-    const length = Math.ceil(jStat.gamma.sample(ID_GAMMA_SHAPE, ID_GAMMA_SCALE)) as number;
+    const length = Math.ceil(jStat.gamma.sample(ID_GAMMA_SHAPE, ID_GAMMA_SCALE));
     let identifier = ALPHA_CHARSET[Math.floor(Math.random() * ALPHA_CHARSET.length)];
 
     for (let i = 1; i < length; i += 1) {
@@ -237,7 +240,7 @@ export class Generator implements IExprClassVisitor<string> {
   }
 
   private generateString(): string {
-    const length = jStat.gamma.sample(STRING_GAMMA_SHAPE, STRING_GAMMA_SCALE) as number;
+    const length = jStat.gamma.sample(STRING_GAMMA_SHAPE, STRING_GAMMA_SCALE);
     return `"${this.generateRandomString(length)}"`;
   }
 
@@ -425,7 +428,7 @@ export class Generator implements IExprClassVisitor<string> {
 
 const isNode = (node: GrammarNode)
   : node is TokenType | IExprClass | IStmtClass | ISuffixTermClass => {
-  if (node.hasOwnProperty('tag')) {
+  if (Object.prototype.hasOwnProperty.call(node, 'tag')) {
     return false;
   }
 

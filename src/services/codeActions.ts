@@ -444,7 +444,7 @@ function globalParameter(
     (node) =>
       node instanceof Decl.Param &&
       !empty(node.scope?.scope) &&
-      rangeEqual(node.scope!.scope!, diagnostic.range),
+      rangeEqual(node.scope.scope, diagnostic.range),
   );
   if (!(param instanceof Decl.Param)) {
     return [];

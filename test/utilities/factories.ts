@@ -1,11 +1,12 @@
 import { Token } from '../../src/models/token';
+import { Literal } from '../../src/models/types';
 import { TokenType } from '../../src/models/tokentypes';
 
 export const createToken = <T extends TokenType>(
   type: T,
   lexeme: string,
-  literal?: any,
-): Token => {
+  literal?: Literal,
+): Token<T> => {
   return new Token(
     type,
     lexeme,

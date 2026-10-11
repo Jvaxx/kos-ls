@@ -36,7 +36,7 @@ describe('ioService', () => {
 
   describe('when checking directory stats', () => {
     describe('when using a file path', () => {
-      test("get stats on the file's directory", async () => {
+      test("get stats on the file's directory", () => {
         const ioService = new IoService();
 
         const entities = ioService.statDirectory(
@@ -63,7 +63,7 @@ describe('ioService', () => {
     });
 
     describe('when using a directory', () => {
-      test('get stats on directory ', async () => {
+      test('get stats on directory ', () => {
         const ioService = new IoService();
 
         const entities = ioService.statDirectory(URI.file(loadDir));

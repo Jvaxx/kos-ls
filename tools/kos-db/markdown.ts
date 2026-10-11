@@ -124,9 +124,9 @@ function listTable(lines: string[]): string[] {
       headerRows = Number(option[1]);
     } else if (/^\* - /.test(line)) {
       rows.push([line.slice(4)]);
-    } else if (/^  - ?/.test(line) && rows.length > 0) {
-      rows[rows.length - 1].push(line.replace(/^  - ?/, ''));
-    } else if (/^    \S/.test(line) && rows.length > 0) {
+    } else if (/^ {2}- ?/.test(line) && rows.length > 0) {
+      rows[rows.length - 1].push(line.replace(/^ {2}- ?/, ''));
+    } else if (/^ {4}\S/.test(line) && rows.length > 0) {
       const row = rows[rows.length - 1];
       row[row.length - 1] += ' ' + line.trim();
     }
@@ -180,8 +180,8 @@ export function simpleTableEnd(lines: string[], start: number): number {
 function simpleTable(lines: string[]): string[] {
   // columns: the spans of the `=` runs of the first border
   const spans = [...lines[0].matchAll(/=+/g)].map((m) => ({
-    start: m.index!,
-    end: m.index! + m[0].length,
+    start: m.index,
+    end: m.index + m[0].length,
   }));
   const cells = (line: string) =>
     spans.map((span, i) =>

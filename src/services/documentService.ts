@@ -16,8 +16,6 @@ import { normalizeExtensions } from '../utilities/pathUtils';
 import { empty } from '../utilities/typeGuards';
 import { IoService } from './ioService';
 
-type DocumentChangeHandler = (document: TextDocument) => void;
-type DocumentClosedHandler = (uri: string) => void;
 
 type DocumentConnection = Pick<
   Connection,
@@ -25,23 +23,12 @@ type DocumentConnection = Pick<
 > &
   Partial<Pick<Connection, 'onDidChangeWatchedFiles'>>;
 
-export declare interface DocumentService {
-  on(event: 'change', listener: DocumentChangeHandler): this;
-  emit(event: 'change', ...args: Parameters<DocumentChangeHandler>): boolean;
-  on(event: 'configChange', listener: DocumentChangeHandler): this;
-  emit(
-    event: 'configChange',
-    ...args: Parameters<DocumentChangeHandler>
-  ): boolean;
-  on(event: 'close', listener: DocumentClosedHandler): this;
-  emit(event: 'close', ...args: Parameters<DocumentClosedHandler>): boolean;
-  on(event: 'configLoad', listener: (load: Promise<void>) => void): this;
-  emit(event: 'configLoad', load: Promise<void>): boolean;
-  on(event: 'diskChange', listener: DocumentClosedHandler): this;
-  emit(
-    event: 'diskChange',
-    ...args: Parameters<DocumentClosedHandler>
-  ): boolean;
+interface DocumentEvents {
+  change: [document: TextDocument];
+  configChange: [document: TextDocument];
+  close: [uri: string];
+  configLoad: [load: Promise<void>];
+  diskChange: [uri: string];
 }
 
 /**
@@ -52,7 +39,7 @@ export const configFileName = 'ksconfig.json';
 /**
  * Service responsible for managing documents being loaded by the client and the server
  */
-export class DocumentService extends EventEmitter {
+export class DocumentService extends EventEmitter<DocumentEvents> {
   /**
    * What is the root volume of this directory
    */

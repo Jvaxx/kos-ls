@@ -16,7 +16,7 @@ const createDirective = (
   expect(result.directiveTokens).toHaveLength(1);
   expect(result.directiveTokens[0].directive.type).toBe(TokenType.include);
 
-  return result.directiveTokens[0] as any;
+  return result.directiveTokens[0] as DirectiveTokens<TokenType.include>;
 };
 
 describe('Include', () => {
@@ -79,12 +79,12 @@ describe('Include', () => {
     describe('when path is a string', () => {
       it('returns the string literal', () => {
         const include = new Include(
-          createToken(TokenType.include, '// #include') as any,
+          createToken(TokenType.include, '// #include'),
           createToken(
             TokenType.string,
             '"0://somePath.ks"',
             '0://somePath.ks',
-          ) as any,
+          ),
         );
 
         expect(include.includePath()).toBe('0://somePath.ks');
@@ -94,8 +94,8 @@ describe('Include', () => {
     describe('when path is a file identifier', () => {
       it('returns the string literal', () => {
         const include = new Include(
-          createToken(TokenType.include, '// #include') as any,
-          createToken(TokenType.fileIdentifier, 'file.ks') as any,
+          createToken(TokenType.include, '// #include'),
+          createToken(TokenType.fileIdentifier, 'file.ks'),
         );
 
         expect(include.includePath()).toBe('file.ks');

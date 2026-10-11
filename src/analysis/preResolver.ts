@@ -37,9 +37,9 @@ export type Diagnostics = Diagnostic[];
  */
 export class PreResolver
   implements
-    IExprVisitor<() => Diagnostics>,
-    IStmtVisitor<() => Diagnostics>,
-    ISuffixTermVisitor<() => Diagnostics> {
+    IExprVisitor<[], Diagnostics>,
+    IStmtVisitor<[], Diagnostics>,
+    ISuffixTermVisitor<[], Diagnostics> {
   /**
    * current script being processed
    */

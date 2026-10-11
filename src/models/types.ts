@@ -2,6 +2,11 @@ import { Position, Range, Location } from 'vscode-languageserver';
 import { TokenType } from './tokentypes';
 
 /**
+ * The value of a literal token: a string's text, a number, a boolean
+ */
+export type Literal = string | number | boolean | undefined;
+
+/**
  * Represents the core of an atomic unit of the kerboscript language
  */
 export interface TokenBase<T extends TokenType = TokenType>
@@ -25,7 +30,7 @@ export interface TokenBase<T extends TokenType = TokenType>
   /**
    * For tokens that present literal value what is the value if any
    */
-  readonly literal: any;
+  readonly literal: Literal;
 
   /**
    * What is the starting position of this token

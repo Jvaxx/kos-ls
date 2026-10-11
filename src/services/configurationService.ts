@@ -8,7 +8,7 @@ import { DocumentService } from './documentService';
 import { serverName, legacyServerNames } from '../utilities/constants';
 import { ServerConfiguration } from '../config/models/serverConfiguration';
 import { parseWorkspaceConfiguration } from '../config/workspaceConfigParser';
-import { DiagnosticUri } from '../types';
+import { ClientConfiguration, DiagnosticUri } from '../types';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 export interface ChangeConfiguration {
@@ -16,14 +16,9 @@ export interface ChangeConfiguration {
   workspaceConfiguration: WorkspaceConfiguration;
 }
 
-type ChangeHandler = (configurations: ChangeConfiguration) => void;
-type ErrorHandler = (errors: DiagnosticUri[], uri: string) => void;
-
-export declare interface ConfigurationService {
-  on(event: 'change', listener: ChangeHandler): this;
-  emit(event: 'change', ...args: Parameters<ChangeHandler>): boolean;
-  on(event: 'error', listener: ErrorHandler): this;
-  emit(event: 'error', ...args: Parameters<ErrorHandler>): boolean;
+interface ConfigurationEvents {
+  change: [configurations: ChangeConfiguration];
+  error: [errors: DiagnosticUri[], uri: string];
 }
 
 type ConfigurationConnection = Pick<Connection, 'onDidChangeConfiguration'>;
@@ -32,7 +27,7 @@ type ConfigurationConnection = Pick<Connection, 'onDidChangeConfiguration'>;
  * A service responsible for collection and organizing user
  * configurations
  */
-export class ConfigurationService extends EventEmitter {
+export class ConfigurationService extends EventEmitter<ConfigurationEvents> {
   /**
    * What is the current workspace's configuration
    */
@@ -99,10 +94,15 @@ export class ConfigurationService extends EventEmitter {
 
     // check if the client supports configurations
     if (clientCapability.hasConfiguration) {
+      const settings = change.settings as Maybe<Record<string, unknown>>;
       const serverConfiguration = this.serverConfiguration.merge({
+        // merge normalizes a partial configuration
         clientConfig: [serverName, ...legacyServerNames]
-          .map((section) => change.settings?.[section])
-          .find((settings) => typeof settings === 'object' && settings !== null),
+          .map((section) => settings?.[section])
+          .find(
+            (found): found is ClientConfiguration =>
+              typeof found === 'object' && found !== null,
+          ),
       });
 
       // if the configuration has changed emit change event

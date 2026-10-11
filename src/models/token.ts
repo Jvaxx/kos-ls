@@ -1,6 +1,6 @@
 import { TokenType } from './tokentypes';
 import { Range, Position } from 'vscode-languageserver';
-import { TokenBase } from './types';
+import { Literal, TokenBase } from './types';
 import { SymbolTracker } from '../analysis/types';
 
 /**
@@ -30,7 +30,7 @@ export interface Comment {
 export class Token<T extends TokenType = TokenType> implements TokenBase<T> {
   public readonly type: T;
   public readonly lexeme: string;
-  public readonly literal: any;
+  public readonly literal: Literal;
   public readonly start: Position;
   public readonly end: Position;
   public readonly uri: string;
@@ -48,7 +48,7 @@ export class Token<T extends TokenType = TokenType> implements TokenBase<T> {
   constructor(
     type: T,
     lexeme: string,
-    literal: any,
+    literal: Literal,
     start: Position,
     end: Position,
     uri: string,
@@ -95,3 +95,10 @@ export class Token<T extends TokenType = TokenType> implements TokenBase<T> {
     return `${this.typeString} ${this.lexeme}`;
   }
 }
+
+/**
+ * Is the value a token: `instanceof` alone gives `Token<any>`
+ * @param value any value
+ */
+export const isToken = (value: unknown): value is Token =>
+  value instanceof Token;

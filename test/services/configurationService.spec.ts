@@ -93,7 +93,7 @@ describe('configurationService', () => {
         },
       );
 
-      client.sendNotification(
+      void client.sendNotification(
         DidChangeConfigurationNotification.type,
         mockChangeConfigNotification(clientConfig),
       );

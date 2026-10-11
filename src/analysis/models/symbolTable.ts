@@ -295,7 +295,7 @@ export class SymbolTable implements GraphNode<SymbolTable> {
     node: EnvironmentNode,
     trackerFilter: (x: BasicTracker) => boolean,
   ): Maybe<BasicTracker> {
-    let childSymbol: Maybe<BasicTracker> = undefined;
+    let childSymbol: Maybe<BasicTracker>;
 
     const { range } = node;
     switch (range.kind) {

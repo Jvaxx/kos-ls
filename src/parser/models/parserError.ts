@@ -62,11 +62,11 @@ export const constructorToFailed = (constructor?: NodeConstructor) => {
   }
 
   if (constructor.prototype instanceof Expr) {
-    return failedExpr(constructor as any);
+    return failedExpr(constructor as Constructor<Expr>);
   }
 
   if (constructor.prototype instanceof Stmt) {
-    return failedStmt(constructor as any);
+    return failedStmt(constructor as Constructor<Stmt>);
   }
 
   return failedUnknown();

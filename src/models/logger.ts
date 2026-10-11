@@ -47,10 +47,10 @@ export const consoleTracer: ITracer = {
 export const logException = (
   logger: ILogger,
   tracer: ITracer,
-  err: any,
+  err: unknown,
   level: LogLevel,
 ) => {
-  let method = undefined;
+  let method: (message: string) => void;
 
   switch (level) {
     case LogLevel.error:

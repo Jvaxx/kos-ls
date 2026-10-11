@@ -35,6 +35,6 @@ export class ConstantType<T> extends Type {
    * Create a type string from this type
    */
   public toString(): string {
-    return `${super.toString()} = ${this.value}`;
+    return `${super.toString()} = ${String(this.value)}`;
   }
 }

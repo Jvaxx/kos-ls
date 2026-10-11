@@ -21,9 +21,9 @@ import { FlowGraph } from './flowGraph';
 
 export class ControlFlow
   implements
-    ISuffixTermVisitor<(basicBlock: BasicBlock) => void>,
-    IExprVisitor<(basicBlock: BasicBlock) => void>,
-    IStmtVisitor<(basicBlock: BasicBlock) => Maybe<BasicBlock>> {
+    ISuffixTermVisitor<[basicBlock: BasicBlock], void>,
+    IExprVisitor<[basicBlock: BasicBlock], void>,
+    IStmtVisitor<[basicBlock: BasicBlock], Maybe<BasicBlock>> {
   /**
    * the logger to logging information
    */

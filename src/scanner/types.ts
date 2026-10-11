@@ -2,8 +2,9 @@ import { TokenType } from '../models/tokentypes';
 import { Token, Comment } from '../models/token';
 import { DirectiveTokens } from '../directives/types';
 import { DiagnosticUri } from '../types';
+import { Literal } from '../models/types';
 
-export type ITokenMap = Map<string, { type: TokenType; literal?: any }>;
+export type ITokenMap = Map<string, { type: TokenType; literal?: Literal }>;
 
 export interface Tokenized {
   tokens: Token[];

@@ -196,73 +196,73 @@ export type TreeNode =
   | IDeclScope;
 
 export interface IExprVisitable {
-  accept<T extends (...args: any) => any>(
-    visitor: IExprVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+  accept<P extends unknown[], R>(
+    visitor: IExprVisitor<P, R>,
+    parameters: P,
+  ): R;
 }
 
-export interface IExprVisitor<T extends (...args: any) => any> {
+export interface IExprVisitor<P extends unknown[], R> {
   visitExprInvalid(
     expr: Expr.Invalid,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
-  visitTernary(expr: Expr.Ternary, parameters: Parameters<T>): ReturnType<T>;
-  visitBinary(expr: Expr.Binary, parameters: Parameters<T>): ReturnType<T>;
-  visitUnary(expr: Expr.Unary, parameters: Parameters<T>): ReturnType<T>;
-  visitFactor(expr: Expr.Factor, parameters: Parameters<T>): ReturnType<T>;
-  visitSuffix(expr: Expr.Suffix, parameters: Parameters<T>): ReturnType<T>;
-  visitLambda(expr: Expr.Lambda, parameters: Parameters<T>): ReturnType<T>;
+    parameters: P,
+  ): R;
+  visitTernary(expr: Expr.Ternary, parameters: P): R;
+  visitBinary(expr: Expr.Binary, parameters: P): R;
+  visitUnary(expr: Expr.Unary, parameters: P): R;
+  visitFactor(expr: Expr.Factor, parameters: P): R;
+  visitSuffix(expr: Expr.Suffix, parameters: P): R;
+  visitLambda(expr: Expr.Lambda, parameters: P): R;
 }
 
 export interface ISuffixTermVisitable {
-  accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+  accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R;
 }
 
-export interface ISuffixTermVisitor<T extends (...args: any) => any> {
+export interface ISuffixTermVisitor<P extends unknown[], R> {
   visitSuffixTermInvalid(
     suffixTerm: SuffixTerm.Invalid,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
   visitSuffixTrailer(
     suffixTerm: SuffixTerm.SuffixTrailer,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
   visitSuffixTerm(
     suffixTerm: SuffixTerm.SuffixTerm,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
   visitCall(
     suffixTerm: SuffixTerm.Call,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
   visitHashIndex(
     suffixTerm: SuffixTerm.HashIndex,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
   visitBracketIndex(
     suffixTerm: SuffixTerm.BracketIndex,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
   visitDelegate(
     suffixTerm: SuffixTerm.Delegate,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
   visitLiteral(
     suffixTerm: SuffixTerm.Literal,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
   visitIdentifier(
     suffixTerm: SuffixTerm.Identifier,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
   visitGrouping(
     suffixTerm: SuffixTerm.Grouping,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+    parameters: P,
+  ): R;
 }
 
 export interface IExprVisitableClass {
@@ -297,62 +297,62 @@ export interface ISuffixTermClassVisitor<T> {
 }
 
 export interface IStmtVisitable {
-  accept<T extends (...args: any) => any>(
-    visitor: IStmtVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+  accept<P extends unknown[], R>(
+    visitor: IStmtVisitor<P, R>,
+    parameters: P,
+  ): R;
 }
 
-export interface IStmtVisitor<T extends (...args: any) => any> {
-  visitDeclVariable(decl: Var, parameters: Parameters<T>): ReturnType<T>;
-  visitDeclLock(decl: Lock, parameters: Parameters<T>): ReturnType<T>;
-  visitDeclFunction(decl: Func, parameters: Parameters<T>): ReturnType<T>;
-  visitDeclParameter(decl: Param, parameters: Parameters<T>): ReturnType<T>;
+export interface IStmtVisitor<P extends unknown[], R> {
+  visitDeclVariable(decl: Var, parameters: P): R;
+  visitDeclLock(decl: Lock, parameters: P): R;
+  visitDeclFunction(decl: Func, parameters: P): R;
+  visitDeclParameter(decl: Param, parameters: P): R;
 
   visitStmtInvalid(
     stmt: Stmt.Invalid,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
-  visitBlock(stmt: Stmt.Block, parameters: Parameters<T>): ReturnType<T>;
-  visitExpr(stmt: Stmt.ExprStmt, parameters: Parameters<T>): ReturnType<T>;
-  visitOnOff(stmt: Stmt.OnOff, parameters: Parameters<T>): ReturnType<T>;
-  visitCommand(stmt: Stmt.Command, parameters: Parameters<T>): ReturnType<T>;
+    parameters: P,
+  ): R;
+  visitBlock(stmt: Stmt.Block, parameters: P): R;
+  visitExpr(stmt: Stmt.ExprStmt, parameters: P): R;
+  visitOnOff(stmt: Stmt.OnOff, parameters: P): R;
+  visitCommand(stmt: Stmt.Command, parameters: P): R;
   visitCommandExpr(
     stmt: Stmt.CommandExpr,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
-  visitUnset(stmt: Stmt.Unset, parameters: Parameters<T>): ReturnType<T>;
-  visitUnlock(stmt: Stmt.Unlock, parameters: Parameters<T>): ReturnType<T>;
-  visitSet(stmt: Stmt.Set, parameters: Parameters<T>): ReturnType<T>;
-  visitChain(stmt: Stmt.Chain, parameters: Parameters<T>): ReturnType<T>;
+    parameters: P,
+  ): R;
+  visitUnset(stmt: Stmt.Unset, parameters: P): R;
+  visitUnlock(stmt: Stmt.Unlock, parameters: P): R;
+  visitSet(stmt: Stmt.Set, parameters: P): R;
+  visitChain(stmt: Stmt.Chain, parameters: P): R;
   visitDirective(
     stmt: Stmt.Directive,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
-  visitIf(stmt: Stmt.If, parameters: Parameters<T>): ReturnType<T>;
-  visitElse(stmt: Stmt.Else, parameters: Parameters<T>): ReturnType<T>;
-  visitUntil(stmt: Stmt.Until, parameters: Parameters<T>): ReturnType<T>;
-  visitFrom(stmt: Stmt.From, parameters: Parameters<T>): ReturnType<T>;
-  visitWhen(stmt: Stmt.When, parameters: Parameters<T>): ReturnType<T>;
-  visitReturn(stmt: Stmt.Return, parameters: Parameters<T>): ReturnType<T>;
-  visitBreak(stmt: Stmt.Break, parameters: Parameters<T>): ReturnType<T>;
-  visitSwitch(stmt: Stmt.Switch, parameters: Parameters<T>): ReturnType<T>;
-  visitFor(stmt: Stmt.For, parameters: Parameters<T>): ReturnType<T>;
-  visitOn(stmt: Stmt.On, parameters: Parameters<T>): ReturnType<T>;
-  visitToggle(stmt: Stmt.Toggle, parameters: Parameters<T>): ReturnType<T>;
-  visitWait(stmt: Stmt.Wait, parameters: Parameters<T>): ReturnType<T>;
-  visitLog(stmt: Stmt.Log, parameters: Parameters<T>): ReturnType<T>;
-  visitCopy(stmt: Stmt.Copy, parameters: Parameters<T>): ReturnType<T>;
-  visitRename(stmt: Stmt.Rename, parameters: Parameters<T>): ReturnType<T>;
-  visitDelete(stmt: Stmt.Delete, parameters: Parameters<T>): ReturnType<T>;
-  visitRun(stmt: Stmt.Run, parameters: Parameters<T>): ReturnType<T>;
-  visitRunPath(stmt: Stmt.RunPath, parameters: Parameters<T>): ReturnType<T>;
+    parameters: P,
+  ): R;
+  visitIf(stmt: Stmt.If, parameters: P): R;
+  visitElse(stmt: Stmt.Else, parameters: P): R;
+  visitUntil(stmt: Stmt.Until, parameters: P): R;
+  visitFrom(stmt: Stmt.From, parameters: P): R;
+  visitWhen(stmt: Stmt.When, parameters: P): R;
+  visitReturn(stmt: Stmt.Return, parameters: P): R;
+  visitBreak(stmt: Stmt.Break, parameters: P): R;
+  visitSwitch(stmt: Stmt.Switch, parameters: P): R;
+  visitFor(stmt: Stmt.For, parameters: P): R;
+  visitOn(stmt: Stmt.On, parameters: P): R;
+  visitToggle(stmt: Stmt.Toggle, parameters: P): R;
+  visitWait(stmt: Stmt.Wait, parameters: P): R;
+  visitLog(stmt: Stmt.Log, parameters: P): R;
+  visitCopy(stmt: Stmt.Copy, parameters: P): R;
+  visitRename(stmt: Stmt.Rename, parameters: P): R;
+  visitDelete(stmt: Stmt.Delete, parameters: P): R;
+  visitRun(stmt: Stmt.Run, parameters: P): R;
+  visitRunPath(stmt: Stmt.RunPath, parameters: P): R;
   visitRunPathOnce(
     stmt: Stmt.RunOncePath,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
-  visitCompile(stmt: Stmt.Compile, parameters: Parameters<T>): ReturnType<T>;
-  visitList(stmt: Stmt.List, parameters: Parameters<T>): ReturnType<T>;
-  visitEmpty(stmt: Stmt.Empty, parameters: Parameters<T>): ReturnType<T>;
-  visitPrint(stmt: Stmt.Print, parameters: Parameters<T>): ReturnType<T>;
+    parameters: P,
+  ): R;
+  visitCompile(stmt: Stmt.Compile, parameters: P): R;
+  visitList(stmt: Stmt.List, parameters: P): R;
+  visitEmpty(stmt: Stmt.Empty, parameters: P): R;
+  visitPrint(stmt: Stmt.Print, parameters: P): R;
 }

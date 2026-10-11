@@ -40,7 +40,7 @@ import { DiskUsage, usageDetails, usageSummary } from './analysis/diskSize';
 import { relative } from 'path';
 import { semanticTokens, semanticTokensLegend } from './services/semanticTokens';
 import { codeActions } from './services/codeActions';
-import { ClientConfiguration } from './types';
+import { ClientConfiguration, IClientCapabilities } from './types';
 import { KsSymbolKind, SymbolTracker, KsBaseSymbol } from './analysis/types';
 import { mockLogger, mockTracer, logException } from './models/logger';
 import { empty } from './utilities/typeGuards';
@@ -248,14 +248,25 @@ export class KLS {
   }
 
   /**
-   * Track an operation until it settles, for whenIdle
+   * Track an operation until it settles, for whenIdle. A failure is logged.
    * @param operation the operation's promise
    */
-  private track<T>(operation: Promise<T>): Promise<T> {
-    this.pending.add(operation);
-    const untrack = () => this.pending.delete(operation);
-    operation.then(untrack, untrack);
-    return operation;
+  private track(operation: Promise<unknown>): void {
+    const settled = operation
+      .catch((err) => logException(this.logger, this.tracer, err, LogLevel.error))
+      .finally(() => this.pending.delete(settled));
+    this.pending.add(settled);
+  }
+
+  /**
+   * Log the failure of a message sent to the client, rather than leave its
+   * rejection unhandled
+   * @param operation the sending promise
+   */
+  private logFailure(operation: Promise<unknown>): void {
+    operation.catch((err) =>
+      logException(this.logger, this.tracer, err, LogLevel.warn),
+    );
   }
 
   /**
@@ -264,9 +275,9 @@ export class KLS {
   public listen(): void {
 
     this.connection.onInitialize(this.onInitialize.bind(this));
-    this.connection.onInitialized((params) =>
-      this.track(this.onInitialized(params)),
-    );
+    this.connection.onInitialized((params) => {
+      this.track(this.onInitialized(params));
+    });
     this.connection.onCompletion(this.onCompletion.bind(this));
     this.connection.onCompletionResolve(this.onCompletionResolve.bind(this));
     this.connection.onSignatureHelp(this.onSignatureHelp.bind(this));
@@ -289,11 +300,15 @@ export class KLS {
     this.documentService.listen();
     this.symbolService.listen();
 
-    this.documentService.on('change', this.onChange.bind(this));
+    this.documentService.on('change', (document) => {
+      void this.onChange(document);
+    });
     this.documentService.on('close', (uri) =>
       this.analysisService.invalidateDocument(uri),
     );
-    this.documentService.on('configLoad', (load) => this.track(load));
+    this.documentService.on('configLoad', (load) => {
+      this.track(load);
+    });
     this.documentService.on('diskChange', (uri) =>
       this.analysisService.invalidateDocument(uri),
     );
@@ -301,9 +316,9 @@ export class KLS {
       this.publishDiagnostics(diagnostics);
       this.refreshCodeLenses();
     });
-    this.configurationService.on('change', (change) =>
-      this.track(this.onConfigChange(change)),
-    );
+    this.configurationService.on('change', (change) => {
+      this.track(this.onConfigChange(change));
+    });
     this.configurationService.on('error', (diagnostics, uri) =>
       this.publishDiagnostics(new Map([[uri, diagnostics]])),
     );
@@ -323,7 +338,10 @@ export class KLS {
       `[KLS Server(${process.pid})] Started and initialize received.`,
     );
 
-    const clientCapability: any = {};
+    const clientCapability: IClientCapabilities = {
+      hasConfiguration: false,
+      hasWorkspaceFolder: false,
+    };
     const serverConfiguration: Partial<Writeable<
       Pick<
         ServerConfiguration,
@@ -364,7 +382,7 @@ export class KLS {
     // as it determines how run statements are resolved
     this.documentService.workspaceUri = serverConfiguration.workspaceUri;
     await this.documentService.loadWorkspaceConfig();
-    this.onConfigChange(this.configurationService);
+    await this.onConfigChange(this.configurationService);
 
     return {
       serverInfo: {
@@ -424,21 +442,26 @@ export class KLS {
 
     // register for all configuration changes.
     if (clientCapability.hasConfiguration) {
-      this.connection.client.register(DidChangeConfigurationNotification.type, {
-        section: serverName,
-      });
+      this.logFailure(
+        this.connection.client.register(
+          DidChangeConfigurationNotification.type,
+          { section: serverName },
+        ),
+      );
     }
 
     // watch scripts and the configuration changed outside the client
     if (clientCapability.hasWatchedFiles) {
-      this.connection.client.register(
-        DidChangeWatchedFilesNotification.type,
-        {
-          watchers: [
-            { globPattern: '**/*.{ks,KS}' },
-            { globPattern: '**/ksconfig.json' },
-          ],
-        },
+      this.logFailure(
+        this.connection.client.register(
+          DidChangeWatchedFilesNotification.type,
+          {
+            watchers: [
+              { globPattern: '**/*.{ks,KS}' },
+              { globPattern: '**/ksconfig.json' },
+            ],
+          },
+        ),
       );
     }
 
@@ -453,7 +476,7 @@ export class KLS {
     const clientConfig = await this.getClientSettings();
 
     this.configurationService.updateServerConfiguration({ clientConfig });
-    this.onConfigChange(this.configurationService);
+    await this.onConfigChange(this.configurationService);
 
     this.initialized = true;
     await this.reloadWorkspace();
@@ -743,7 +766,7 @@ export class KLS {
    */
   private async onExecuteCommand(params: ExecuteCommandParams): Promise<void> {
     try {
-      const [uri] = params.arguments ?? [];
+      const [uri] = (params.arguments ?? []) as unknown[];
       if (params.command !== diskUsageCommand || typeof uri !== 'string') {
         return;
       }
@@ -760,10 +783,12 @@ export class KLS {
       };
       // a notification: the request form asks the client for a choice,
       // which some clients show as a prompt that waits for an answer
-      this.connection.sendNotification(ShowMessageNotification.type, {
+      this.logFailure(
+        this.connection.sendNotification(ShowMessageNotification.type, {
         type: MessageType.Info,
-        message: usageDetails(usage, name),
-      });
+          message: usageDetails(usage, name),
+        }),
+      );
     } catch (err) {
       logException(this.logger, this.tracer, err, LogLevel.error);
     }
@@ -944,9 +969,7 @@ export class KLS {
   private refreshCodeLenses(): void {
     const { clientCapability } = this.configurationService.serverConfiguration;
     if (clientCapability.hasCodeLensRefresh) {
-      this.connection
-        .sendRequest(CodeLensRefreshRequest.type)
-        .catch((err) => logException(this.logger, this.tracer, err, LogLevel.warn));
+      this.logFailure(this.connection.sendRequest(CodeLensRefreshRequest.type));
     }
   }
 
@@ -966,12 +989,14 @@ export class KLS {
         continue;
       }
 
-      this.connection.sendDiagnostics({
-        uri,
-        diagnostics: this.lintManager
-          .apply(documentDiagnostics)
-          .map(cleanDiagnostic),
-      });
+      this.logFailure(
+        this.connection.sendDiagnostics({
+          uri,
+          diagnostics: this.lintManager
+            .apply(documentDiagnostics)
+            .map(cleanDiagnostic),
+        }),
+      );
     }
   }
 
@@ -1000,7 +1025,7 @@ export class KLS {
     const found = settings.find(
       (setting) => typeof setting === 'object' && setting !== null,
     );
-    return normalizeClientConfiguration(found as Partial<ClientConfiguration>);
+    return normalizeClientConfiguration(found);
   }
 
   /**
@@ -1287,7 +1312,7 @@ export class KLS {
           // the statement ends here
           if (depth === 0) return undefined;
           break;
-        case TokenType.bracketOpen:
+        case TokenType.bracketOpen: {
           if (depth > 0) {
             depth -= 1;
             break;
@@ -1307,6 +1332,7 @@ export class KLS {
           // a grouping: the call, if any, is further out
           index = 0;
           break;
+        }
       }
     }
 

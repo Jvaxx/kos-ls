@@ -43,7 +43,7 @@ export const createMockIoService = (files: Map<string, string>): IoService => {
         return Promise.resolve(document);
       }
 
-      return Promise.reject();
+      return Promise.reject(new Error(`No document at ${path}`));
     },
     async *loadDirectory(_: string): AsyncIterableIterator<Document> {},
     exists(uri: URI): Maybe<URI> {

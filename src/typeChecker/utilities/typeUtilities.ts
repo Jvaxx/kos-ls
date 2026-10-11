@@ -83,7 +83,7 @@ export const tokenTrackedType = (token: Token): Maybe<IType> => {
     case TokenType.string:
     case TokenType.fileIdentifier:
       return stringType;
-    default:
+    default: {
       // if not a literally we need to lookup tracker
       const { tracker } = token;
       if (empty(tracker)) {
@@ -91,6 +91,7 @@ export const tokenTrackedType = (token: Token): Maybe<IType> => {
       }
 
       return tracker.getType({ uri: token.uri, range: token });
+    }
   }
 };
 

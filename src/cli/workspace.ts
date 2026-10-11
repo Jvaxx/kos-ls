@@ -90,7 +90,7 @@ export async function openWorkspace(root: string): Promise<Workspace> {
     rootUri: URI.file(root).toString(),
     capabilities: {},
   });
-  client.sendNotification('initialized', {});
+  await client.sendNotification('initialized', {});
 
   // once a request is answered, the server has received what was sent
   // before it; once idle, the diagnostics it sent before the next answer

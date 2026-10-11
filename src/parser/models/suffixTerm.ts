@@ -44,10 +44,10 @@ export abstract class SuffixTermBase extends NodeBase implements ISuffixTerm {
    * Called when the node should execute the visitors methods
    * @param visitor visitor object
    */
-  public abstract accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T>;
+  public abstract accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R;
 }
 
 /**
@@ -78,10 +78,10 @@ export class Invalid extends SuffixTermBase {
     return [''];
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitSuffixTermInvalid(this, parameters);
   }
 
@@ -195,10 +195,10 @@ export class SuffixTrailer extends SuffixTermBase {
     return suffixTermLines;
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitSuffixTrailer(this, parameters);
   }
 
@@ -228,7 +228,7 @@ export class SuffixTerm extends SuffixTermBase {
     super();
   }
   public get ranges(): Range[] {
-    return [this.atom as Range, ...(this.trailers as Range[])];
+    return [this.atom, ...(this.trailers as Range[])];
   }
   public get start(): Position {
     return this.atom.start;
@@ -247,10 +247,10 @@ export class SuffixTerm extends SuffixTermBase {
     return joinLines('', atomLines, ...trailersLines);
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitSuffixTerm(this, parameters);
   }
 
@@ -309,10 +309,10 @@ export class Call extends SuffixTermBase {
     return argsResult;
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitCall(this, parameters);
   }
 
@@ -355,10 +355,10 @@ export class HashIndex extends SuffixTermBase {
     return [`${this.indexer.lexeme}${this.index.lexeme}`];
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitHashIndex(this, parameters);
   }
 
@@ -410,10 +410,10 @@ export class BracketIndex extends SuffixTermBase {
     return lines;
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitBracketIndex(this, parameters);
   }
 
@@ -455,10 +455,10 @@ export class Delegate extends SuffixTermBase {
     return [this.atSign.lexeme];
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitDelegate(this, parameters);
   }
 
@@ -500,10 +500,10 @@ export class Literal extends SuffixTermBase {
     return [`${this.token.lexeme}`];
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitLiteral(this, parameters);
   }
 
@@ -552,10 +552,10 @@ export class Identifier extends SuffixTermBase {
     return [`${this.token.lexeme}`];
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitIdentifier(this, parameters);
   }
 
@@ -611,10 +611,10 @@ export class Grouping extends SuffixTermBase {
     return lines;
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: ISuffixTermVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: ISuffixTermVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitGrouping(this, parameters);
   }
 

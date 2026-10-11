@@ -40,7 +40,7 @@ export class VariadicType implements IType {
     return undefined;
   }
   public indexer(): Maybe<IIndexer> {
-    throw undefined;
+    return undefined;
   }
   public getTypeParameters(): IParametricType[] {
     return [];

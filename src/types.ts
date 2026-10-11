@@ -9,7 +9,7 @@ export interface DependencyInfo {
   diagnostics: DiagnosticUri[];
 }
 
-export type Fallible<T extends {}> = T & {
+export type Fallible<T extends object> = T & {
   diagnostics: DiagnosticUri[];
 };
 

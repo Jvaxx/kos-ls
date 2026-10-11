@@ -122,7 +122,7 @@ export function validateOptions(raw: unknown): OptionsResult {
   }
 
   const keys = Object.keys(optionKinds) as (keyof FormatOptions)[];
-  for (const [rawKey, value] of Object.entries(raw)) {
+  for (const [rawKey, value] of Object.entries(raw as Record<string, unknown>)) {
     const key = keys.find(k => k.toLowerCase() === rawKey.toLowerCase());
     if (key === undefined) {
       errors.push(`Unknown format option ${rawKey}.`);
@@ -133,30 +133,30 @@ export function validateOptions(raw: unknown): OptionsResult {
     if (kind === 'count') {
       const count = typeof value === 'string' ? Number(value) : value;
       if (typeof count !== 'number' || !Number.isInteger(count) || count < 0) {
-        errors.push(`${key} must be a whole number, not ${value}.`);
+        errors.push(`${key} must be a whole number, not ${String(value)}.`);
         continue;
       }
-      (options as any)[key] = count;
+      Object.assign(options, { [key]: count });
     } else if (kind === 'boolean') {
       const flag =
         typeof value === 'string' ? { true: true, false: false }[
           value.toLowerCase() as 'true' | 'false'
         ] : value;
       if (typeof flag !== 'boolean') {
-        errors.push(`${key} must be true or false, not ${value}.`);
+        errors.push(`${key} must be true or false, not ${String(value)}.`);
         continue;
       }
-      (options as any)[key] = flag;
+      Object.assign(options, { [key]: flag });
     } else {
       const choice =
         typeof value === 'string'
           ? kind.find(c => c.toLowerCase() === value.toLowerCase())
           : undefined;
       if (choice === undefined) {
-        errors.push(`${key} must be one of ${kind.join(', ')}, not ${value}.`);
+        errors.push(`${key} must be one of ${kind.join(', ')}, not ${String(value)}.`);
         continue;
       }
-      (options as any)[key] = choice;
+      Object.assign(options, { [key]: choice });
     }
   }
 
@@ -206,5 +206,8 @@ export function parseFormatFile(text: string): OptionsResult {
 export function resolveOptions(
   ...options: (Partial<FormatOptions> | undefined)[]
 ): FormatOptions {
-  return Object.assign({}, defaultFormatOptions, ...options);
+  return options.reduce<FormatOptions>(
+    (resolved, partial) => ({ ...resolved, ...partial }),
+    { ...defaultFormatOptions },
+  );
 }

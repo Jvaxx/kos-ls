@@ -2077,9 +2077,9 @@ export class Parser {
   private attachPartial<T, K extends keyof NodeDataBuilder<T>>(
     builder: NodeDataBuilder<T>,
     key: K,
-    partial: any,
+    partial: Maybe<PartialNode>,
   ): void {
-    builder[key] = partial;
+    builder[key] = partial as NodeDataBuilder<T>[K];
   }
 
   // attempt to synchronize parser

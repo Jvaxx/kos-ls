@@ -26,6 +26,10 @@ export const walkDir = (
   readdirSync(dir).forEach(f => {
     const dirPath = join(dir, f);
     const isDirectory = statSync(dirPath).isDirectory();
-    isDirectory ? walkDir(dirPath, callback) : callback(join(dir, f));
+    if (isDirectory) {
+      walkDir(dirPath, callback);
+    } else {
+      callback(join(dir, f));
+    }
   });
 };

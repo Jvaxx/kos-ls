@@ -211,7 +211,7 @@ export function loadDatabase(database: KosDatabase): KosTypes {
       const [element] = expression.args;
       return type.apply(element === undefined ? structureType : resolve(element));
     }
-    return type as IType;
+    return type;
   };
 
   const resolveText = (text: string): IType => resolve(parseType(text));

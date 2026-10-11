@@ -17,8 +17,8 @@ import { Token } from '../models/token';
  */
 export class SetResolver
   implements
-    IExprVisitor<() => ISetResolverResult>,
-    ISuffixTermVisitor<() => ISetResolverResult> {
+    IExprVisitor<[], ISetResolverResult>,
+    ISuffixTermVisitor<[], ISetResolverResult> {
   /**
    * Set resolver constructor
    */
@@ -110,7 +110,7 @@ export class SetResolver
    * @param _ invalid suffix term
    */
   public visitSuffixTermInvalid(_: SuffixTerm.Invalid): ISetResolverResult {
-    throw { set: undefined, used: [] };
+    return { set: undefined, used: [] };
   }
 
   /**

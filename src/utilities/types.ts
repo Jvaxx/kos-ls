@@ -12,7 +12,7 @@ type PartialRequire<T, K extends keyof T> = Required<Pick<T, K>> & Omit<T, K>;
  * The type helper restricts the type to constructor functions
  * or classes
  */
-type Constructor<T = {}> = new (...args: any[]) => T;
+type Constructor<T = object> = new (...args: never[]) => T;
 
 /**
  * This type helper gets the property type of a parent type

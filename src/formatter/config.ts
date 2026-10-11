@@ -38,10 +38,11 @@ export function findFormatOptions(path: string): FoundOptions {
 
     const configFile = join(directory, 'ksconfig.json');
     if (existsSync(configFile)) {
-      const config = parse(readText(configFile));
+      const config: unknown = parse(readText(configFile));
       if (
         typeof config === 'object' &&
         config !== null &&
+        'format' in config &&
         config.format !== undefined
       ) {
         return { ...validateOptions(config.format), file: configFile };

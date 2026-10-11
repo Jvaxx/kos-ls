@@ -89,7 +89,6 @@ const checkSource = (
   const resolverErrors = resolver.resolve();
   const unusedErrors = symbolTableBuilder.findUnused();
 
-  debugger;
   const checker = new TypeChecker(result.parse.script);
   const typeCheckError = checker.check();
 

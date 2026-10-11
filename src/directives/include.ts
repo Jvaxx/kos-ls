@@ -39,7 +39,7 @@ export class Include {
   public includePath(): string {
     switch (this.path.type) {
       case TokenType.string:
-        return this.path.literal;
+        return String(this.path.literal);
       default:
         return this.path.lexeme;
     }
@@ -66,7 +66,7 @@ export class Include {
       case TokenType.string:
       case TokenType.fileIdentifier:
       case TokenType.identifier:
-        return new Include(directive.directive, token as any);
+        return new Include(directive.directive, token as Token<IncludeTypes>);
       default:
         return createDiagnosticUri(
           token,

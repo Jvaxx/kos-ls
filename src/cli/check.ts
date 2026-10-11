@@ -98,7 +98,7 @@ export async function main(
   await workspace.close();
   const reported = [...workspace.diagnostics]
     .map(([path, diagnostics]) => ({ path, diagnostics }))
-    .filter(({ path }) => selected(path, root!, paths))
+    .filter(({ path }) => selected(path, root, paths))
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 
   const counts = new Map<DiagnosticSeverity, number>();

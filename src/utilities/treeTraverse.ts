@@ -14,9 +14,9 @@ import { empty } from './typeGuards';
 
 export abstract class TreeTraverse
   implements
-    IExprVisitor<() => void>,
-    IStmtVisitor<() => void>,
-    ISuffixTermVisitor<() => void> {
+    IExprVisitor<[], void>,
+    IStmtVisitor<[], void>,
+    ISuffixTermVisitor<[], void> {
   constructor() {}
 
   // find an statement

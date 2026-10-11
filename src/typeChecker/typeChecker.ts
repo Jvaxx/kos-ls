@@ -100,9 +100,9 @@ const comparisonOperators = new Set([
  */
 export class TypeChecker
   implements
-    IStmtVisitor<() => Diagnostics>,
-    IExprVisitor<() => ITypeResultExpr<IType>>,
-    ISuffixTermVisitor<(builder: SuffixTypeBuilder) => Diagnostics> {
+    IStmtVisitor<[], Diagnostics>,
+    IExprVisitor<[], ITypeResultExpr<IType>>,
+    ISuffixTermVisitor<[builder: SuffixTypeBuilder], Diagnostics> {
   /**
    * the logger to logging information
    */
@@ -1074,7 +1074,7 @@ export class TypeChecker
         };
 
       case TokenType.minus:
-      case TokenType.plus:
+      case TokenType.plus: {
         const operatorKind = unaryOperatorMap.get(expr.operator.type);
         if (!empty(operatorKind)) {
           return this.checkUnary(
@@ -1084,6 +1084,7 @@ export class TypeChecker
             operatorKind,
           );
         }
+      }
     }
 
     throw new Error(
@@ -1417,7 +1418,7 @@ export class TypeChecker
         return errors;
 
       // If index is identify check that it holds a integer
-      case TokenType.identifier:
+      case TokenType.identifier: {
         const { tracker } = suffixTerm.indexer;
 
         if (this.isBasicTracker(tracker)) {
@@ -1439,6 +1440,7 @@ export class TypeChecker
         );
 
         return errors;
+      }
 
       // All other cases are disallowed
       default:
@@ -1515,9 +1517,10 @@ export class TypeChecker
       errors.push(
         createDiagnostic(
           suffixTerm.index,
-          `${indexer.toString()} may indexed with of type ${
-            callSignature.params()[0]
-          }` + ` ${suffixTerm.toString()} is of type ${indexResult.type}`,
+          `${indexer.toString()} may indexed with of type ${callSignature
+            .params()[0]
+            .toString()}` +
+            ` ${suffixTerm.toString()} is of type ${indexResult.type.toString()}`,
           DiagnosticSeverity.Hint,
           DIAGNOSTICS.TYPE_WRONG,
         ),
@@ -1732,7 +1735,7 @@ export class TypeChecker
     source: IType,
     target?: IType,
   ): IType {
-    if (notEmpty(source.callSignature) && !source.access.get) {
+    if (!source.access.get) {
       errors.push(
         createDiagnostic(
           range,

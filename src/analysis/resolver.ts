@@ -36,9 +36,9 @@ type Diagnostics = Diagnostic[];
 
 export class Resolver
   implements
-    IStmtVisitor<() => Diagnostics>,
-    IExprVisitor<() => Diagnostics>,
-    ISuffixTermVisitor<() => Diagnostics> {
+    IStmtVisitor<[], Diagnostics>,
+    IExprVisitor<[], Diagnostics>,
+    ISuffixTermVisitor<[], Diagnostics> {
   /**
    * Script the resolver executes on
    */

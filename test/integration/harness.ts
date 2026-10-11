@@ -5,6 +5,7 @@ import {
   CodeAction,
   CodeLens,
   CompletionItem,
+  ConfigurationParams,
   createConnection,
   Diagnostic,
   DocumentHighlight,
@@ -15,6 +16,7 @@ import {
   PublishDiagnosticsParams,
   Range,
   SemanticTokens,
+  ShowMessageParams,
   SignatureHelp,
   TextEdit,
   WorkspaceEdit,
@@ -103,14 +105,14 @@ export class TestClient {
         client.diagnostics.set(params.uri, params.diagnostics),
     );
     connection.onNotification('window/logMessage', () => {});
-    connection.onNotification('window/showMessage', (params) =>
+    connection.onNotification('window/showMessage', (params: ShowMessageParams) =>
       client.shown.push(params.message),
     );
     connection.onRequest('workspace/codeLens/refresh', () => {
       client.codeLensRefreshes += 1;
       return null;
     });
-    connection.onRequest('workspace/configuration', (params) =>
+    connection.onRequest('workspace/configuration', (params: ConfigurationParams) =>
       params.items.map(({ section }: { section?: string }) =>
         section === (options.section ?? 'kos-ls')
           ? options.settings ?? null
@@ -131,7 +133,7 @@ export class TestClient {
         },
       },
     });
-    connection.sendNotification('initialized', {});
+    void connection.sendNotification('initialized', {});
     return client;
   }
 
@@ -145,7 +147,7 @@ export class TestClient {
    */
   open(path: string, text?: string): void {
     this.versions.set(path, 1);
-    this.connection.sendNotification('textDocument/didOpen', {
+    void this.connection.sendNotification('textDocument/didOpen', {
       textDocument: {
         uri: this.uri(path),
         languageId: 'kerboscript',
@@ -162,14 +164,14 @@ export class TestClient {
   change(path: string, text: string): void {
     const version = (this.versions.get(path) ?? 1) + 1;
     this.versions.set(path, version);
-    this.connection.sendNotification('textDocument/didChange', {
+    void this.connection.sendNotification('textDocument/didChange', {
       textDocument: { uri: this.uri(path), version },
       contentChanges: [{ text }],
     });
   }
 
   close(path: string): void {
-    this.connection.sendNotification('textDocument/didClose', {
+    void this.connection.sendNotification('textDocument/didClose', {
       textDocument: { uri: this.uri(path) },
     });
   }
@@ -180,7 +182,7 @@ export class TestClient {
    * (1 created, 2 changed, 3 deleted)
    */
   filesChanged(...changes: [string, 1 | 2 | 3][]): void {
-    this.connection.sendNotification('workspace/didChangeWatchedFiles', {
+    void this.connection.sendNotification('workspace/didChangeWatchedFiles', {
       changes: changes.map(([path, type]) => ({ uri: this.uri(path), type })),
     });
   }

@@ -149,10 +149,10 @@ export class Var extends Decl {
     ];
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: IStmtVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: IStmtVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitDeclVariable(this, parameters);
   }
 }
@@ -207,10 +207,10 @@ export class Lock extends Decl {
     return [this.lock, this.identifier, this.to, this.value];
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: IStmtVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: IStmtVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitDeclLock(this, parameters);
   }
 }
@@ -256,10 +256,10 @@ export class Func extends Decl {
     return [this.functionToken, this.identifier, this.block];
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: IStmtVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: IStmtVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitDeclFunction(this, parameters);
   }
 }
@@ -280,8 +280,8 @@ export class Param extends Decl {
 
   public toLines(): string[] {
     const declareLine = empty(this.scope)
-      ? [`${this.parameterToken.lexeme}`]
-      : [`${this.scope.toString()} ${this.parameterToken.lexeme}`];
+      ? this.parameterToken.lexeme
+      : `${this.scope.toString()} ${this.parameterToken.lexeme}`;
 
     const paramLines = joinLines(
       ', ',
@@ -292,7 +292,7 @@ export class Param extends Decl {
       ...this.optionalParameters.map(param => param.toLines()),
     );
 
-    let lines: string[] = [];
+    let lines: string[];
     if (
       this.requiredParameters.length > 0 &&
       this.optionalParameters.length > 0
@@ -336,10 +336,10 @@ export class Param extends Decl {
     ];
   }
 
-  public accept<T extends (...args: any) => any>(
-    visitor: IStmtVisitor<T>,
-    parameters: Parameters<T>,
-  ): ReturnType<T> {
+  public accept<P extends unknown[], R>(
+    visitor: IStmtVisitor<P, R>,
+    parameters: P,
+  ): R {
     return visitor.visitDeclParameter(this, parameters);
   }
 }

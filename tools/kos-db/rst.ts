@@ -94,7 +94,7 @@ export function parseSignature(signature: string): {
     if (/^\s*\[/.test(part)) {
       optional = true;
     }
-    const raw = part.replace(/[\[\]]/g, '').trim();
+    const raw = part.replace(/[[\]]/g, '').trim();
     const opensNext = /\w[^\w]*\[\s*$/.test(part);
     if (raw === '') {
       optional ||= part.includes('[');

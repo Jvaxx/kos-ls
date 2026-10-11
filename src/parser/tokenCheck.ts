@@ -1,5 +1,5 @@
 import { IScript, IStmt, IExpr, ISuffixTerm } from './types';
-import { Token } from '../models/token';
+import { Token, isToken } from '../models/token';
 import { TreeTraverse } from '../utilities/treeTraverse';
 
 /**
@@ -31,7 +31,7 @@ export class TokenCheck extends TreeTraverse {
 
   public stmtAction(stmt: IStmt) {
     for (const range of stmt.ranges) {
-      if (range instanceof Token) {
+      if (isToken(range)) {
         this.tokens.push(range);
       }
     }
@@ -41,7 +41,7 @@ export class TokenCheck extends TreeTraverse {
 
   public exprAction(expr: IExpr) {
     for (const range of expr.ranges) {
-      if (range instanceof Token) {
+      if (isToken(range)) {
         this.tokens.push(range);
       }
     }
@@ -51,7 +51,7 @@ export class TokenCheck extends TreeTraverse {
 
   public suffixTermAction(suffixTerm: ISuffixTerm) {
     for (const range of suffixTerm.ranges) {
-      if (range instanceof Token) {
+      if (isToken(range)) {
         this.tokens.push(range);
       }
     }

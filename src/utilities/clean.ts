@@ -34,7 +34,7 @@ export const cleanCompletion = (completion: CompletionItem): CompletionItem => {
       completion.additionalTextEdits.map(edit => cleanTextEdit(edit)),
     commitCharacters: completion.commitCharacters,
     command: completion.command && cleanCommand(completion.command),
-    data: completion.data,
+    data: completion.data as unknown,
   };
 };
 
@@ -70,7 +70,7 @@ export const cleanCommand = (command: Command): Command => {
   return {
     title: command.title,
     command: command.command,
-    arguments: command.arguments && [...command.arguments],
+    arguments: command.arguments && [...(command.arguments as unknown[])],
   };
 };
 

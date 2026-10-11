@@ -6,7 +6,7 @@ import * as SuffixTerm from './models/suffixTerm';
 import { Position } from 'vscode-languageserver';
 import { binarySearch, rangeContainsPos } from '../utilities/positionUtils';
 import { empty } from '../utilities/typeGuards';
-import { Token } from '../models/token';
+import { isToken } from '../models/token';
 import { TreeExecute } from '../utilities/treeExecute';
 
 export type AstContext =
@@ -118,7 +118,7 @@ export class ScriptFind extends TreeExecute<Maybe<IFindResult>> {
     }
 
     // return result if token found
-    if (searchResult instanceof Token) {
+    if (isToken(searchResult)) {
       return {
         node: this.isContext(node) ? node : undefined,
         token: searchResult,

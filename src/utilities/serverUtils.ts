@@ -81,7 +81,10 @@ export class CompletionDocs {
    * @param item completion item
    */
   public resolve(item: CompletionItem): CompletionItem {
-    const { generation, index } = item.data ?? {};
+    const { generation, index } = (item.data ?? {}) as {
+      generation?: unknown;
+      index?: unknown;
+    };
     if (generation !== this.generation || typeof index !== 'number') {
       return item;
     }

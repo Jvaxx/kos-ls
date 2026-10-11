@@ -237,4 +237,5 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
   a system lock is a write of it in highlights; rename refuses kOS's
   names (it used to edit the uses and a pseudo-file `builtIn`), and
   references no longer include that pseudo-file.
-- Maintenance: ESLint, dependency updates, remove pre-Node-10 shims.
+- Maintenance: ~~ESLint~~ (done: `npm run lint`, in CI), dependency
+  updates, remove pre-Node-10 shims.

@@ -48,11 +48,8 @@ import { directiveParser } from '../directives/directiveParser';
  */
 export type DiagnosticsByUri = Map<string, DiagnosticUri[]>;
 
-type PropagateHandler = (diagnostics: DiagnosticsByUri) => void;
-
-export declare interface AnalysisService {
-  on(event: 'propagate', listener: PropagateHandler): this;
-  emit(event: 'propagate', ...args: Parameters<PropagateHandler>): boolean;
+interface AnalysisEvents {
+  propagate: [diagnostics: DiagnosticsByUri];
 }
 
 /**
@@ -94,7 +91,7 @@ const PROPAGATION_DELAY = 200;
  * Analysis jobs run one at a time, as symbol tables of different
  * documents are linked together and must not be rebuilt concurrently.
  */
-export class AnalysisService extends EventEmitter {
+export class AnalysisService extends EventEmitter<AnalysisEvents> {
   private readonly logger: ILogger;
   private readonly tracer: ITracer;
   private readonly documentService: DocumentService;
@@ -343,7 +340,7 @@ export class AnalysisService extends EventEmitter {
         return await this.analyzeDirty();
       } catch (err) {
         logException(this.logger, this.tracer, err, LogLevel.error);
-        return new Map();
+        return new Map<string, DiagnosticUri[]>();
       }
     });
   }
@@ -392,7 +389,7 @@ export class AnalysisService extends EventEmitter {
 
     const timer = setTimeout(() => {
       this.propagation = undefined;
-      this.enqueue(async () => {
+      void this.enqueue(async () => {
         try {
           const diagnostics = await this.analyzeDirty();
           if (diagnostics.size > 0) {
@@ -784,7 +781,7 @@ export class AnalysisService extends EventEmitter {
           DiagnosticSeverity.Information,
           DIAGNOSTICS.LOAD_ERROR,
         );
-      case 'file':
+      case 'file': {
         const normalized = normalizeExtensions(resolution.uri);
         if (
           !empty(normalized) &&
@@ -798,6 +795,7 @@ export class AnalysisService extends EventEmitter {
           DiagnosticSeverity.Information,
           DIAGNOSTICS.LOAD_ERROR,
         );
+      }
     }
   }
 
