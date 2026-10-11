@@ -99,12 +99,12 @@ The most visible feature, built on phases 1-2:
 - Hover in Markdown: signature, type, access (get/set), description, and a
   link to the kOS documentation page, for every builtin and suffix.
 - Doc comments for user code: the `//` comment block directly above a
-  `function`, `parameter`, `declare`/`local`/`global` or `lock` is its
-  documentation, shown in hover, completion and signature help. Proposed
-  tags (to be settled with real use):
+  `function` or `parameter` is its documentation, shown in hover,
+  completion and signature help. Tags:
   `// @param name {Vector} description` and `// @return {Scalar} ...`.
-  Types given in tags feed the type checker, so a parameter documented as
-  `{Vessel}` gets suffix completion and checking instead of `structure`.
+  To be decided: whether types given in tags feed the type checker, so
+  a parameter documented as `{Vessel}` gets suffix completion and
+  checking instead of `Structure`.
 - Completion items with documentation (`completionItem/resolve`), signature
   help with parameter names and per-parameter docs, inlay hints for
   inferred types (optional).
