@@ -125,4 +125,13 @@ export interface VariableEntry extends Documented {
 
   /** `getset` for variables that can be set (`set target to ...`) */
   access: 'get' | 'getset';
+
+  /** units of the value, e.g. `m` */
+  units?: string;
+
+  /**
+   * whether kOS reads it continuously when it is locked (`lock throttle
+   * to ...`): `throttle`, `steering`, `wheelThrottle`, `wheelSteering`
+   */
+  lock?: boolean;
 }

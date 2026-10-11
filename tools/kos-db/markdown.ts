@@ -53,6 +53,8 @@ export function convertInline(text: string): string {
       .replace(/``([^`]+)``/g, '`$1`')
       // hyperlinks: `text <url>`_ and `text <url>`__
       .replace(/`([^`<]+?)\s*<(https?:[^>]+)>`__?/g, '[$1]($2)')
+      // links relative to the documentation: their text
+      .replace(/`([^`<]+?)\s*<[^>:]+>`__?/g, '$1')
       // anonymous references: `text`_
       .replace(/`([^`]+)`__?(?=\W|$)/g, '$1')
       // substitutions: |name|
@@ -150,6 +152,81 @@ function listTable(lines: string[]): string[] {
 }
 
 /**
+ * Border of a simple table: `=====  =====`
+ */
+export const simpleTableBorder = /^=+(?:\s+=+)+\s*$/;
+
+/**
+ * The index after a simple table starting with a border at `start`: the
+ * table ends with the border followed by a blank line or the end
+ */
+export function simpleTableEnd(lines: string[], start: number): number {
+  let borders = 0;
+  for (let i = start; i < lines.length; i++) {
+    if (simpleTableBorder.test(lines[i])) {
+      borders++;
+      if (borders >= 2 && (i + 1 >= lines.length || isBlank(lines[i + 1]))) {
+        return i + 1;
+      }
+    }
+  }
+  return lines.length;
+}
+
+/**
+ * Convert a simple table to a Markdown table
+ * @param lines the table, borders included
+ */
+function simpleTable(lines: string[]): string[] {
+  // columns: the spans of the `=` runs of the first border
+  const spans = [...lines[0].matchAll(/=+/g)].map((m) => ({
+    start: m.index!,
+    end: m.index! + m[0].length,
+  }));
+  const cells = (line: string) =>
+    spans.map((span, i) =>
+      line
+        .slice(span.start, i === spans.length - 1 ? undefined : spans[i + 1].start)
+        .trim(),
+    );
+
+  const borders = lines
+    .map((line, i) => (simpleTableBorder.test(line) ? i : -1))
+    .filter((i) => i >= 0);
+  // a header when there are three borders: top, under the header, bottom
+  const headerEnd = borders.length >= 3 ? borders[1] : -1;
+
+  const rows: string[][] = [];
+  let header: string[] | undefined;
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (simpleTableBorder.test(line) || /^-+\s*$/.test(line.trim()) || isBlank(line)) {
+      continue;
+    }
+    const row = cells(line);
+    if (i < headerEnd) {
+      header = header ? header.map((c, j) => `${c} ${row[j]}`.trim()) : row;
+    } else if (row[0] === '' && rows.length > 0) {
+      // continuation of the previous row
+      const previous = rows[rows.length - 1];
+      row.forEach((c, j) => {
+        previous[j] = `${previous[j]} ${c}`.trim();
+      });
+    } else {
+      rows.push(row);
+    }
+  }
+
+  const cell = (text: string) => convertInline(text).replace(/\|/g, '\\|');
+  const line = (row: string[]) => `| ${row.map(cell).join(' | ')} |`;
+  return [
+    line(header ?? spans.map(() => '')),
+    `|${' --- |'.repeat(spans.length)}`,
+    ...rows.map(line),
+  ];
+}
+
+/**
  * Convert RST lines (already dedented to their block) to Markdown
  * @param lines RST lines
  * @param language language of literal blocks
@@ -198,6 +275,13 @@ export function rstToMarkdown(
       // other directives (images, figures, indexes, targets) are dropped
 
       out.push('');
+      i = end;
+      continue;
+    }
+
+    if (simpleTableBorder.test(line)) {
+      const end = simpleTableEnd(source, i);
+      out.push(...simpleTable(source.slice(i, end)), '');
       i = end;
       continue;
     }

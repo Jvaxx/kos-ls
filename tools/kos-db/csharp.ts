@@ -24,11 +24,20 @@ export interface CsClass {
   addon?: string;
   /** names from a Function attribute */
   functionNames?: string[];
+  /**
+   * for a function: the number of arguments it pops, whether the count
+   * varies (it calls CountRemainingArgs) and whether it returns a value
+   */
+  functionShape?: { pops: number; variable: boolean; returns: boolean };
   /** whether the class has a Binding attribute */
   binding: boolean;
   suffixes: CsSuffix[];
   /** names given to AddGetter / AddSetter calls in the class */
   getters: CsBinding[];
+  /** enclosing namespace, e.g. `kOS.Suffixed` */
+  namespace: string;
+  /** namespaces imported by the file's using directives */
+  usings: string[];
   file: string;
   line: number;
 }
@@ -289,6 +298,22 @@ export function extractClasses(source: string, file: string): CsClass[] {
   const code = stripComments(source);
   const found: { cls: CsClass; start: number; end: number }[] = [];
 
+  const usings = [...code.matchAll(/^\s*using\s+([\w.]+)\s*;/gm)].map((m) => m[1]);
+  const namespaces: { name: string; start: number; end: number }[] = [];
+  for (const match of code.matchAll(/\bnamespace\s+([\w.]+)\s*([{;])/g)) {
+    const open = match.index! + match[0].length - 1;
+    namespaces.push({
+      name: match[1],
+      start: open,
+      end: match[2] === ';' ? code.length : matchBracket(code, open),
+    });
+  }
+  const namespaceAt = (index: number) =>
+    namespaces
+      .filter((ns) => ns.start < index && index < ns.end)
+      .map((ns) => ns.name)
+      .join('.');
+
   for (const match of code.matchAll(classPattern)) {
     const [whole, attributes, , name, generics, base] = match;
     const open = match.index! + whole.length - 1;
@@ -312,6 +337,15 @@ export function extractClasses(source: string, file: string): CsClass[] {
           .filter((n): n is string => n !== undefined)
       : undefined;
 
+    const body = code.slice(open, end === -1 ? code.length : end);
+    const functionShape = functionAttribute
+      ? {
+          pops: (body.match(/\bPop(?:Value|Structure)\w*\s*\(/g) ?? []).length,
+          variable: /\bCountRemainingArgs\s*\(/.test(body),
+          returns: /\bReturnValue\s*=/.test(body),
+        }
+      : undefined;
+
     found.push({
       cls: {
         name,
@@ -322,9 +356,12 @@ export function extractClasses(source: string, file: string): CsClass[] {
         kosNames,
         addon,
         functionNames,
+        functionShape,
         binding: /\bBinding\s*\(/.test(attributes),
         suffixes: [],
         getters: [],
+        namespace: namespaceAt(match.index!),
+        usings,
         file,
         line: lineAt(code, match.index! + attributes.length),
       },
@@ -383,7 +420,38 @@ export function extractClasses(source: string, file: string): CsClass[] {
     });
   }
 
-  for (const call of code.matchAll(/\b(AddGetter|AddSetter)\s*\(/g)) {
+  // config keys: new ConfigKey(property, NAME, description, default,
+  // min, max, typeof(type)) are settable suffixes of the Config
+  for (const call of code.matchAll(/\bnew\s+ConfigKey\s*\(/g)) {
+    const open = call.index! + call[0].length - 1;
+    const close = matchBracket(code, open);
+    const cls = owner(call.index!);
+    if (close === -1 || cls === undefined) {
+      continue;
+    }
+    const args = splitTopLevel(code.slice(open + 1, close));
+    const name = args[1] && stringLiteral(args[1]);
+    const type = /^typeof\s*\(\s*([\w.]+)\s*\)$/.exec(args[6] ?? '')?.[1];
+    // keys also registered with AddSuffix keep that registration
+    const registered = cls.suffixes.some((suffix) =>
+      suffix.names?.some((n) => n.toUpperCase() === name?.toUpperCase()),
+    );
+    if (name === undefined || type === undefined || registered) {
+      continue;
+    }
+    cls.suffixes.push({
+      names: [name],
+      kind: 'SetSuffix',
+      generics: [type],
+      description: args[2] && stringLiteral(args[2]),
+      file,
+      line: lineAt(code, call.index!),
+    });
+  }
+
+  for (const call of code.matchAll(
+    /\b(AddGetter|AddSetter|AddBoundVariable)\s*\(/g,
+  )) {
     const open = call.index! + call[0].length - 1;
     const close = matchBracket(code, open);
     const cls = owner(call.index!);
@@ -396,12 +464,19 @@ export function extractClasses(source: string, file: string): CsClass[] {
       continue;
     }
 
-    cls.getters.push({
-      names: parseNames(args[0]),
-      setter: call[1] === 'AddSetter',
-      file,
-      line: lineAt(code, call.index!),
-    });
+    const names = parseNames(args[0]);
+    const line = lineAt(code, call.index!);
+    // AddBoundVariable(name, getter, setter) registers both
+    const setters =
+      call[1] === 'AddBoundVariable'
+        ? [
+            ...(args[1] !== 'null' ? [false] : []),
+            ...(args[2] !== undefined && args[2] !== 'null' ? [true] : []),
+          ]
+        : [call[1] === 'AddSetter'];
+    for (const setter of setters) {
+      cls.getters.push({ names, setter, file, line });
+    }
   }
 
   return found.map((entry) => entry.cls);
