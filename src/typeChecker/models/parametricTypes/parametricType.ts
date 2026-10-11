@@ -23,6 +23,11 @@ export class ParametricType implements IParametricType {
   public readonly name: string;
 
   /**
+   * The name as written in the definitions, see Type.displayName
+   */
+  public displayName: string;
+
+  /**
    * What is the access of this type
    */
   public readonly access: Access;
@@ -91,6 +96,7 @@ export class ParametricType implements IParametricType {
     kind: TypeKind,
   ) {
     this.name = name;
+    this.displayName = name;
     this.access = access;
     this.kind = kind;
     this.anyType = false;

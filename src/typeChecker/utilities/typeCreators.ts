@@ -178,6 +178,7 @@ export const createParametricArgSuffixType = (
     typeParameters,
     TypeKind.suffix,
   );
+  parametricType.displayName = name;
 
   const callSignature = new GenericCallSignature(typeParameters);
   const typePlaceholders = callSignature.getTypeParameters();
@@ -237,13 +238,15 @@ export const createArgSuffixType = (
 ): Type => {
   const get = params.length === 0;
 
-  return new Type(
+  const type = new Type(
     name.toLowerCase(),
     { get, set: false },
     new Map(),
     TypeKind.suffix,
     new CallSignature(params, returns),
   );
+  type.displayName = name;
+  return type;
 };
 
 /**
@@ -252,13 +255,15 @@ export const createArgSuffixType = (
  * @param returns return type of suffix
  */
 export const createSuffixType = (name: string, returns: IType): Type => {
-  return new Type(
+  const type = new Type(
     name.toLowerCase(),
     { get: true, set: false },
     new Map(),
     TypeKind.suffix,
     new CallSignature([], returns),
   );
+  type.displayName = name;
+  return type;
 };
 
 /**
@@ -267,13 +272,15 @@ export const createSuffixType = (name: string, returns: IType): Type => {
  * @param returns return type of suffix
  */
 export const createSetSuffixType = (name: string, returns: IType): Type => {
-  return new Type(
+  const type = new Type(
     name.toLowerCase(),
     { get: true, set: true },
     new Map(),
     TypeKind.suffix,
     new CallSignature([], returns),
   );
+  type.displayName = name;
+  return type;
 };
 
 /**
@@ -282,13 +289,15 @@ export const createSetSuffixType = (name: string, returns: IType): Type => {
  * @param returns return type of suffix
  */
 export const createSetOnlySuffixType = (name: string, returns: IType): Type => {
-  return new Type(
+  const type = new Type(
     name.toLowerCase(),
     { get: false, set: true },
     new Map(),
     TypeKind.suffix,
     new CallSignature([], returns),
   );
+  type.displayName = name;
+  return type;
 };
 
 /**
@@ -306,13 +315,15 @@ export const createVarSuffixType = (
     throw new Error('Expected variadic type.');
   }
 
-  return new Type(
+  const type = new Type(
     name.toLowerCase(),
     { get: false, set: false },
     new Map(),
     TypeKind.suffix,
     new CallSignature([params], returns),
   );
+  type.displayName = name;
+  return type;
 };
 
 /**
@@ -326,13 +337,15 @@ export const createFunctionType = (
   returns: IType,
   ...params: IType[]
 ): Type => {
-  return new Type(
+  const type = new Type(
     name.toLowerCase(),
     { get: false, set: false },
     new Map(),
     TypeKind.function,
     new CallSignature(params, returns),
   );
+  type.displayName = name;
+  return type;
 };
 
 /**
@@ -350,13 +363,15 @@ export const createVarFunctionType = (
     throw new Error('Expected variadic type.');
   }
 
-  return new Type(
+  const type = new Type(
     name.toLowerCase(),
     { get: false, set: false },
     new Map(),
     TypeKind.function,
     new CallSignature([params], returns),
   );
+  type.displayName = name;
+  return type;
 };
 
 /**

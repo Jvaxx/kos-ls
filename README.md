@@ -34,11 +34,28 @@ vim.lsp.config("kos_ls", {
 vim.lsp.enable("kos_ls")
 ```
 
+## Client settings
+
+Read from the `kos-ls` settings section (`kos-vscode`, the section of
+kos-language-server, is still read when `kos-ls` is absent):
+
+|Setting|Values|Default|
+|--|--|--|
+|`completionCase`|`lowercase`, `uppercase`, `camelcase`, `pascalcase`|`camelcase`|
+|`trace.server.level`|`verbose`, `info`, `log`, `warn`, `error`, `none`|`error`|
+
+```lua
+vim.lsp.config("kos_ls", {
+    settings = { ["kos-ls"] = { completionCase = "lowercase" } },
+})
+```
+
 ## Workspace configuration
 
 A `ksconfig.json` at the root of the workspace sets the archive (`0:`)
-directory, custom bodies and lint levels. See
-[docs/ksconfig.md](docs/ksconfig.md).
+and other volume directories, files preloaded at runtime (such as a
+library a boot file loads), excluded directories, custom bodies and lint
+levels. See [docs/ksconfig.md](docs/ksconfig.md).
 
 ## Developer tools
 

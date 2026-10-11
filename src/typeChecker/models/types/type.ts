@@ -24,6 +24,12 @@ export class Type implements IType {
   public readonly name: string;
 
   /**
+   * The name as written in the definitions, with its word boundaries
+   * (e.g. `stageDeltaV`), to present it in the requested case
+   */
+  public displayName: string;
+
+  /**
    * What is the access level of this type
    */
   public readonly access: Access;
@@ -114,6 +120,7 @@ export class Type implements IType {
     }
 
     this.name = name;
+    this.displayName = name;
     this.access = access;
     this.typeArguments = typeArguments;
     this.kind = kind;

@@ -5,7 +5,7 @@ import {
   DidChangeConfigurationParams,
 } from 'vscode-languageserver';
 import { DocumentService } from './documentService';
-import { serverName } from '../utilities/constants';
+import { serverName, legacyServerNames } from '../utilities/constants';
 import { ServerConfiguration } from '../config/models/serverConfiguration';
 import { parseWorkspaceConfiguration } from '../config/workspaceConfigParser';
 import { DiagnosticUri } from '../types';
@@ -100,7 +100,9 @@ export class ConfigurationService extends EventEmitter {
     // check if the client supports configurations
     if (clientCapability.hasConfiguration) {
       const serverConfiguration = this.serverConfiguration.merge({
-        clientConfig: change.settings[serverName],
+        clientConfig: [serverName, ...legacyServerNames]
+          .map((section) => change.settings?.[section])
+          .find((settings) => typeof settings === 'object' && settings !== null),
       });
 
       // if the configuration has changed emit change event

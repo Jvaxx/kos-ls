@@ -161,6 +161,12 @@ export interface ITypeMappable<T = {}> {
  */
 export interface IParametricType extends ITypeMappable<IType> {
   /**
+   * The name with its word boundaries (e.g. `stageDeltaV`), to present it
+   * in any case; the name when absent
+   */
+  displayName?: string;
+
+  /**
    * What access does this type possess
    */
   readonly access: Access;

@@ -31,6 +31,7 @@ import * as SuffixTerm from './parser/models/suffixTerm';
 import {
   builtIn,
   serverName,
+  legacyServerNames,
   keywordCompletions,
   DEFAULT_BODIES,
   languageServer,
@@ -58,6 +59,7 @@ import { LintManager } from './config/lintManager';
 import {
   ServerConfiguration,
   defaultClientConfiguration,
+  normalizeClientConfiguration,
 } from './config/models/serverConfiguration';
 import {
   ConfigurationService,
@@ -98,6 +100,11 @@ export class KLS {
    * The current cased set of keywords for completions
    */
   private keywords: CompletionItem[];
+
+  /**
+   * The case completions are presented in
+   */
+  public completionCase: CaseKind;
 
   /**
    * Has the client finished initialization, after which configuration
@@ -164,6 +171,7 @@ export class KLS {
     );
     this.connection = connection;
     this.keywords = keywordCompletions(caseKind);
+    this.completionCase = caseKind;
     this.ioService = new IoService();
     this.resolverService = new ResolverService();
     this.documentService = new DocumentService(
@@ -623,6 +631,7 @@ export class KLS {
     );
 
     this.keywords = keywordCompletions(casePreference);
+    this.completionCase = casePreference;
     this.logger.level = logPreference;
 
     const { workspaceUri } = serverConfiguration;
@@ -681,20 +690,28 @@ export class KLS {
    * Get document settings from the client. If the client does not support
    * have configurations then return the default configurations.
    */
-  private getClientSettings(): Thenable<ClientConfiguration> {
+  private async getClientSettings(): Promise<ClientConfiguration> {
     const {
       clientCapability,
       workspaceUri,
     } = this.configurationService.serverConfiguration;
 
     if (!clientCapability.hasConfiguration) {
-      return Promise.resolve(defaultClientConfiguration);
+      return defaultClientConfiguration;
     }
 
-    return this.connection.workspace.getConfiguration({
-      scopeUri: workspaceUri?.toString(),
-      section: serverName,
-    });
+    const sections = [serverName, ...legacyServerNames];
+    const settings: unknown[] = await this.connection.workspace.getConfiguration(
+      sections.map((section) => ({
+        scopeUri: workspaceUri?.toString(),
+        section,
+      })),
+    );
+
+    const found = settings.find(
+      (setting) => typeof setting === 'object' && setting !== null,
+    );
+    return normalizeClientConfiguration(found as Partial<ClientConfiguration>);
   }
 
   /**

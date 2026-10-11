@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { PassThrough } from 'stream';
 import {
+  CompletionItem,
   createConnection,
   Diagnostic,
   Hover,
@@ -23,8 +24,10 @@ import { defaultWorkspaceConfiguration } from '../../src/config/models/workspace
 export const workspaces = join(__dirname, '../fixtures/workspaces');
 
 export interface StartOptions {
-  /** Client settings returned for the `kos-language-server` section */
+  /** Client settings */
   settings?: object;
+  /** The section the settings are returned for (default `kos-ls`) */
+  section?: string;
 }
 
 /**
@@ -79,7 +82,11 @@ export class TestClient {
     );
     connection.onNotification('window/logMessage', () => {});
     connection.onRequest('workspace/configuration', (params) =>
-      params.items.map(() => options.settings ?? null),
+      params.items.map(({ section }: { section?: string }) =>
+        section === (options.section ?? 'kos-ls')
+          ? options.settings ?? null
+          : null,
+      ),
     );
     connection.onRequest('client/registerCapability', () => null);
     connection.listen();
@@ -177,6 +184,26 @@ export class TestClient {
             d.message
           }`,
       );
+  }
+
+  /**
+   * Labels of the completions at a position
+   * @param path path relative to the workspace root
+   */
+  async completionLabels(
+    path: string,
+    line: number,
+    character: number,
+  ): Promise<string[]> {
+    await this.settle();
+    const items: CompletionItem[] | null = await this.connection.sendRequest(
+      'textDocument/completion',
+      {
+        textDocument: { uri: this.uri(path) },
+        position: { line, character },
+      },
+    );
+    return (items ?? []).map((item) => item.label);
   }
 
   async hover(

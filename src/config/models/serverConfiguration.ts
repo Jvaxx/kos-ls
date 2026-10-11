@@ -48,11 +48,7 @@ export class ServerConfiguration {
    */
   public merge(config: Partial<ServerConfiguration>): ServerConfiguration {
     return new ServerConfiguration(
-      Object.assign(
-        {},
-        defaultClientConfiguration,
-        config.clientConfig || this.clientConfig,
-      ),
+      normalizeClientConfiguration(config.clientConfig || this.clientConfig),
       config.clientCapability || this.clientCapability,
       config.workspaceFolder || this.workspaceFolder,
       config.workspaceUri || this.workspaceUri,
@@ -71,6 +67,41 @@ export class ServerConfiguration {
 /**
  * The default client side kls configuration
  */
+const completionCases = ['lowercase', 'uppercase', 'camelcase', 'pascalcase'];
+const logLevels = ['verbose', 'info', 'log', 'warn', 'error', 'none'];
+
+/**
+ * Complete settings sent by a client with the defaults, ignoring invalid
+ * values (case-insensitive enumerations are lowercased)
+ * @param settings settings from the client, possibly partial
+ */
+export function normalizeClientConfiguration(
+  settings: Partial<ClientConfiguration> | null | undefined,
+): ClientConfiguration {
+  const config = settings ?? {};
+  const defaults = defaultClientConfiguration;
+  const server = { ...defaults.trace.server, ...config.trace?.server };
+
+  const completionCase = String(config.completionCase ?? '').toLowerCase();
+  const level = String(server.level).toLowerCase();
+
+  return {
+    ...defaults,
+    ...config,
+    completionCase: completionCases.includes(completionCase)
+      ? (completionCase as ClientConfiguration['completionCase'])
+      : defaults.completionCase,
+    trace: {
+      server: {
+        ...server,
+        level: logLevels.includes(level)
+          ? (level as ClientConfiguration['trace']['server']['level'])
+          : defaults.trace.server.level,
+      },
+    },
+  };
+}
+
 export const defaultClientConfiguration: ClientConfiguration = {
   kerbalSpaceProgramPath: undefined,
   telnetHost: '127.0.0.1',

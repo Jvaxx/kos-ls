@@ -75,6 +75,8 @@ export class TypeBinder extends Binder<Type> {
       type,
     );
 
+    newType.displayName = type.displayName;
+
     // cache earlier in case of cycles list<T>:copy -> list<T>
     this.applicationCache.set(cachedTypeReplacement, newType);
 

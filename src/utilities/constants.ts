@@ -4,7 +4,13 @@ import { toCase } from './stringUtils';
 export const builtIn = 'builtIn';
 export const iterator = 'iterator';
 
-export const serverName = 'kos-vscode';
+export const serverName = 'kos-ls';
+
+/**
+ * Settings sections read when the client has none for serverName: the
+ * one kos-language-server used
+ */
+export const legacyServerNames = ['kos-vscode'];
 export const languageServer = 'kos-language-server';
 
 export const notFoundErrorCode = 'ENOTFOUND';

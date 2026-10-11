@@ -38,3 +38,11 @@ const toCamelCase = (...segments: string[]): string => {
   const [first, ...rest] = segments;
   return [first.toLowerCase(), toPascalCase(...rest)].join('');
 };
+
+/**
+ * Present a camel case name (e.g. `stageDeltaV`) in the requested case
+ * @param caseKind requested case
+ * @param name camel case name
+ */
+export const presentName = (caseKind: CaseKind, name: string): string =>
+  toCase(caseKind, ...name.split(/(?=[A-Z])/));
