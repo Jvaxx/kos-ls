@@ -11,9 +11,10 @@ const outDir = process.env.NODE_ENV && process.env.NODE_ENV === 'dev' ?
 const config = {
     target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
     entry: {
-        // the language server, and the `kos-ls format` command
+        // the language server, and the `kos-ls format` and `check` commands
         server: path.join(__dirname, '/src/server.ts'),
         format: path.join(__dirname, '/src/cli/format.ts'),
+        check: path.join(__dirname, '/src/cli/check.ts'),
     },
     output: {
         // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/

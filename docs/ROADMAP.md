@@ -171,5 +171,21 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
   `ksconfig.json`. Diagnostics on `parser_valid`: 2687 to 2680 (7
   false warnings on bare file names gone), then 2745 (70 true clobber
   errors on scripts older than kOS 1.4, 5 shadow warnings gone).
-- `kos-ls check`: diagnostics from the command line, for CI.
+- `kos-ls check` (done): diagnostics from the command line, for CI.
+  It runs the server in-process on the workspace load, without opening
+  documents (`src/cli/check.ts`). Comparing it with the probe found that
+  cross-file results depend on the order of events, see below.
+- Order-dependent analysis (found with `kos-ls check`, to fix): in a
+  cycle of scripts sharing globals (`parser_valid`: `q.ks`, `quad.ks`,
+  `quad_loop.ks`, `turret.ks`, `lib_quad.ks`), opening an unchanged
+  file after the workspace load changes the diagnostics. Two causes: a
+  global set in several files is looked up in the first linked table
+  (`SymbolTableBuilder` lookup over `dependencyTables` then
+  `dependentTables`, Sets in link order, so in history order); and the
+  "may not exist at script runtime" check compares the use with a
+  declaration in another file by line number (`checkUseSymbol`,
+  `rangeBefore`). On `parser_valid`: check 2847, the probe 2733 (it
+  opens every file; 2834 when it does not offer
+  `workspace/configuration`, which delays the workspace load until
+  after the opens).
 - Maintenance: ESLint, dependency updates, remove pre-Node-10 shims.

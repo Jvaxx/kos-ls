@@ -122,11 +122,31 @@ SpacesBeforeTrailingComments: 1
 AlignTrailingComments: true
 ```
 
+## Checking
+
+`kos-ls check` prints the diagnostics an editor would get for the whole
+workspace, for CI or a git hook: same `ksconfig.json` (volumes, preload,
+exclude, lint rules), each file analysed with the scripts it runs.
+
+```sh
+kos-ls check                    # the workspace of the current directory
+kos-ls check src/lib            # report only these files or directories
+kos-ls check --fail-on warning  # fail on warnings too (default: error)
+kos-ls check --root ~/Ships/Script
+```
+
+The root is the nearest directory with a `ksconfig.json` from the current
+directory up, else the current directory. Each diagnostic is printed as
+`path:line:column: severity: message [code]`, a summary goes to standard
+error. Exit status: 0 when no diagnostic reaches the `--fail-on` severity,
+1 when one does, 2 on a usage error or a path that cannot be checked.
+
 ## Developer tools
 
 `npm run probe -- <root> [files...]` starts the server headlessly, opens the
 files (all `.ks` under `<root>` by default) and prints the diagnostics it
-publishes. `--server <cmd...> --` runs another server instead, for
+publishes (after 7 s, and once none came for 6 s: `PROBE_QUIET`, in ms).
+`--server <cmd...> --` runs another server instead, for
 comparisons. `--ask <method> <file>:<line>:<col>` sends a position request
 (`textDocument/hover`, `textDocument/completion`,
 `textDocument/signatureHelp`) and prints its result instead.
