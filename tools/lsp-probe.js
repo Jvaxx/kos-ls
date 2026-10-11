@@ -15,6 +15,7 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const rpc = require('vscode-jsonrpc/node');
+const { URI } = require('vscode-uri');
 
 let args = process.argv.slice(2);
 let server = ['node', path.join(__dirname, '../out/src/server.js'), '--stdio'];
@@ -40,9 +41,14 @@ const files = args.length > 1 ? args.slice(1).map(f => path.resolve(f)) : walk(r
 const proc = spawn(server[0], server.slice(1), { stdio: ['pipe', 'pipe', 'inherit'] });
 const conn = rpc.createMessageConnection(
   new rpc.StreamMessageReader(proc.stdout), new rpc.StreamMessageWriter(proc.stdin));
-const uri = f => 'file://' + f;
+// the server's own form (spaces are %20): a raw path names another document
+const uri = f => URI.file(f).toString();
 const diags = new Map();
-conn.onNotification('textDocument/publishDiagnostics', p => diags.set(p.uri, p.diagnostics));
+let lastPublish = Date.now();
+conn.onNotification('textDocument/publishDiagnostics', p => {
+  diags.set(p.uri, p.diagnostics);
+  lastPublish = Date.now();
+});
 conn.onNotification('window/logMessage', () => {});
 conn.onRequest('workspace/configuration', p => p.items.map(() => null));
 conn.onRequest('client/registerCapability', () => null);
@@ -60,8 +66,14 @@ conn.listen();
       textDocument: { uri: uri(f), languageId: 'kerboscript', version: 1, text: fs.readFileSync(f, 'utf8') },
     });
   }
-  // kls debounces workspace loading and propagation (4 s): wait for it to settle
-  await new Promise(r => setTimeout(r, 7000));
+  // kls debounces workspace loading and propagation (4 s): wait for it to
+  // settle, then until no diagnostics were published for PROBE_QUIET ms
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  await sleep(7000);
+  const quiet = +(process.env.PROBE_QUIET ?? 6000);
+  while (Date.now() - lastPublish < quiet) {
+    await sleep(quiet - (Date.now() - lastPublish));
+  }
   if (asks.length > 0) {
     for (const { method, file, line, character } of asks) {
       const result = await conn.sendRequest(method, {
