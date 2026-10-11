@@ -40,6 +40,7 @@ import { rangeAfter, rangeContainsPos } from './positionUtils';
 import { empty } from './typeGuards';
 import { presentName } from './stringUtils';
 import { formatDocs, formatSignature, symbolDocs } from './documentation';
+import { CaseKind, LogLevel } from './enums';
 
 /**
  * The documentation of the items of the last completion, given on

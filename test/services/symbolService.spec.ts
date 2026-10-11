@@ -37,6 +37,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { serverName } from '../../src/utilities/constants';
 import { join } from 'path';
+import { CaseKind } from '../../src/utilities/enums';
 
 const rootUri = URI.file('/example/folder');
 const caseKind = CaseKind.camelCase;

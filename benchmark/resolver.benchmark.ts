@@ -9,6 +9,7 @@ import { Resolver } from '../src/analysis/resolver';
 import { SymbolTable } from '../src/analysis/models/symbolTable';
 import { typeInitializer } from '../src/typeChecker/initialize';
 import { standardLibraryBuilder, bodyLibraryBuilder } from '../src/analysis/standardLibrary';
+import { CaseKind } from '../src/utilities/enums';
 
 const testDir = join(__dirname, '../../../kerboscripts/parser_valid/');
 const fakeUri = 'file:///fake/base';

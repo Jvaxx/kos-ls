@@ -12,6 +12,7 @@ import {
   directiveParser,
   DirectiveResult,
 } from '../../src/directives/directiveParser';
+import { CaseKind } from '../../src/utilities/enums';
 
 const fakeUri = 'C:\\fake.ks';
 

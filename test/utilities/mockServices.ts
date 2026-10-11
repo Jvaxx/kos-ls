@@ -10,6 +10,7 @@ import { AnalysisService } from '../../src/services/analysisService';
 import { DocumentInfo, DiagnosticUri } from '../../src/types';
 import { PassThrough } from 'stream';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { CaseKind } from '../../src/utilities/enums';
 
 /**
  * Create a mock client and server connection

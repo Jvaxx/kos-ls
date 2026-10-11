@@ -6,6 +6,7 @@ import { mockLogger, mockTracer } from '../../src/models/logger';
 import { empty } from '../../src/utilities/typeGuards';
 import { SearchState } from '../../src/analysis/types';
 import { ResolverService } from '../../src/services/resolverService';
+import { CaseKind } from '../../src/utilities/enums';
 
 const grandSource = `
 runOncePath("parent.ks").

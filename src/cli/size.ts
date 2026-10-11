@@ -10,7 +10,7 @@ import {
   selected,
 } from './workspace';
 
-export { Output } from './workspace';
+export type { Output } from './workspace';
 
 const usage = `Usage: kos-ls size [--root dir] [--max bytes] [--files] [file or directory...]
 

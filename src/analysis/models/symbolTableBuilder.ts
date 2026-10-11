@@ -47,6 +47,7 @@ import { cleanLocation } from '../../utilities/clean';
 import { Token } from '../../models/token';
 import { KsParameter } from '../../models/parameter';
 import { IType, TypeDocs } from '../../typeChecker/types';
+import { CaseKind } from '../../utilities/enums';
 
 /**
  * The Symbol table builder is used to declare new symbols and track new symbols

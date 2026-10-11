@@ -36,6 +36,7 @@ import { createUnion } from '../../src/typeChecker/utilities/typeCreators';
 import { noneType } from '../../src/typeChecker/ksTypes/primitives/none';
 import { DIAGNOSTICS } from '../../src/utilities/diagnosticsUtils';
 import { timeStampType } from '../../src/typeChecker/ksTypes/time/timestamp';
+import { CaseKind } from '../../src/utilities/enums';
 
 const fakeUri = 'C:\\fake.ks';
 

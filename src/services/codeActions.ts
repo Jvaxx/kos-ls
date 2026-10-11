@@ -17,7 +17,7 @@ import * as SuffixTerm from '../parser/models/suffixTerm';
 import { Token } from '../models/token';
 import { TokenType } from '../models/tokentypes';
 import { IScript } from '../parser/types';
-import { DIAGNOSTICS } from '../utilities/diagnosticsUtils';
+import { DIAGNOSTICS, diagnosticText } from '../utilities/diagnosticsUtils';
 import { levenshteinDistance } from '../utilities/levenshtein';
 import { rangeEqual } from '../utilities/positionUtils';
 import { suffixReceiverType } from '../utilities/serverUtils';
@@ -278,7 +278,7 @@ function misspelledType(
   context: FixContext,
   diagnostic: Diagnostic,
 ): CodeAction[] {
-  const match = /^Unknown type (\w+):/.exec(diagnostic.message);
+  const match = /^Unknown type (\w+):/.exec(diagnosticText(diagnostic));
   if (match === null) {
     return [];
   }

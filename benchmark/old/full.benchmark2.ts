@@ -11,6 +11,7 @@ import { standardLibraryBuilder } from '../../src/analysis/standardLibrary';
 import { TypeChecker } from '../../src/typeChecker/typeChecker';
 import { ControlFlow } from '../../src/controlFlow/controlFlow';
 import { benchmark } from '@dynatrace/zakzak';
+import { CaseKind } from '../../src/utilities/enums';
 
 benchmark('temp', () => {
   const testDir = join(__dirname, '../../../../kerboscripts/parser_valid/');

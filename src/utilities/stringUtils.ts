@@ -1,3 +1,5 @@
+import { CaseKind } from './enums';
+
 /**
  * Convert a set of string segments to the requested case
  * @param caseKind requested case

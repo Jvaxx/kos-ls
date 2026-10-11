@@ -1,4 +1,5 @@
 import { empty } from '../utilities/typeGuards';
+import { LogLevel } from '../utilities/enums';
 
 /**
  * A mock logger for testings or performance

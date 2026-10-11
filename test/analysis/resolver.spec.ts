@@ -28,7 +28,11 @@ import {
 } from '../../src/analysis/standardLibrary';
 import { PreResolver } from '../../src/analysis/preResolver';
 import { Resolver } from '../../src/analysis/resolver';
-import { DIAGNOSTICS } from '../../src/utilities/diagnosticsUtils';
+import {
+  DIAGNOSTICS,
+  diagnosticText,
+} from '../../src/utilities/diagnosticsUtils';
+import { CaseKind } from '../../src/utilities/enums';
 
 const fakeUri = 'C:\\fake.ks';
 const unitTestPath = join(
@@ -624,8 +628,8 @@ describe('resolver', () => {
 
       expect(results.parse.diagnostics).toHaveLength(0);
       const messages = results.resolveDiagnostics
-        .filter((d) => !d.message.includes('deprecated'))
-        .map((d) => [d.range.start.line, d.message]);
+        .filter((d) => !diagnosticText(d).includes('deprecated'))
+        .map((d) => [d.range.start.line, diagnosticText(d)]);
       expect(messages).toEqual([[11, 'Symbol missing may not exist']]);
     });
 
@@ -646,7 +650,7 @@ describe('resolver', () => {
 
         return diagnostics
           .filter((d) => d.code === DIAGNOSTICS.CLOBBER_BUILTIN)
-          .map((d) => `${d.range.start.line}: ${d.message.split('.')[0]}`)
+          .map((d) => `${d.range.start.line}: ${diagnosticText(d).split('.')[0]}`)
           .sort();
       };
 

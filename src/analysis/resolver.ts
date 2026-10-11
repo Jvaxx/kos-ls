@@ -31,6 +31,7 @@ import {
 } from './clobber';
 import Denque from 'denque';
 import { Token } from '../models/token';
+import { LogLevel } from '../utilities/enums';
 
 type Diagnostics = Diagnostic[];
 

@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "node16",
     "target": "es2022",
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
+    "moduleDetection": "legacy",
+    "isolatedModules": true,
     "outDir": "out",
     "lib": ["es2022"],
     "sourceMap": true,

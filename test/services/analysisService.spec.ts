@@ -13,6 +13,7 @@ import { DocumentService } from '../../src/services/documentService';
 import { join } from 'path';
 import { DocumentInfo, DiagnosticUri } from '../../src/types';
 import { typeInitializer } from '../../src/typeChecker/initialize';
+import { CaseKind } from '../../src/utilities/enums';
 
 const testDir = join(__dirname, '../fixtures/parser_valid/');
 const analysisDir = join(testDir, 'unitTests/analysis');

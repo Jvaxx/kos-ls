@@ -1,5 +1,6 @@
 import { CompletionItemKind, CompletionItem } from 'vscode-languageserver';
 import { toCase } from './stringUtils';
+import { CaseKind } from './enums';
 
 export const builtIn = 'builtIn';
 export const iterator = 'iterator';

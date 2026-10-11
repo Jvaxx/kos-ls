@@ -65,21 +65,9 @@ interface ILoggerBase {
  * Interface for internal logger
  */
 interface ILogger extends ILoggerBase {
-  level: LogLevel;
+  level: import('./enums').LogLevel;
 
   verbose(message: string): void;
-}
-
-/**
- * Logging level internal to kos-language-server
- */
-const enum LogLevel {
-  verbose,
-  info,
-  log,
-  warn,
-  error,
-  none,
 }
 
 /**
@@ -87,17 +75,6 @@ const enum LogLevel {
  */
 interface ITracer {
   log(message: string, verbose?: string): void;
-}
-
-/**
- * This is used by the various completion functionailities
- * to decide how they should be cased
- */
-const enum CaseKind {
-  lowerCase,
-  upperCase,
-  camelCase,
-  pascalCase,
 }
 
 /**

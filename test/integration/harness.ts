@@ -28,12 +28,14 @@ import {
   StreamMessageWriter,
 } from 'vscode-jsonrpc/node';
 import { URI } from 'vscode-uri';
+import { diagnosticText } from '../../src/utilities/diagnosticsUtils';
 import { KLS } from '../../src/kls';
 import { mockLogger, mockTracer } from '../../src/models/logger';
 import { typeInitializer } from '../../src/typeChecker/initialize';
 import { defaultServerConfiguration } from '../../src/config/models/serverConfiguration';
 import { defaultWorkspaceConfiguration } from '../../src/config/models/workspaceConfiguration';
 import { semanticTokensLegend } from '../../src/services/semanticTokens';
+import { CaseKind } from '../../src/utilities/enums';
 
 export const workspaces = join(__dirname, '../fixtures/workspaces');
 
@@ -101,12 +103,16 @@ export class TestClient {
 
     connection.onNotification(
       'textDocument/publishDiagnostics',
-      (params: PublishDiagnosticsParams) =>
-        client.diagnostics.set(params.uri, params.diagnostics),
+      (params: PublishDiagnosticsParams) => {
+        client.diagnostics.set(params.uri, params.diagnostics);
+      },
     );
     connection.onNotification('window/logMessage', () => {});
-    connection.onNotification('window/showMessage', (params: ShowMessageParams) =>
-      client.shown.push(params.message),
+    connection.onNotification(
+      'window/showMessage',
+      (params: ShowMessageParams) => {
+        client.shown.push(params.message);
+      },
     );
     connection.onRequest('workspace/codeLens/refresh', () => {
       client.codeLensRefreshes += 1;
@@ -213,7 +219,7 @@ export class TestClient {
       .map(
         (d) =>
           `${d.range.start.line + 1}:${d.range.start.character + 1} ${
-            d.message
+            diagnosticText(d)
           }`,
       );
   }
@@ -228,7 +234,7 @@ export class TestClient {
       diagnostics.map(
         (d) =>
           `${uri} ${d.range.start.line + 1}:${d.range.start.character + 1} ` +
-          d.message,
+          diagnosticText(d),
       ),
     ).sort();
   }

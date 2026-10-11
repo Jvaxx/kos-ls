@@ -15,6 +15,7 @@ import { logException, mockTracer } from '../models/logger';
 import { normalizeExtensions } from '../utilities/pathUtils';
 import { empty } from '../utilities/typeGuards';
 import { IoService } from './ioService';
+import { LogLevel } from '../utilities/enums';
 
 
 type DocumentConnection = Pick<
@@ -121,8 +122,12 @@ export class DocumentService extends EventEmitter<DocumentEvents> {
    * Attach to listener to connection events
    */
   public listen(): void {
-    this.conn.onDidChangeTextDocument(this.onChangeHandler.bind(this));
-    this.conn.onDidOpenTextDocument(this.onOpenHandler.bind(this));
+    this.conn.onDidChangeTextDocument((params) => {
+      this.onChangeHandler(params);
+    });
+    this.conn.onDidOpenTextDocument((params) => {
+      this.onOpenHandler(params);
+    });
     this.conn.onDidCloseTextDocument(this.onCloseHandler.bind(this));
     this.conn.onDidChangeWatchedFiles?.(this.onWatchedFilesHandler.bind(this));
   }

@@ -18,6 +18,7 @@ import { MutableMarker, Marker } from './models/marker';
 import { DirectiveTokens } from '../directives/types';
 import { DiagnosticUri } from '../types';
 import { Literal } from '../models/types';
+import { LogLevel } from '../utilities/enums';
 
 /**
  * Class for scanning kerboscript files

@@ -8,8 +8,9 @@ import {
   processOutput,
   selected,
 } from './workspace';
+import { diagnosticText } from '../utilities/diagnosticsUtils';
 
-export { Output } from './workspace';
+export type { Output } from './workspace';
 
 const usage = `Usage: kos-ls check [--root dir] [--fail-on severity] [file or directory...]
 
@@ -118,7 +119,7 @@ export async function main(
       const code = diagnostic.code === undefined ? '' : ` [${diagnostic.code}]`;
       io.out(
         `${relative(cwd, path)}:${line + 1}:${character + 1}: ` +
-          `${severityNames[severity]}: ${diagnostic.message}${code}\n`,
+          `${severityNames[severity]}: ${diagnosticText(diagnostic)}${code}\n`,
       );
     }
   }

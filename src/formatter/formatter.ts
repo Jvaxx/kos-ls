@@ -8,6 +8,7 @@ import * as Expr from '../parser/models/expr';
 import * as Stmt from '../parser/models/stmt';
 import * as SuffixTerm from '../parser/models/suffixTerm';
 import { FormatOptions, resolveOptions } from './options';
+import { diagnosticText } from '../utilities/diagnosticsUtils';
 
 /**
  * The formatter works from the token stream: every token and every comment
@@ -475,7 +476,7 @@ function syntaxError(diagnostics: Diagnostic[]): { error: string } {
   );
   const { line, character } = first.range.start;
   return {
-    error: `Syntax error at ${line + 1}:${character + 1}: ${first.message}`,
+    error: `Syntax error at ${line + 1}:${character + 1}: ${diagnosticText(first)}`,
   };
 }
 

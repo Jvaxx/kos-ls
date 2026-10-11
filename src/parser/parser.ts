@@ -30,6 +30,7 @@ import { Marker } from '../scanner/models/marker';
 // import { Diagnostic } from 'vscode-languageserver';
 import { parseToDiagnostics } from '../utilities/serverUtils';
 import { DiagnosticUri } from '../types';
+import { LogLevel } from '../utilities/enums';
 
 type NodeConstructor =
   | Constructor<Expr.Expr>

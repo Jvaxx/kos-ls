@@ -18,6 +18,7 @@ import { BlockKind, Boundary, ReturnContext } from './types';
 import { IStack } from '../analysis/types';
 import { BranchJump } from './models/branchJump';
 import { FlowGraph } from './flowGraph';
+import { LogLevel } from '../utilities/enums';
 
 export class ControlFlow
   implements

@@ -10,6 +10,7 @@ import { typeInitializer } from './typeChecker/initialize';
 import { defaultWorkspaceConfiguration } from './config/models/workspaceConfiguration';
 import { defaultServerConfiguration } from './config/models/serverConfiguration';
 import packageJson from '../package.json';
+import { CaseKind, LogLevel } from './utilities/enums';
 
 const defaultVersion = '1.0.0';
 const version = packageJson?.version ?? defaultVersion;

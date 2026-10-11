@@ -41,6 +41,7 @@ import {
 import { EventEmitter } from 'events';
 import { DEFAULT_BODIES } from '../utilities/constants';
 import { directiveParser } from '../directives/directiveParser';
+import { CaseKind, LogLevel } from '../utilities/enums';
 
 /**
  * Diagnostics of a set of analysed documents, with every analysed

@@ -9,6 +9,7 @@ import { Marker } from '../scanner/models/marker';
 import { Range } from 'vscode-languageserver';
 import { kosType, kosTypes } from '../typeChecker/initialize';
 import { TypeKind } from '../typeChecker/types';
+import { CaseKind } from '../utilities/enums';
 
 /**
  * A token for a builtin symbol

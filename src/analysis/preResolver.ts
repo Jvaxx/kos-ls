@@ -27,6 +27,7 @@ import {
   parseDocComment,
 } from './docComment';
 import { TypeDocs } from '../typeChecker/types';
+import { LogLevel } from '../utilities/enums';
 
 export type Diagnostics = Diagnostic[];
 

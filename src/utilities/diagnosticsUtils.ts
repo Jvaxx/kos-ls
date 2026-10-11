@@ -61,6 +61,15 @@ export const createDiagnostic = (
 };
 
 /**
+ * The text of a diagnostic's message, which LSP 3.18 allows to be markup
+ * @param diagnostic diagnostic to read
+ */
+export const diagnosticText = (diagnostic: Diagnostic): string =>
+  typeof diagnostic.message === 'string'
+    ? diagnostic.message
+    : diagnostic.message.value;
+
+/**
  * Code for each diagnostic in the language server
  */
 export const DIAGNOSTICS = {

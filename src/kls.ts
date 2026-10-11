@@ -98,6 +98,7 @@ import { URI } from 'vscode-uri';
 import { CONFIG_DIAGNOSTICS } from './utilities/diagnosticsUtils';
 import { SymbolService } from './services/symbolService';
 import { IoService } from './services/ioService';
+import { CaseKind, LogLevel } from './utilities/enums';
 
 export class KLS {
   /**

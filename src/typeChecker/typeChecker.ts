@@ -79,6 +79,7 @@ import {
   declarationStart,
   parseDocComment,
 } from '../analysis/docComment';
+import { LogLevel } from '../utilities/enums';
 
 type Diagnostics = Diagnostic[];
 

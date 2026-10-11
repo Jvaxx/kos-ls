@@ -18,6 +18,7 @@ import { typeInitializer } from '../typeChecker/initialize';
 import { defaultServerConfiguration } from '../config/models/serverConfiguration';
 import { defaultWorkspaceConfiguration } from '../config/models/workspaceConfiguration';
 import { configFileName } from '../services/documentService';
+import { CaseKind } from '../utilities/enums';
 
 /**
  * Where a command writes, replaceable for tests
@@ -77,8 +78,9 @@ export async function openWorkspace(root: string): Promise<Workspace> {
   const diagnostics = new Map<string, Diagnostic[]>();
   client.onNotification(
     'textDocument/publishDiagnostics',
-    (params: PublishDiagnosticsParams) =>
-      diagnostics.set(URI.parse(params.uri).fsPath, params.diagnostics),
+    (params: PublishDiagnosticsParams) => {
+      diagnostics.set(URI.parse(params.uri).fsPath, params.diagnostics);
+    },
   );
   client.onNotification('window/logMessage', () => {});
   client.listen();

@@ -22,6 +22,7 @@ import { Logger } from '../src/models/logger';
 import { Graph } from '../src/models/graph';
 import { dfsNode, scc } from '../src/utilities/graphUtils';
 import { empty } from '../src/utilities/typeGuards';
+import { CaseKind, LogLevel } from '../src/utilities/enums';
 
 const createRange = (
   startLine: number,
