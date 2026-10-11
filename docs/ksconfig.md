@@ -155,7 +155,7 @@ The `control-flow` grouping contains rules related to control flow in your scrip
 |control-flow-break|This provides an error when a break appears outside of a loop body|error|
 |control-flow-return|This provides an error when a return appears outside of a function body or trigger|error|
 |control-flow-preserve|This provides an error when preserve appears outside of a trigger body|error|
-|control-flow-lazy-global|This provides an error when a lazy global does appear at the top of a script|error|
+|control-flow-lazy-global|This provides an error when a directive (`@lazyglobal`, `@clobberbuiltins`) does not appear at the top of a script|error|
 
 ### **Deprecated**
 

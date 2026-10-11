@@ -102,6 +102,9 @@ export class PreResolver
       this.logger.info(`Function Resolving started for ${file}.`);
 
       this.tableBuilder.rewind();
+      this.tableBuilder.clobberBuiltins = Stmt.clobbersBuiltins(
+        this.script.stmts,
+      );
       this.tableBuilder.beginScope(this.script);
 
       const resolveErrors = this.resolveStmts(this.script.stmts);
@@ -302,7 +305,7 @@ export class PreResolver
     return this.resolveStmts(stmt.clauses);
   }
 
-  public visitLazyGlobal(_: Stmt.LazyGlobal): Diagnostics {
+  public visitDirective(_: Stmt.Directive): Diagnostics {
     return [];
   }
 

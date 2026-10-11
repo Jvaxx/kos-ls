@@ -165,7 +165,10 @@ const lintTemplates: LintRule = {
         {
           rule: 'control-flow-lazy-global',
           level: 'error',
-          diagnostics: [DIAGNOSTICS.INVALID_LAZY_GLOBAL],
+          diagnostics: [
+            DIAGNOSTICS.INVALID_LAZY_GLOBAL,
+            DIAGNOSTICS.INVALID_CLOBBER_BUILTINS,
+          ],
           owned: [],
         },
       ],

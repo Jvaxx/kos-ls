@@ -848,6 +848,7 @@ const keywords: ITokenMap = new Map([
   ['choose', { type: TokenType.choose }],
   ['is', { type: TokenType.is }],
   ['lazyglobal', { type: TokenType.lazyGlobal }],
+  ['clobberbuiltins', { type: TokenType.clobberBuiltins }],
   ['list', { type: TokenType.list }],
   ['local', { type: TokenType.local }],
   ['lock', { type: TokenType.lock }],

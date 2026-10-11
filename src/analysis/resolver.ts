@@ -74,9 +74,9 @@ export class Resolver
   private lazyGlobal: boolean;
 
   /**
-   * Is this the first statement of the script
+   * The directives at the top of the script, the only valid ones
    */
-  private firstStmt: boolean;
+  private leadingDirectives: Set<Stmt.Directive>;
 
   /**
    * Should resolution be deferred
@@ -133,7 +133,7 @@ export class Resolver
     this.setResolver = new SetResolver(this.localResolver);
     this.deferred = new Denque();
     this.lazyGlobal = true;
-    this.firstStmt = true;
+    this.leadingDirectives = new Set(Stmt.leadingDirectives(script.stmts));
     this.deferResolve = true;
 
     this.loopDepth = 0;
@@ -155,21 +155,14 @@ export class Resolver
       this.logger.info(`Resolving started for ${file}.`);
 
       this.tableBuilder.rewind();
+      this.tableBuilder.clobberBuiltins = Stmt.clobbersBuiltins(
+        this.script.stmts,
+      );
       this.tableBuilder.beginScope(this.script);
 
       const errors: Diagnostics = [];
 
-      // if no statements simply return immediatly
-      if (this.script.stmts.length > 0) {
-        const [firstStmt, ...restStmts] = this.script.stmts;
-
-        // check for lazy global flag
-        errors.push(...this.resolveStmt(firstStmt));
-        this.firstStmt = false;
-
-        // resolve reset
-        errors.push(...this.resolveStmts(restStmts));
-      }
+      errors.push(...this.resolveStmts(this.script.stmts));
 
       this.tableBuilder.endScope();
 
@@ -594,23 +587,35 @@ export class Resolver
   }
 
   /**
-   * Visit the Lazy Global Stmt syntax node
+   * Visit a directive syntax node
    * @param stmt the syntax node
    */
-  public visitLazyGlobal(stmt: Stmt.LazyGlobal): Diagnostics {
-    // It is an error if lazy global is not at the start of a file
-    if (!this.firstStmt) {
+  public visitDirective(stmt: Stmt.Directive): Diagnostics {
+    const lazyGlobal = stmt.directive.type === TokenType.lazyGlobal;
+
+    // It is an error if a directive is not at the start of a file
+    if (!this.leadingDirectives.has(stmt)) {
       return [
-        createDiagnostic(
-          stmt.lazyGlobal,
-          'Lazy global was not declared at top of the file',
-          DiagnosticSeverity.Error,
-          DIAGNOSTICS.INVALID_LAZY_GLOBAL,
-        ),
+        lazyGlobal
+          ? createDiagnostic(
+              stmt.directive,
+              'Lazy global was not declared at top of the file',
+              DiagnosticSeverity.Error,
+              DIAGNOSTICS.INVALID_LAZY_GLOBAL,
+            )
+          : createDiagnostic(
+              stmt.directive,
+              'Clobber builtins was not declared at top of the file',
+              DiagnosticSeverity.Error,
+              DIAGNOSTICS.INVALID_CLOBBER_BUILTINS,
+            ),
       ];
     }
 
-    this.lazyGlobal = stmt.onOff.type === TokenType.on;
+    // clobbering builtins is read before the analysis, by the pre resolver
+    if (lazyGlobal) {
+      this.lazyGlobal = stmt.onOff.type === TokenType.on;
+    }
     return [];
   }
 

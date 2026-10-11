@@ -79,6 +79,7 @@ export const DIAGNOSTICS = {
   // resolver
   GLOBAL_PARAMETER: 'global-parameter',
   INVALID_LAZY_GLOBAL: 'invalid-lazy-global',
+  INVALID_CLOBBER_BUILTINS: 'invalid-clobber-builtins',
   INVALID_RETURN_CONTEXT: 'invalid-return-context',
   INVALID_PRESERVE_CONTEXT: 'invalid-preserve-context',
   INVALID_BREAK_CONTEXT: 'invalid-break-context',

@@ -107,6 +107,7 @@ export enum TokenType {
   identifier,
   fileIdentifier,
   lazyGlobal,
+  clobberBuiltins,
 }
 
 export const isValidIdentifier = (type: TokenType): boolean => {
@@ -169,6 +170,7 @@ export const isValidIdentifier = (type: TokenType): boolean => {
     case TokenType.shutdown:
     case TokenType.identifier:
     case TokenType.lazyGlobal:
+    case TokenType.clobberBuiltins:
       return true;
     default:
       return false;

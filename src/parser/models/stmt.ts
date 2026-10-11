@@ -14,6 +14,7 @@ import { joinLines } from '../utils/toStringUtils';
 import { flatten } from '../../utilities/arrayUtils';
 import { rangeOrder, rangeContains } from '../../utilities/positionUtils';
 import { Token } from '../../models/token';
+import { TokenType } from '../../models/tokentypes';
 
 /**
  * Statement base class
@@ -481,22 +482,26 @@ export class Set extends Stmt {
   }
 }
 
-export class LazyGlobal extends Stmt {
+/**
+ * A compiler directive at the top of a file: `@lazyglobal off.` or
+ * `@clobberbuiltins on.`
+ */
+export class Directive extends Stmt {
   public readonly atSign: Token;
-  public readonly lazyGlobal: Token;
+  public readonly directive: Token;
   public readonly onOff: Token;
 
-  constructor(builder: NodeDataBuilder<LazyGlobal>) {
+  constructor(builder: NodeDataBuilder<Directive>) {
     super();
 
     this.atSign = unWrap(builder.atSign);
-    this.lazyGlobal = unWrap(builder.lazyGlobal);
+    this.directive = unWrap(builder.directive);
     this.onOff = unWrap(builder.onOff);
   }
 
   public toLines(): string[] {
     return [
-      `${this.atSign.lexeme}${this.lazyGlobal.lexeme} ${this.onOff.lexeme}.`,
+      `${this.atSign.lexeme}${this.directive.lexeme} ${this.onOff.lexeme}.`,
     ];
   }
 
@@ -509,16 +514,47 @@ export class LazyGlobal extends Stmt {
   }
 
   public get ranges(): Range[] {
-    return [this.atSign, this.lazyGlobal, this.onOff];
+    return [this.atSign, this.directive, this.onOff];
   }
 
   public accept<T extends (...args: any) => any>(
     visitor: IStmtVisitor<T>,
     parameters: Parameters<T>,
   ): ReturnType<T> {
-    return visitor.visitLazyGlobal(this, parameters);
+    return visitor.visitDirective(this, parameters);
   }
 }
+
+/**
+ * The directives at the top of a script, before any other statement:
+ * the only place kOS accepts them
+ * @param stmts top level statements of a script
+ */
+export const leadingDirectives = (stmts: IStmt[]): Directive[] => {
+  const directives: Directive[] = [];
+  for (const stmt of stmts) {
+    if (!(stmt instanceof Directive)) {
+      break;
+    }
+    directives.push(stmt);
+  }
+
+  return directives;
+};
+
+/**
+ * Is `@clobberbuiltins on.` set at the top of a script: names declared
+ * in it may then hide kOS builtins
+ * @param stmts top level statements of a script
+ */
+export const clobbersBuiltins = (stmts: IStmt[]): boolean =>
+  leadingDirectives(stmts).reduce(
+    (on, { directive, onOff }) =>
+      directive.type === TokenType.clobberBuiltins
+        ? onOff.type === TokenType.on
+        : on,
+    false,
+  );
 
 export class If extends Stmt {
   public readonly ifToken: Token;
@@ -1734,7 +1770,8 @@ export const validStatements: Constructor<Stmt>[] = [
   Unset,
   Unlock,
   Set,
-  LazyGlobal,
+  Chain,
+  Directive,
   If,
   Else,
   Until,

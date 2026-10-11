@@ -124,6 +124,7 @@ describe('Formatter rules', () => {
     );
     expect(format('set f to foo@.')).toBe('set f to foo@.\n');
     expect(format('@LAZYGLOBAL   OFF.')).toBe('@lazyglobal off.\n');
+    expect(format('@ClobberBuiltins on.')).toBe('@clobberbuiltins on.\n');
     expect(format('print(1).')).toBe('print (1).\n');
     expect(format('print "a" at(1,2).')).toBe('print "a" at (1, 2).\n');
     expect(format('RUNPATH ( "a", 1 ).')).toBe('runPath("a", 1).\n');

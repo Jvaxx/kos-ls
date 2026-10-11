@@ -77,6 +77,11 @@ export class SymbolTableBuilder {
   private globalSymbolEnvironment: Map<string, Environment>;
 
   /**
+   * Set by `@clobberbuiltins on.`: declarations may hide builtins
+   */
+  public clobberBuiltins = false;
+
+  /**
    * A set of symbols tables that are dependencies of this table
    */
   public dependencyTables: Set<SymbolTable>;
@@ -359,7 +364,7 @@ export class SymbolTableBuilder {
     );
 
     // check if variable has already been defined
-    if (!empty(conflictTracker)) {
+    if (!empty(conflictTracker) && !this.hidesBuiltin(conflictTracker)) {
       return this.localConflictError(token, conflictTracker.declared.symbol);
     }
 
@@ -376,7 +381,8 @@ export class SymbolTableBuilder {
         ScopeKind.global,
         KsSymbolKind.variable,
       );
-      diagnostic = empty(shadowTracker)
+      diagnostic =
+        empty(shadowTracker) || this.hidesBuiltin(shadowTracker)
         ? undefined
         : this.shadowSymbolHint(
             token,
@@ -424,7 +430,7 @@ export class SymbolTableBuilder {
     );
 
     // check if variable has already been defined
-    if (!empty(conflictTracker)) {
+    if (!empty(conflictTracker) && !this.hidesBuiltin(conflictTracker)) {
       return this.localConflictError(token, conflictTracker.declared.symbol);
     }
 
@@ -441,7 +447,8 @@ export class SymbolTableBuilder {
         ScopeKind.global,
         KsSymbolKind.function,
       );
-      diagnostic = empty(shadowTracker)
+      diagnostic =
+        empty(shadowTracker) || this.hidesBuiltin(shadowTracker)
         ? undefined
         : this.shadowSymbolHint(
             token,
@@ -495,7 +502,7 @@ export class SymbolTableBuilder {
     );
 
     // check if lock has already been defined
-    if (!empty(conflictTracker)) {
+    if (!empty(conflictTracker) && !this.hidesBuiltin(conflictTracker)) {
       return this.localConflictError(token, conflictTracker.declared.symbol);
     }
 
@@ -512,7 +519,8 @@ export class SymbolTableBuilder {
         ScopeKind.global,
         KsSymbolKind.lock,
       );
-      diagnostic = empty(shadowTracker)
+      diagnostic =
+        empty(shadowTracker) || this.hidesBuiltin(shadowTracker)
         ? undefined
         : this.shadowSymbolHint(
             token,
@@ -557,7 +565,7 @@ export class SymbolTableBuilder {
     );
 
     // check if variable has already been defined
-    if (!empty(conflictTracker)) {
+    if (!empty(conflictTracker) && !this.hidesBuiltin(conflictTracker)) {
       return this.localConflictError(token, conflictTracker.declared.symbol);
     }
 
@@ -574,7 +582,8 @@ export class SymbolTableBuilder {
         ScopeKind.global,
         KsSymbolKind.parameter,
       );
-      diagnostic = empty(shadowTracker)
+      diagnostic =
+        empty(shadowTracker) || this.hidesBuiltin(shadowTracker)
         ? undefined
         : this.shadowSymbolHint(
             token,
@@ -1021,6 +1030,15 @@ export class SymbolTableBuilder {
 
     // not found
     return undefined;
+  }
+
+  /**
+   * Does a new symbol hide this one without a diagnostic: a builtin, when
+   * the script sets `@clobberbuiltins on.`
+   * @param tracker tracker of the existing symbol
+   */
+  private hidesBuiltin(tracker: BasicTracker): boolean {
+    return this.clobberBuiltins && tracker.declared.uri === builtIn;
   }
 
   /**

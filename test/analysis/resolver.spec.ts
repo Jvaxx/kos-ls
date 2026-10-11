@@ -620,6 +620,42 @@ describe('resolver', () => {
       expect(messages).toEqual([[11, 'Symbol missing may not exist']]);
     });
 
+    test('clobber builtins', () => {
+      const body = [
+        'global ship is 1.',
+        'function heading { return 1. }',
+        'local function f {',
+        '  local altitude is ship + heading().',
+        '  return altitude.',
+        '}',
+        'print f().',
+      ];
+      const messages = (source: string[]) => {
+        const results = resolveSource(source.join('\n'), undefined, true);
+        expect(results.parse.diagnostics).toHaveLength(0);
+        return results.resolveDiagnostics.map((d) => d.message);
+      };
+
+      expect(messages(body)).toEqual([
+        'Function heading already exists.',
+        'Variable ship already exists.',
+        'Variable altitude already exists here. This variable shadows it.',
+      ]);
+      expect(messages(['@clobberbuiltins on.', ...body])).toEqual([]);
+      expect(messages(['@clobberbuiltins off.', ...body])).toHaveLength(3);
+
+      // only at the top, with other directives
+      expect(
+        messages(['@lazyglobal off.', '@clobberbuiltins on.', ...body]),
+      ).toEqual([]);
+      expect(messages(['print 1.', '@clobberbuiltins on.'])).toEqual([
+        'Clobber builtins was not declared at top of the file',
+      ]);
+      expect(messages(['{ @clobberbuiltins on. }'])).toEqual([
+        'Clobber builtins was not declared at top of the file',
+      ]);
+    });
+
     // test shadowing
     describe('shadowed symbols', () => {
       const shadowPath = join(unitTestPath, 'shadow', 'shadowtest.ks');

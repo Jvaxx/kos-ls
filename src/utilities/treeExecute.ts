@@ -78,7 +78,7 @@ export abstract class TreeExecute<T>
   public visitChain(stmt: Stmt.Chain): T {
     return this.nodeAction(stmt);
   }
-  public visitLazyGlobal(stmt: Stmt.LazyGlobal): T {
+  public visitDirective(stmt: Stmt.Directive): T {
     return this.nodeAction(stmt);
   }
   public visitIf(stmt: Stmt.If): T {

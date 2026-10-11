@@ -449,7 +449,7 @@ export class Parser {
         return this.set();
       case TokenType.atSign:
         this.advance();
-        return this.lazyGlobal();
+        return this.directive();
       case TokenType.if:
         this.advance();
         return this.ifStmt();
@@ -709,31 +709,31 @@ export class Parser {
   }
 
   /**
-   * Parse lazy global statement
+   * Parse a directive, `@lazyglobal off.` or `@clobberbuiltins on.`
    */
-  private lazyGlobal(): INodeResult<Stmt.LazyGlobal> {
-    const builder: NodeDataBuilder<Stmt.LazyGlobal> = {
+  private directive(): INodeResult<Stmt.Directive> {
+    const builder: NodeDataBuilder<Stmt.Directive> = {
       atSign: this.previous(),
-      lazyGlobal: undefined,
+      directive: undefined,
       onOff: undefined,
     };
 
-    builder.lazyGlobal = this.consumeTokenThrow(
-      'Expected keyword "lazyGlobal" following @.',
-      Stmt.LazyGlobal,
-      TokenType.lazyGlobal,
+    builder.directive = this.consumeTokensThrow(
+      'Expected "lazyGlobal" or "clobberBuiltins" following @.',
+      Stmt.Directive,
+      [TokenType.lazyGlobal, TokenType.clobberBuiltins],
       builder,
     );
 
     builder.onOff = this.consumeTokensThrow(
-      'Expected "on" or "off" following lazy global directive.',
-      Stmt.LazyGlobal,
+      'Expected "on" or "off" following the directive.',
+      Stmt.Directive,
       [TokenType.on, TokenType.off],
       builder,
     );
-    this.terminal(Stmt.LazyGlobal, builder);
+    this.terminal(Stmt.Directive, builder);
 
-    return nodeResult(new Stmt.LazyGlobal(builder), []);
+    return nodeResult(new Stmt.Directive(builder), []);
   }
 
   /**

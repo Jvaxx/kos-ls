@@ -574,7 +574,7 @@ export class TypeChecker
   }
 
   // visit lazy global directive
-  public visitLazyGlobal(_: Stmt.LazyGlobal): Diagnostics {
+  public visitDirective(_: Stmt.Directive): Diagnostics {
     return [];
   }
 

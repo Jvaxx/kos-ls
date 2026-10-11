@@ -415,6 +415,8 @@ export class Generator implements IExprClassVisitor<string> {
         return `${this.generateIdentifier()}.${this.generateIdentifier()}`;
       case TokenType.lazyGlobal:
         return 'lazyglobal';
+      case TokenType.clobberBuiltins:
+        return 'clobberbuiltins';
       default:
         throw new Error(`Unknown token ${tokenType} encounted`);
     }

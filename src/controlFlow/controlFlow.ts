@@ -400,8 +400,8 @@ export class ControlFlow
    * @param stmt the lazy global
    * @param prevBlock current block
    */
-  public visitLazyGlobal(
-    stmt: Stmt.LazyGlobal,
+  public visitDirective(
+    stmt: Stmt.Directive,
     [prevBlock]: [BasicBlock],
   ): BasicBlock {
     const block = this.createBlock(BlockKind.basic, stmt);

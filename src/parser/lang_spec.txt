@@ -34,7 +34,7 @@ statement -> ( statementBlock
     | unset
     | unlock
     | set
-    | lazyGlobal
+    | directive
     | if
     | until
     | from
@@ -60,7 +60,7 @@ statement -> ( statementBlock
 )
 
 // directive
-lazyGlobal -> '@' 'lazyglobal' onOff '.'
+directive -> '@' ( 'lazyglobal' | 'clobberbuiltins' ) onOff '.'
 
 // block
 statementBlock -> '{' declarations* '}'

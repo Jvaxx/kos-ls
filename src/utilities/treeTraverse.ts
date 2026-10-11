@@ -75,7 +75,7 @@ export abstract class TreeTraverse
       this.stmtAction(clause);
     }
   }
-  public visitLazyGlobal(_: Stmt.LazyGlobal): void {}
+  public visitDirective(_: Stmt.Directive): void {}
   public visitIf(stmt: Stmt.If): void {
     this.exprAction(stmt.condition);
     this.stmtAction(stmt.body);
