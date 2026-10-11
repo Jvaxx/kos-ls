@@ -22,7 +22,12 @@ import {
   DocumentFormattingParams,
   DocumentRangeFormattingParams,
   TextEdit,
+  CodeAction,
+  CodeActionKind,
+  CodeActionParams,
+  WorkspaceEdit,
 } from 'vscode-languageserver';
+import { codeActions } from './services/codeActions';
 import { ClientConfiguration } from './types';
 import { KsSymbolKind, SymbolTracker, KsBaseSymbol } from './analysis/types';
 import { mockLogger, mockTracer, logException } from './models/logger';
@@ -255,6 +260,7 @@ export class KLS {
     this.connection.onFoldingRanges(this.onFoldingRange.bind(this));
     this.connection.languages.inlayHint.on(this.onInlayHint.bind(this));
     this.connection.onDocumentFormatting(this.onFormatting.bind(this));
+    this.connection.onCodeAction(this.onCodeAction.bind(this));
     this.connection.onDocumentRangeFormatting(
       this.onRangeFormatting.bind(this),
     );
@@ -368,6 +374,9 @@ export class KLS {
         inlayHintProvider: true,
         documentFormattingProvider: true,
         documentRangeFormattingProvider: true,
+        codeActionProvider: {
+          codeActionKinds: [CodeActionKind.QuickFix],
+        },
       },
     };
   }
@@ -592,6 +601,53 @@ export class KLS {
     return this.format(params.textDocument.uri, (text, options) =>
       formatRange(text, params.range, options),
     );
+  }
+
+  /**
+   * This handler gives the quick fixes for the diagnostics of a range
+   * @param params the document, range and diagnostics
+   * @param cancellation request cancellation token
+   */
+  private async onCodeAction(
+    params: CodeActionParams,
+    cancellation: CancellationToken,
+  ): Promise<Maybe<CodeAction[]>> {
+    try {
+      const { uri } = params.textDocument;
+      const document = this.documentService.getDocument(uri);
+      const documentInfo = await this.analysisService.loadInfo(uri);
+      if (
+        cancellation.isCancellationRequested ||
+        empty(document) ||
+        empty(documentInfo)
+      ) {
+        return undefined;
+      }
+
+      return await codeActions(
+        this,
+        params,
+        document,
+        documentInfo.lexicalInfo.script,
+      );
+    } catch (err) {
+      logException(this.logger, this.tracer, err, LogLevel.error);
+      return undefined;
+    }
+  }
+
+  /**
+   * The edits renaming the symbol at a position everywhere
+   * @param uri document uri
+   * @param position position of the symbol
+   * @param newName new name
+   */
+  public renameEdit(
+    uri: string,
+    position: Position,
+    newName: string,
+  ): Promise<Maybe<WorkspaceEdit>> {
+    return this.symbolService.renameEdit(uri, position, newName);
   }
 
   /**

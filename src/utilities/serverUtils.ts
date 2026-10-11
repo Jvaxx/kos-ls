@@ -266,19 +266,7 @@ export const suffixCompletionItems = async (
   const { position } = documentPosition;
   const { uri } = documentPosition.textDocument;
 
-  // find suffix context
-  const findResult = await analyzer.findToken(position, uri, Expr.Suffix);
-
-  if (empty(findResult) || !(findResult.node instanceof Expr.Suffix)) {
-    return [];
-  }
-
-  const suffixResult = findContainingSuffixTerm(findResult.node, position);
-  if (empty(suffixResult)) {
-    return [];
-  }
-
-  const type = resolveSuffixTermType(suffixResult.parentSuffixTerm);
+  const type = await suffixReceiverType(analyzer, uri, position);
 
   // if type not found exit
   if (empty(type)) {
@@ -305,6 +293,31 @@ export const suffixCompletionItems = async (
       () => formatDocs(suffix.docs, suffix.access),
     );
   });
+};
+
+/**
+ * The type whose suffix is at a position (`ship` in `ship:alt|`), as
+ * suffix completion sees it
+ * @param analyzer the server
+ * @param uri document uri
+ * @param position position in or right after the suffix
+ */
+export const suffixReceiverType = async (
+  analyzer: KLS,
+  uri: string,
+  position: Position,
+): Promise<Maybe<IType>> => {
+  const findResult = await analyzer.findToken(position, uri, Expr.Suffix);
+  if (empty(findResult) || !(findResult.node instanceof Expr.Suffix)) {
+    return undefined;
+  }
+
+  const suffixResult = findContainingSuffixTerm(findResult.node, position);
+  if (empty(suffixResult)) {
+    return undefined;
+  }
+
+  return resolveSuffixTermType(suffixResult.parentSuffixTerm);
 };
 
 const resolveSuffixTermType = (

@@ -90,6 +90,9 @@ export interface KosTypes {
   /** bound variables and locks */
   readonly variables: BuiltinSymbol[];
 
+  /** the names of the structures, as kOS writes them */
+  readonly structureNames: string[];
+
   /**
    * The type of a type expression with kOS names in any case:
    * `vessel`, `List<Part>`, `Scalar | Vector`. Unknown names are
@@ -371,6 +374,7 @@ export function loadDatabase(database: KosDatabase): KosTypes {
     },
     functions,
     variables,
+    structureNames: [...byLowerName.values()],
     parse: (text) => {
       const unknown: string[] = [];
       const expression = mapNames(parseType(text), (name) => {

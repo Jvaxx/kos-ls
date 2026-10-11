@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { PassThrough } from 'stream';
 import {
+  CodeAction,
   CompletionItem,
   createConnection,
   Diagnostic,
@@ -202,6 +203,32 @@ export class TestClient {
           d.message,
       ),
     ).sort();
+  }
+
+  /**
+   * The code actions for the diagnostics of a document, as a client asks
+   * for them: with the diagnostics at a line (1-based), or all
+   * @param path path relative to the workspace root
+   * @param line only the diagnostics starting on this line
+   * @param only the kinds of actions wanted
+   */
+  async codeActions(
+    path: string,
+    line?: number,
+    only?: string[],
+  ): Promise<CodeAction[]> {
+    const diagnostics = (await this.diagnosticsFor(path)).filter(
+      (d) => line === undefined || d.range.start.line === line - 1,
+    );
+    const range = diagnostics[0]?.range ?? {
+      start: { line: (line ?? 1) - 1, character: 0 },
+      end: { line: (line ?? 1) - 1, character: 0 },
+    };
+    return this.connection.sendRequest('textDocument/codeAction', {
+      textDocument: { uri: this.uri(path) },
+      range,
+      context: { diagnostics, ...(only ? { only } : {}) },
+    });
   }
 
   /**

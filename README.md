@@ -83,6 +83,31 @@ is a `Structure`, accepted everywhere. A comment above a `parameter`
 statement documents its parameters, before the `@param` tags of the
 function.
 
+## Quick fixes
+
+Code actions (`vim.lsp.buf.code_action()` in Neovim) fix these
+diagnostics:
+
+| Diagnostic | Fixes |
+|---|---|
+| `Expected "."` | insert the period |
+| a name hides a builtin | rename it everywhere (`r` to `r_`), or add `@clobberbuiltins on.` at the top of the file (or turn an `off` one on) |
+| a symbol or suffix may not exist | change it to a close name that exists (up to three; at most a third of the letters differ) |
+| an unknown type in a doc comment tag | change it to a close structure name |
+| `set` of an undeclared variable with `@lazyglobal off` | declare it with `global` (preferred at the top level) or `local` (preferred in a block) |
+| a directive not at the top of the file | move it there, or remove it |
+| `declare global parameter` | remove `global` |
+
+The preferred fix, if any, is marked as such. To apply it without a
+menu:
+
+```lua
+vim.lsp.buf.code_action({
+    filter = function(action) return action.isPreferred end,
+    apply = true,
+})
+```
+
 ## Formatting
 
 The server formats documents and ranges (`textDocument/formatting`,

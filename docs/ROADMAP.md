@@ -157,7 +157,15 @@ idempotence, same tokens and tree, comments kept, edits. Diagnostics on
 ## Phase 5: more
 
 - Semantic tokens (replaces client-side syntax files).
-- Code actions: quick fixes for common diagnostics.
+- Code actions (done): quick fixes for a missing period, a name hiding
+  a builtin (rename to a free `name_`, or `@clobberbuiltins on.`),
+  misspelled symbols, suffixes and doc tag types (closest names by
+  Levenshtein distance, at most a third of the letters), `set` of an
+  undeclared variable under `@lazyglobal off` (`global`/`local`), a
+  misplaced directive (move to the top, or remove) and `declare global
+  parameter`. Not done: the deprecated `copy`/`rename`/`delete` (their
+  file and volume rules differ from `copyPath`/`movePath`/`deletePath`
+  in ways a rewrite could get wrong).
 - Disk size: stripped size of a file and of everything it runs, for
   probes with a few KB of disk.
 - Parser gaps (done): multiple declarations (#214) and declare/set

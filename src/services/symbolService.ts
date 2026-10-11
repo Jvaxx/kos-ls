@@ -264,12 +264,28 @@ export class SymbolService extends EventEmitter {
     cancellation: CancellationToken,
   ): Promise<Maybe<WorkspaceEdit>> {
     const { newName, position, textDocument } = rename;
-    const scanner = new Scanner(newName);
 
     // exit if cancel requested
     if (cancellation.isCancellationRequested) {
       return undefined;
     }
+
+    return this.renameEdit(textDocument.uri, position, newName);
+  }
+
+  /**
+   * The edits renaming the symbol at a position everywhere it is
+   * declared, set and used
+   * @param uri document uri
+   * @param position position of the symbol
+   * @param newName new name, a valid identifier
+   */
+  public async renameEdit(
+    uri: string,
+    position: Position,
+    newName: string,
+  ): Promise<Maybe<WorkspaceEdit>> {
+    const scanner = new Scanner(newName);
 
     const { tokens, diagnostics: scanErrors } = scanner.scanTokens();
 
@@ -282,21 +298,11 @@ export class SymbolService extends EventEmitter {
       return undefined;
     }
 
-    // exit if cancel requested
-    if (cancellation.isCancellationRequested) {
-      return undefined;
-    }
-
-    const locations = await this.getSymbolLocations(position, textDocument.uri);
+    const locations = await this.getSymbolLocations(position, uri);
     if (empty(locations)) {
       return undefined;
     }
     const changes: PropType<WorkspaceEdit, 'changes'> = {};
-
-    // exit if cancel requested
-    if (cancellation.isCancellationRequested) {
-      return undefined;
-    }
 
     const editLocations: Location[] = [
       locations.declaration,
