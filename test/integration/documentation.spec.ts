@@ -33,6 +33,38 @@ describe('documentation', () => {
     expect(variable.value).toContain('*Access: get · Units: m*');
   });
 
+  test('hover finds the character under the cursor', async () => {
+    client.open(
+      file,
+      'print terminal:height.\nprint ship:body:radius.\nprint vang(v(1, 0, 0), v(0, 1, 0)).\n',
+    );
+
+    // the cursor on the `h` right after the colon
+    const suffix = (await client.hover(file, 0, 15))!.contents as MarkupContent;
+    expect(suffix.value).toContain('(suffix) height: Scalar');
+    expect(suffix.value).toContain('*Access: get, set*');
+
+    // punctuation gives way to the name it touches: `(` its function, the
+    // colon the structure; the last character is still the suffix
+    expect(
+      ((await client.hover(file, 0, 14))!.contents as MarkupContent).value,
+    ).toContain('(variable) terminal: Terminal');
+    expect(
+      ((await client.hover(file, 2, 10))!.contents as MarkupContent).value,
+    ).toContain('(function) vAng');
+    // an argument is itself, not the call it is in
+    expect(
+      ((await client.hover(file, 2, 13))!.contents as MarkupContent).value,
+    ).toContain('(literal) 1: Scalar');
+    expect(
+      ((await client.hover(file, 0, 20))!.contents as MarkupContent).value,
+    ).toContain('(suffix) height: Scalar');
+
+    // down a chain of suffixes
+    const chained = (await client.hover(file, 1, 16))!.contents as MarkupContent;
+    expect(chained.value).toContain('(suffix) radius: Scalar');
+  });
+
   test('signature help while a call is typed', async () => {
     client.open(file, 'local p is ship:partsnamed("x").\nprint heading(90, ');
 

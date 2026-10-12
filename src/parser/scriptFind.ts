@@ -4,9 +4,14 @@ import * as Stmt from './models/stmt';
 import * as Expr from './models/expr';
 import * as SuffixTerm from './models/suffixTerm';
 import { Position } from 'vscode-languageserver';
-import { binarySearch, rangeContainsPos } from '../utilities/positionUtils';
+import {
+  binarySearch,
+  positionEqual,
+  rangeContainsPos,
+} from '../utilities/positionUtils';
 import { empty } from '../utilities/typeGuards';
-import { isToken } from '../models/token';
+import { isToken, Token } from '../models/token';
+import { TokenType } from '../models/tokentypes';
 import { TreeExecute } from '../utilities/treeExecute';
 
 export type AstContext =
@@ -15,9 +20,36 @@ export type AstContext =
   | Constructor<SuffixTerm.SuffixTermBase>
   | Constructor<Decl.Parameter>;
 
+/**
+ * Tokens that give way to the name they touch
+ */
+const punctuation = new Set([
+  TokenType.bracketOpen,
+  TokenType.bracketClose,
+  TokenType.curlyOpen,
+  TokenType.curlyClose,
+  TokenType.squareOpen,
+  TokenType.squareClose,
+  TokenType.comma,
+  TokenType.colon,
+  TokenType.period,
+  TokenType.atSign,
+]);
+
+/**
+ * Is this token punctuation
+ * @param token the token
+ */
+const isPunctuation = (token: Token): boolean => punctuation.has(token.type);
+
 export class ScriptFind extends TreeExecute<Maybe<IFindResult>> {
   private pos: Position;
   private contexts: AstContext[];
+
+  /**
+   * Where two ranges touch, search the one starting at the position
+   */
+  private next: boolean;
 
   constructor() {
     super();
@@ -26,6 +58,7 @@ export class ScriptFind extends TreeExecute<Maybe<IFindResult>> {
       character: 0,
     };
     this.contexts = [];
+    this.next = true;
   }
 
   /**
@@ -41,11 +74,31 @@ export class ScriptFind extends TreeExecute<Maybe<IFindResult>> {
   ): Maybe<IFindResult> {
     this.pos = pos;
     this.contexts = contexts;
-    return this.nodeAction(syntaxNode);
+
+    // the character under the cursor: in `ship:mass` the `m` is `mass`
+    this.next = true;
+    const under = this.nodeAction(syntaxNode);
+    if (
+      empty(under) ||
+      !isPunctuation(under.token) ||
+      !positionEqual(under.token.start, pos)
+    ) {
+      return under;
+    }
+
+    // punctuation gives way to the name ending there: in `vang(` the
+    // `(` is `vang`, as is the end of a word being completed
+    this.next = false;
+    const before = this.nodeAction(syntaxNode);
+    return !empty(before) &&
+      !isPunctuation(before.token) &&
+      positionEqual(before.token.end, pos)
+      ? before
+      : under;
   }
 
   protected nodeAction(node: TreeNode): Maybe<IFindResult> {
-    const searchResult = binarySearch(node.ranges, this.pos);
+    const searchResult = binarySearch(node.ranges, this.pos, this.next);
     if (empty(searchResult)) {
       return searchResult;
     }

@@ -205,16 +205,29 @@ export const positionToString = (pos: Position): string => {
 };
 
 /**
- * Binary search a collection of ordered ranges
+ * Binary search a collection of ordered ranges. A position where one
+ * range ends and the next begins is in both: `next` picks the range
+ * starting there (the character under the cursor), otherwise the one
+ * ending there
  * @param ranges sorted ranges to search
  * @param pos query position
+ * @param next pick the range starting at the position
  */
 export const binarySearch = <T extends Range>(
   ranges: T[],
   pos: Position,
+  next = false,
 ): Maybe<T> => {
   const index = binarySearchIndex(ranges, pos);
-  return Array.isArray(index) ? undefined : ranges[index];
+  if (Array.isArray(index)) {
+    return undefined;
+  }
+
+  const neighbor = next ? ranges[index + 1] : ranges[index - 1];
+  const touching =
+    neighbor !== undefined &&
+    positionEqual(next ? neighbor.start : neighbor.end, pos);
+  return touching ? neighbor : ranges[index];
 };
 
 /**
