@@ -1,6 +1,5 @@
 import {
   Position,
-  Location,
   Range,
   Connection,
   InitializeParams,
@@ -44,11 +43,9 @@ import { ClientConfiguration, IClientCapabilities } from './types';
 import { KsSymbolKind, SymbolTracker, KsBaseSymbol } from './analysis/types';
 import { mockLogger, mockTracer, logException } from './models/logger';
 import { empty } from './utilities/typeGuards';
-import { ScriptFind, AstContext } from './parser/scriptFind';
+import { AstContext } from './parser/scriptFind';
 import * as Expr from './parser/models/expr';
-import * as Stmt from './parser/models/stmt';
 import {
-  builtIn,
   diskUsageCommand,
   serverName,
   legacyServerNames,
@@ -82,7 +79,6 @@ import {
 } from './services/analysisService';
 import { IFindResult } from './parser/types';
 import { ResolverService } from './services/resolverService';
-import { runPath } from './utilities/pathUtils';
 import { WorkspaceConfiguration } from './config/models/workspaceConfiguration';
 import { LintManager } from './config/lintManager';
 import {
@@ -1071,136 +1067,7 @@ export class KLS {
     uri: string,
     ...contexts: AstContext[]
   ): Promise<Maybe<IFindResult>> {
-    const documentInfo = await this.analysisService.loadInfo(uri);
-    if (empty(documentInfo)) {
-      return undefined;
-    }
-
-    // try to find an symbol at the position
-    const { script } = documentInfo.lexicalInfo;
-    const finder = new ScriptFind();
-    return finder.find(script, pos, ...contexts);
-  }
-
-  /**
-   * Get the declaration location for the token at the provided position
-   * @param pos position in the document
-   * @param uri uri of the document
-   */
-  public async getDeclarationLocation(
-    pos: Position,
-    uri: string,
-  ): Promise<Maybe<Location>> {
-    const documentInfo = await this.analysisService.loadInfo(uri);
-    if (empty(documentInfo)) {
-      return undefined;
-    }
-
-    // try to find an symbol at the position
-    const { script } = documentInfo.lexicalInfo;
-    const finder = new ScriptFind();
-    const result = finder.find(
-      script,
-      pos,
-      Stmt.Run,
-      Stmt.RunPath,
-      Stmt.RunOncePath,
-    );
-
-    if (empty(result)) {
-      return undefined;
-    }
-
-    // check if symbols exists
-    const { token, node } = result;
-    if (empty(token.tracker)) {
-      // if no tracker it might be a run statement
-      if (
-        node instanceof Stmt.Run ||
-        node instanceof Stmt.RunPath ||
-        node instanceof Stmt.RunOncePath
-      ) {
-        // get the kos run path
-        const kosPath = runPath(node);
-        if (typeof kosPath !== 'string') {
-          return undefined;
-        }
-
-        const resolved = this.resolverService.resolve(
-          node.toLocation(uri),
-          kosPath,
-        );
-
-        if (empty(resolved)) {
-          return undefined;
-        }
-
-        // resolve to the file system
-        const found = this.ioService.exists(resolved);
-        return (
-          found &&
-          Location.create(
-            found.toString(),
-            Range.create(Position.create(0, 0), Position.create(0, 0)),
-          )
-        );
-      }
-
-      return undefined;
-    }
-
-    const { declared } = token.tracker;
-
-    // exit if undefined
-    if (declared.uri === builtIn) {
-      return undefined;
-    }
-
-    return typeof declared.symbol.name !== 'string'
-      ? declared.symbol.name
-      : undefined;
-  }
-
-  /**
-   * Get all usage locations in all files
-   * @param pos position in document
-   * @param uri uri of document
-   */
-  public async getSymbolLocations(
-    pos: Position,
-    uri: string,
-  ): Promise<Maybe<Location[]>> {
-    const documentInfo = await this.analysisService.loadInfo(uri);
-    if (
-      empty(documentInfo) ||
-      empty(documentInfo.semanticInfo.symbolTable) ||
-      empty(documentInfo.lexicalInfo.script)
-    ) {
-      return undefined;
-    }
-
-    // try to find the symbol at the position
-    const { semanticInfo, lexicalInfo } = documentInfo;
-    const finder = new ScriptFind();
-    const result = finder.find(lexicalInfo.script, pos);
-
-    if (empty(result)) {
-      return undefined;
-    }
-
-    // try to find the tracker at a given position
-    const { token } = result;
-    const tracker = semanticInfo.symbolTable.scopedNamedTracker(
-      pos,
-      token.lookup,
-    );
-    if (empty(tracker)) {
-      return undefined;
-    }
-
-    return [tracker.declared, ...tracker.usages, ...tracker.sets].filter(
-      location => location.uri !== builtIn,
-    );
+    return this.symbolService.findToken(pos, uri, ...contexts);
   }
 
   /**
@@ -1233,20 +1100,6 @@ export class KLS {
     }
 
     return documentInfo.semanticInfo.symbolTable.importedSymbols();
-  }
-
-  /**
-   * Get all symbols in a provided file
-   * @param uri document uri
-   */
-  public async getAllFileSymbols(uri: string): Promise<KsBaseSymbol[]> {
-    const documentInfo = await this.analysisService.loadInfo(uri);
-
-    if (empty(documentInfo)) {
-      return [];
-    }
-
-    return documentInfo.semanticInfo.symbolTable.allSymbols();
   }
 
   /**
