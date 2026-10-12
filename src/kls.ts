@@ -458,7 +458,7 @@ export class KLS {
           DidChangeWatchedFilesNotification.type,
           {
             watchers: [
-              { globPattern: '**/*.{ks,KS}' },
+              { globPattern: '**/*.ks' },
               { globPattern: '**/ksconfig.json' },
             ],
           },
