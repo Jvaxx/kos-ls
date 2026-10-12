@@ -51,7 +51,6 @@ import {
   legacyServerNames,
   keywordCompletions,
   DEFAULT_BODIES,
-  languageServer,
 } from './utilities/constants';
 import { rangeContains } from './utilities/positionUtils';
 import { Scanner } from './scanner/scanner';
@@ -385,7 +384,7 @@ export class KLS {
     return {
       serverInfo: {
         // The name of the server as defined by the server.
-        name: languageServer,
+        name: serverName,
 
         // The servers's version as defined by the server.
         version: this.version,

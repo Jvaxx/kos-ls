@@ -5,7 +5,7 @@ import {
   Range,
   Location,
 } from 'vscode-languageserver';
-import { languageServer } from './constants';
+import { serverName } from './constants';
 import { DiagnosticUri } from '../types';
 
 /**
@@ -55,7 +55,7 @@ export const createDiagnostic = (
     message,
     severity,
     code,
-    languageServer,
+    serverName,
     relatedInformation,
   );
 };

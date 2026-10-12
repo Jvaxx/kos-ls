@@ -17,7 +17,6 @@ export const diskUsageCommand = 'kos-ls.diskUsage';
  * one kos-language-server used
  */
 export const legacyServerNames = ['kos-vscode'];
-export const languageServer = 'kos-language-server';
 
 export const notFoundErrorCode = 'ENOTFOUND';
 

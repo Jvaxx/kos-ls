@@ -13,7 +13,7 @@ const exampleConfigUri = URI.file('/example/ksconfig.json');
 function makeDocument(source: string): TextDocument {
   return TextDocument.create(
     exampleConfigUri.toString(),
-    'kos-language-server',
+    'json',
     1,
     source,
   );

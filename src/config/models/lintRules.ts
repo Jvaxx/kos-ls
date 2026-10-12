@@ -2,7 +2,7 @@ import { DiagnosticSeverity } from 'vscode-languageserver';
 import { DIAGNOSTICS } from '../../utilities/diagnosticsUtils';
 
 /**
- * A class for holding information about a lint rule in kos-language-server
+ * A class for holding information about a lint rule in kos-ls
  */
 export class LintRule {
   /**

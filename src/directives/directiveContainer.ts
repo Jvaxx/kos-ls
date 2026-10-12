@@ -3,7 +3,7 @@ import { BasicDirective } from './basicDirectives';
 import { TokenType } from '../models/tokentypes';
 
 /**
- * Available directives is kos-language-server
+ * Available directives is kos-ls
  */
 export interface DirectiveContainer {
   /**

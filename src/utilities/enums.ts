@@ -1,5 +1,5 @@
 /**
- * Logging level internal to kos-language-server
+ * Logging level internal to kos-ls
  */
 export const enum LogLevel {
   verbose,
