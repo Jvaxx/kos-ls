@@ -6,6 +6,7 @@ import * as SuffixTerm from '../parser/models/suffixTerm';
 import { TokenType } from '../models/tokentypes';
 import { URI } from 'vscode-uri';
 import { extname } from 'path';
+import { DIAGNOSTICS } from './diagnosticsUtils';
 
 /**
  * based on run type determine how to get file path
@@ -81,6 +82,7 @@ export const normalizeExtensions = (uri: URI | string): Maybe<string> => {
 const cannotLoad = (stmt: RunStmtType) =>
   Diagnostic.create(
     stmt,
-    'kos-language-server cannot load runtime resolved run statements',
+    'Cannot follow a path built at runtime: the script it runs is not analysed',
     DiagnosticSeverity.Hint,
+    DIAGNOSTICS.LOAD_RUNTIME_PATH,
   );

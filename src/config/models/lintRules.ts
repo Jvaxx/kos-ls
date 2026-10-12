@@ -122,6 +122,12 @@ const lintTemplates: LintRule = {
       owned: [],
     },
     {
+      rule: 'file-loading-runtime',
+      level: 'hint',
+      diagnostics: [DIAGNOSTICS.LOAD_RUNTIME_PATH],
+      owned: [],
+    },
+    {
       rule: 'unreachable-code',
       level: 'error',
       diagnostics: [DIAGNOSTICS.UNREACHABLE_CODE],

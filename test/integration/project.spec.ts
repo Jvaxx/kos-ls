@@ -63,7 +63,9 @@ describe('project model', () => {
     client.open('src/boot/main.ks');
 
     // print_status comes from runoncepath("1:/lib/std.ks")
-    expect(await client.messages('src/boot/main.ks')).toEqual([]);
+    expect(await client.messages('src/boot/main.ks')).toEqual([
+      '14:5 Cannot follow a path built at runtime: the script it runs is not analysed',
+    ]);
   });
 
   test('unmapped volumes are reported once per path', async () => {
@@ -74,6 +76,7 @@ describe('project model', () => {
     expect(await client.messages('src/boot/main.ks')).toEqual([
       '8:5 Volume 1: is not mapped to a directory: add it to "volumes" in ksconfig.json',
       '9:5 Symbol print_status may not exist',
+      '14:5 Cannot follow a path built at runtime: the script it runs is not analysed',
     ]);
   });
 

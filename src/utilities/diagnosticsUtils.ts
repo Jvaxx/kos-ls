@@ -81,6 +81,7 @@ export const DIAGNOSTICS = {
 
   // analysis service
   LOAD_ERROR: 'unable-to-load-file',
+  LOAD_RUNTIME_PATH: 'load-runtime-path',
 
   // flow analysis
   UNREACHABLE_CODE: 'unreachable-code',

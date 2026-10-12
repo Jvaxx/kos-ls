@@ -144,6 +144,7 @@ These rules are not part of a grouping other than `all` and represent an assortm
 |scanning|This provides an error when an invalid token is encountered such as `variable$$$`|error|
 |parsing|This provides an error when invalid syntax is encountered such as `set x to .`|error|
 |file-loading|This provides an error when the file cannot in a run statement|warning|
+|file-loading-runtime|This applies to a run statement whose path is built at runtime, such as `runPath(name).`: the script it runs is not analysed|hint|
 |unreachable-code|This provides an error when code is unreachable. This typically occurs when a statement occurs after a break or return statement|error|
 |no-global-parameters|This provides an error when `global parameter example.` is used as globals. This will throw in kOS|error|
 |uninitialized-set|This is a warning when an undeclared variable is set with `@lazyglobal off`|warning|
