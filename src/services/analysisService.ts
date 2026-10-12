@@ -217,11 +217,6 @@ export class AnalysisService extends EventEmitter<AnalysisEvents> {
   }
 
   /**
-   * Set the files run before every script. Their globals, and those of
-   * the files they run, are visible in every other file.
-   * @param uris preloaded files
-   */
-  /**
    * Set whether declarations may hide builtins without the directive
    * @param clobberBuiltins kOS's `Config:CLOBBERBUILTINS`
    */
@@ -234,6 +229,11 @@ export class AnalysisService extends EventEmitter<AnalysisEvents> {
     return this;
   }
 
+  /**
+   * Set the files run before every script. Their globals, and those of
+   * the files they run, are visible in every other file.
+   * @param uris preloaded files
+   */
   public setPreload(uris: URI[]): this {
     const preload = uris
       .map((uri) => normalizeExtensions(uri))
