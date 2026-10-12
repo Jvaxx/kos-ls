@@ -79,20 +79,19 @@ export class ScriptFind extends TreeExecute<Maybe<IFindResult>> {
     this.next = true;
     const under = this.nodeAction(syntaxNode);
     if (
-      empty(under) ||
-      !isPunctuation(under.token) ||
-      !positionEqual(under.token.start, pos)
+      !empty(under) &&
+      (!isPunctuation(under.token) || !positionEqual(under.token.start, pos))
     ) {
       return under;
     }
 
-    // punctuation gives way to the name ending there: in `vang(` the
-    // `(` is `vang`, as is the end of a word being completed
+    // punctuation gives way to the token ending there: in `vang(` the
+    // `(` is `vang`, the end of a word being completed is the word, and
+    // in `ship:)` the position after the colon is the colon. So does the
+    // empty suffix of an unfinished `ship:`
     this.next = false;
     const before = this.nodeAction(syntaxNode);
-    return !empty(before) &&
-      !isPunctuation(before.token) &&
-      positionEqual(before.token.end, pos)
+    return !empty(before) && positionEqual(before.token.end, pos)
       ? before
       : under;
   }

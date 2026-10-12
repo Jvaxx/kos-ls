@@ -54,3 +54,33 @@ describe('completion case', () => {
     );
   });
 });
+
+describe('suffix completion', () => {
+  let client: TestClient;
+
+  beforeEach(async () => {
+    client = await TestClient.start(root);
+  });
+
+  afterEach(async () => {
+    await client?.stop();
+  });
+
+  // an editor asks right after the colon is typed, then filters
+  test.each([
+    'print terminal:',
+    'print terminal:.',
+    'print (terminal:).',
+    'print "x" at (0, terminal:).',
+    'runpath("a", terminal:).',
+    'print terminal:hei).',
+  ])('the suffixes in `%s`', async (line) => {
+    client.open('src/scratch.ks', `${line}\n`);
+
+    const end = line.indexOf(':') + 1;
+    const typed = line.slice(end).match(/^\w*/)![0].length;
+    expect(
+      await client.completionLabels('src/scratch.ks', 0, end + typed),
+    ).toContain('height');
+  });
+});
