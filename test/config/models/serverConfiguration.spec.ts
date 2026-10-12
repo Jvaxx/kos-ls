@@ -7,14 +7,9 @@ import { ClientConfiguration, IClientCapabilities } from '../../../src/types';
 
 const clientConfig: ClientConfiguration = {
   completionCase: 'lowercase',
-  telnetHost: '127.358.111',
-  telnetPort: 8080,
-  lspPort: 7234,
   trace: {
     server: {
-      format: 'json',
       level: 'info',
-      verbosity: 'verbose',
     },
   },
 };

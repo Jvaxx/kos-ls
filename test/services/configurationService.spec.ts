@@ -79,7 +79,10 @@ describe('configurationService', () => {
 
   describe('when the server configuration is updated', () => {
     test('change event is fired with appropriate config', () => {
-      const clientConfig = { ...defaultClientConfiguration, lspPort: 1000 };
+      const clientConfig: ClientConfiguration = {
+        ...defaultClientConfiguration,
+        completionCase: 'uppercase',
+      };
 
       const expectedServerConfiguration = capableServerConfiguration.merge({
         clientConfig,

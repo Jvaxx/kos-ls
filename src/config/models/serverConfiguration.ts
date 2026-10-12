@@ -103,15 +103,9 @@ export function normalizeClientConfiguration(
 }
 
 export const defaultClientConfiguration: ClientConfiguration = {
-  kerbalSpaceProgramPath: undefined,
-  telnetHost: '127.0.0.1',
-  telnetPort: 5410,
-  lspPort: 7000,
   completionCase: 'camelcase',
   trace: {
     server: {
-      verbosity: 'off',
-      format: 'text',
       level: 'error',
     },
   },

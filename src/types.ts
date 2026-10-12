@@ -59,14 +59,8 @@ export interface DiagnosticUri extends Diagnostic {
 
 export interface ClientConfiguration {
   completionCase: 'lowercase' | 'uppercase' | 'camelcase' | 'pascalcase';
-  kerbalSpaceProgramPath?: string;
-  telnetHost: string;
-  telnetPort: number;
-  lspPort: number;
   trace: {
     server: {
-      verbosity: 'off' | 'message' | 'verbose';
-      format: 'text' | 'json';
       level: 'verbose' | 'info' | 'log' | 'warn' | 'error' | 'none';
     };
   };
