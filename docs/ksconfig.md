@@ -14,8 +14,15 @@ optional.
 |clobberBuiltins|`true` lets names hide kOS builtins in every file, as kOS's `Config:CLOBBERBUILTINS` setting does. Default: `false`; a file can still set `@clobberbuiltins on.` or `off.`|
 |bodies|A list of custom bodies for the language server to consider valid. By default the stock KSP bodies are assumed|
 |linting|A collection of rules and levels indicating what level lints should be reported|
+|format|Formatter options, as in a `.kos-format` file; see the README|
 
 Paths in these properties are relative to `ksconfig.json`.
+
+Only the `ksconfig.json` at the root configures the analysis. The
+formatter is different: it takes its options from the nearest
+`.kos-format` or `ksconfig.json` `format` section from each file's
+directory up, so a `ksconfig.json` in a subdirectory can set the format
+of the files below it, and nothing else.
 
 ## Example
 

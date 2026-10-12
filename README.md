@@ -170,8 +170,10 @@ line. A file with syntax errors is not formatted.
 
 Options are read from the nearest `.kos-format` file, or `format` section
 of a `ksconfig.json`, from the file's directory up (editor tab settings
-are ignored, so the editor and the command line agree). A `.kos-format`
-is clang-format's flat YAML or JSON:
+are ignored, so the editor and the command line agree). Unlike the
+analysis, which reads only the root `ksconfig.json`, this may be a
+`ksconfig.json` in a subdirectory. A `.kos-format` is clang-format's flat
+YAML or JSON:
 
 ```yaml
 IndentWidth: 4              # columns per block level
