@@ -304,9 +304,10 @@ export class KLS {
     this.documentService.on('change', (document) => {
       void this.onChange(document);
     });
-    this.documentService.on('close', (uri) =>
-      this.analysisService.invalidateDocument(uri),
-    );
+    this.documentService.on('close', (uri) => {
+      this.clearExcluded(uri);
+      this.analysisService.invalidateDocument(uri);
+    });
     this.documentService.on('configLoad', (load) => {
       this.track(load);
     });
@@ -1017,6 +1018,18 @@ export class KLS {
             .map(cleanDiagnostic),
         }),
       );
+    }
+  }
+
+  /**
+   * Clear the diagnostics of an excluded document once closed: only an
+   * open excluded document has diagnostics
+   * @param uri uri of the closed document
+   */
+  private clearExcluded(uri: string): void {
+    const { workspaceConfiguration } = this.configurationService;
+    if (workspaceConfiguration.isExcluded(URI.parse(uri))) {
+      this.logFailure(this.connection.sendDiagnostics({ uri, diagnostics: [] }));
     }
   }
 
