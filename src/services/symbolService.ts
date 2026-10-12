@@ -28,6 +28,7 @@ import {
   KsSymbol,
 } from '../analysis/types';
 import { SymbolTable } from '../analysis/models/symbolTable';
+import { BasicTracker } from '../analysis/models/tracker';
 import { toSymbolInformation } from '../utilities/serverUtils';
 import { notEmpty, empty } from '../utilities/typeGuards';
 import { flatten } from '../utilities/arrayUtils';
@@ -451,16 +452,14 @@ export class SymbolService extends EventEmitter {
     uri: string,
   ): Promise<Maybe<SymbolLocations>> {
     const result = await this.findToken(pos, uri);
-    const table = await this.loadSymbolTable(uri);
-
-    if (empty(result) || empty(table)) {
+    if (empty(result)) {
       return undefined;
     }
 
-    // try to find the tracker at a given position
-    const { token } = result;
-    const tracker = table.scopedNamedTracker(pos, token.lookup);
-    if (empty(tracker)) {
+    // use the token's own tracker: a suffix shares its name with any
+    // variable in scope, but its tracker is a type tracker
+    const { tracker } = result.token;
+    if (!(tracker instanceof BasicTracker)) {
       return undefined;
     }
 

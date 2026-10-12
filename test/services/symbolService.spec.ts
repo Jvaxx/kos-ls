@@ -244,6 +244,39 @@ describe('symbol service', () => {
       });
     });
 
+    describe('when pointing to a suffix named like a variable', () => {
+      test('returns null', async () => {
+        const docUri = URI.file(join(rootUri.fsPath, 'suffix.ks'));
+        const suffixDocs = new Map([
+          [
+            docUri.toString(),
+            makeDoc(docUri, ['local mass is 1.', 'print ship:mass.'].join('\n')),
+          ],
+        ]);
+        const suffixMocks = defaultMocks(suffixDocs);
+        const service = new SymbolService(
+          suffixMocks.server,
+          suffixMocks.resolverService,
+          suffixMocks.ioService,
+          suffixMocks.docService,
+          suffixMocks.analysisService,
+        );
+        await suffixMocks.analysisService.loadDirectory();
+        service.listen();
+
+        const response = await suffixMocks.client.sendRequest(
+          ReferencesRequest.type,
+          mockReferenceRequest({
+            uri: docUri.toString(),
+            position: Position.create(1, 12),
+            includeDeclaration: true,
+          }),
+        );
+
+        expect(response).toBeNull();
+      });
+    });
+
     describe('when in the same file', () => {
       describe('when including declaration', () => {
         test('it find the reference', async () => {
