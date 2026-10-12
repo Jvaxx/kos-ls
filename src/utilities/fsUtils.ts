@@ -15,6 +15,18 @@ export const readFileAsync = (
 };
 
 /**
+ * Is a path an existing directory
+ * @param path path to check
+ */
+export const isDirectory = (path: string): boolean => {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
+};
+
+/**
  * Walk a directory of files
  * @param dir directory to walk
  * @param callback callback for each file in the directory

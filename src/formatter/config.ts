@@ -1,6 +1,7 @@
-import { existsSync, readFileSync, statSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { parse } from 'jsonc-parser';
+import { isDirectory } from '../utilities/fsUtils';
 import { FormatOptions, parseFormatFile, validateOptions } from './options';
 
 /**
@@ -56,14 +57,6 @@ export function findFormatOptions(path: string): FoundOptions {
     directory = parent;
   }
 }
-
-const isDirectory = (path: string): boolean => {
-  try {
-    return statSync(path).isDirectory();
-  } catch {
-    return false;
-  }
-};
 
 const readText = (path: string): string => {
   try {

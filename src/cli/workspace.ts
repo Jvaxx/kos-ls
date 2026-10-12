@@ -1,4 +1,4 @@
-import { existsSync, statSync } from 'fs';
+import { existsSync } from 'fs';
 import { dirname, join, relative, sep } from 'path';
 import { PassThrough } from 'stream';
 import {
@@ -19,6 +19,7 @@ import { defaultServerConfiguration } from '../config/models/serverConfiguration
 import { defaultWorkspaceConfiguration } from '../config/models/workspaceConfiguration';
 import { configFileName } from '../services/documentService';
 import { CaseKind } from '../utilities/enums';
+import { isDirectory } from '../utilities/fsUtils';
 
 /**
  * Where a command writes, replaceable for tests
@@ -124,14 +125,6 @@ export function findRoot(start: string): string {
     if (dirname(dir) === dir) {
       return start;
     }
-  }
-}
-
-export function isDirectory(path: string): boolean {
-  try {
-    return statSync(path).isDirectory();
-  } catch {
-    return false;
   }
 }
 
