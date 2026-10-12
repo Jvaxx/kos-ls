@@ -18,8 +18,16 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { join, relative, resolve } from 'path';
 import { extractClasses, stripComments } from './csharp';
 import { emptyModel, parseRst, parseRstSections } from './rst';
-import { merge, PreviousBuiltin, PreviousParameter, PreviousType } from './merge';
-import { KosDatabase, ParameterEntry } from '../../src/typeChecker/database/schema';
+import {
+  merge,
+  PreviousBuiltin,
+  PreviousParameter,
+  PreviousType,
+} from './merge';
+import {
+  KosDatabase,
+  ParameterEntry,
+} from '../../src/typeChecker/database/schema';
 
 const walk = (dir: string, extension: string): string[] =>
   readdirSync(dir, { withFileTypes: true })
@@ -40,7 +48,10 @@ const walk = (dir: string, extension: string): string[] =>
 function shipShortcuts(kos: string): string[] {
   const file = join(kos, 'src/kOS/Suffixed/VesselTarget.cs');
   const source = stripComments(readFileSync(file, 'utf8'));
-  const match = /ShortCuttableShipSuffixes\s*=\s*new\s*(?:string\s*)?\[\s*\]\s*\{([^}]*)\}/.exec(source);
+  const match =
+    /ShortCuttableShipSuffixes\s*=\s*new\s*(?:string\s*)?\[\s*\]\s*\{([^}]*)\}/.exec(
+      source,
+    );
   if (match === null) {
     throw new Error(`ShortCuttableShipSuffixes not found in ${file}`);
   }
@@ -63,20 +74,26 @@ function previousDefinitions(database: KosDatabase): {
       ...(p.variadic ? { variadic: true } : {}),
     }));
 
-  const types = Object.entries(database.structures).map(([name, structure]) => ({
-    name,
-    ...(structure.inherits ? { super: structure.inherits.replace(/<.*$/, '') } : {}),
-    ...(structure.parameters ? { parameters: structure.parameters } : {}),
-    suffixes: Object.entries(structure.suffixes).flatMap(([key, suffix]) =>
-      [key, ...(suffix.aliases ?? [])].map((suffixName) => ({
-        name: suffixName,
-        get: suffix.access !== 'set' && (suffix.access !== 'call' || !suffix.params?.length),
-        set: suffix.access === 'getset' || suffix.access === 'set',
-        params: params(suffix.params),
-        type: suffix.type,
-      })),
-    ),
-  }));
+  const types = Object.entries(database.structures).map(
+    ([name, structure]) => ({
+      name,
+      ...(structure.inherits
+        ? { super: structure.inherits.replace(/<.*$/, '') }
+        : {}),
+      ...(structure.parameters ? { parameters: structure.parameters } : {}),
+      suffixes: Object.entries(structure.suffixes).flatMap(([key, suffix]) =>
+        [key, ...(suffix.aliases ?? [])].map((suffixName) => ({
+          name: suffixName,
+          get:
+            suffix.access !== 'set' &&
+            (suffix.access !== 'call' || !suffix.params?.length),
+          set: suffix.access === 'getset' || suffix.access === 'set',
+          params: params(suffix.params),
+          type: suffix.type,
+        })),
+      ),
+    }),
+  );
 
   const builtins: PreviousBuiltin[] = [
     ...Object.entries(database.functions).flatMap(([key, fn]) =>
@@ -99,7 +116,10 @@ function previousDefinitions(database: KosDatabase): {
 }
 
 const program = new Command()
-  .requiredOption('--kos <repository>', 'kOS repository, checked out at the version')
+  .requiredOption(
+    '--kos <repository>',
+    'kOS repository, checked out at the version',
+  )
   .requiredOption('--version <version>', 'kOS version, e.g. 1.6.0.1')
   .requiredOption('--out <file>', 'database to write')
   .option('--report <file>', 'report to write', 'docs/kos-db-report.md')
@@ -131,7 +151,9 @@ const documentation = join(kos, 'doc/source');
 
 const classes = walk(sources, '.cs')
   .filter((file) => !/\.Test[/\\]/.test(file))
-  .flatMap((file) => extractClasses(readFileSync(file, 'utf8'), relative(kos, file)));
+  .flatMap((file) =>
+    extractClasses(readFileSync(file, 'utf8'), relative(kos, file)),
+  );
 
 const docs = emptyModel();
 const pages = walk(documentation, '.rst').map((file) => ({
@@ -161,7 +183,10 @@ const { database, report } = merge({
 });
 
 writeFileSync(options.out, JSON.stringify(database, null, 2) + '\n');
-writeFileSync(options.report, report.toMarkdown(`kOS database report: kOS ${options.version}`));
+writeFileSync(
+  options.report,
+  report.toMarkdown(`kOS database report: kOS ${options.version}`),
+);
 
 for (const [name, value] of report.counts) {
   console.log(`${name}: ${value}`);

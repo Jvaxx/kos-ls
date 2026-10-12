@@ -28,7 +28,8 @@ describe('documentation', () => {
     expect(value).toContain('[kOS documentation](https://ksp-kos.github.io/');
 
     // a builtin variable, its access and units
-    const variable = (await client.hover(file, 0, 40))!.contents as MarkupContent;
+    const variable = (await client.hover(file, 0, 40))!
+      .contents as MarkupContent;
     expect(variable.value).toContain('(variable) altitude: Scalar');
     expect(variable.value).toContain('*Access: get · Units: m*');
   });
@@ -61,7 +62,8 @@ describe('documentation', () => {
     ).toContain('(suffix) height: Scalar');
 
     // down a chain of suffixes
-    const chained = (await client.hover(file, 1, 16))!.contents as MarkupContent;
+    const chained = (await client.hover(file, 1, 16))!
+      .contents as MarkupContent;
     expect(chained.value).toContain('(suffix) radius: Scalar');
   });
 
@@ -200,7 +202,8 @@ describe('doc comments', () => {
     const dv = (await client.hover(file, 5, 15))!.contents as MarkupContent;
     expect(dv.value).toContain('delta-v in m/s');
 
-    const target = (await client.hover(file, 11, 28))!.contents as MarkupContent;
+    const target = (await client.hover(file, 11, 28))!
+      .contents as MarkupContent;
     expect(target.value).toContain('Target altitude');
   });
 

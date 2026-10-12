@@ -17,7 +17,6 @@ import { empty } from '../utilities/typeGuards';
 import { IoService } from './ioService';
 import { LogLevel } from '../utilities/enums';
 
-
 type DocumentConnection = Pick<
   Connection,
   'onDidChangeTextDocument' | 'onDidCloseTextDocument' | 'onDidOpenTextDocument'
@@ -251,7 +250,6 @@ export class DocumentService extends EventEmitter<DocumentEvents> {
             this.serverDocs.set(uri, textDocument);
           }
         }
-
       }
     } catch (err) {
       logException(this.logger, mockTracer, err, LogLevel.error);

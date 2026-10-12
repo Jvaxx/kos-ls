@@ -1,11 +1,7 @@
 import { Tokenized } from '../../src/scanner/types';
 import { Ast } from '../../src/parser/types';
 import { SymbolTable } from '../../src/analysis/models/symbolTable';
-import {
-  Diagnostic,
-  Range,
-  DiagnosticSeverity
-} from 'vscode-languageserver';
+import { Diagnostic, Range, DiagnosticSeverity } from 'vscode-languageserver';
 import { Scanner } from '../../src/scanner/scanner';
 import { Parser } from '../../src/parser/parser';
 import { SymbolTableBuilder } from '../../src/analysis/models/symbolTableBuilder';
@@ -102,16 +98,16 @@ const checkSource = (
 };
 
 const noResolverErrors = (result: ITypeCheckResults): void => {
-  expect(result.scan.diagnostics.map(e => e.message)).toEqual([]);
-  expect(result.parse.diagnostics.map(e => e.message)).toEqual([]);
-  expect(result.resolveDiagnostics.map(e => e.message)).toEqual([]);
+  expect(result.scan.diagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.parse.diagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.resolveDiagnostics.map((e) => e.message)).toEqual([]);
 };
 
 const noErrors = (result: ITypeCheckResults): void => {
-  expect(result.scan.diagnostics.map(e => e.message)).toEqual([]);
-  expect(result.parse.diagnostics.map(e => e.message)).toEqual([]);
-  expect(result.resolveDiagnostics.map(e => e.message)).toEqual([]);
-  expect(result.typeCheckDiagnostics.map(e => e.message)).toEqual([]);
+  expect(result.scan.diagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.parse.diagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.resolveDiagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.typeCheckDiagnostics.map((e) => e.message)).toEqual([]);
 };
 
 const literalSource = `
@@ -967,10 +963,16 @@ describe('typeChecker', () => {
           const errors = results.typeCheckDiagnostics.sort(
             (a, b) => a.range.start.line - b.range.start.line,
           );
-          expect(errors.map(e => [e.range.start.line, e.message])).toEqual([
-            [2, 'Call expected 1 required parameters but was called with 0 arguments'],
+          expect(errors.map((e) => [e.range.start.line, e.message])).toEqual([
+            [
+              2,
+              'Call expected 1 required parameters but was called with 0 arguments',
+            ],
             [3, 'Call expected 2 parameters but was called with 3 arguments'],
-            [5, 'Call expected 1 required parameters but was called with 0 arguments'],
+            [
+              5,
+              'Call expected 1 required parameters but was called with 0 arguments',
+            ],
           ]);
           for (const error of errors) {
             expect(error.code).toBe(DIAGNOSTICS.TYPE_WRONG_ARITY_USER);

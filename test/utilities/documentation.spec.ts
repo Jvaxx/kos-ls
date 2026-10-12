@@ -30,7 +30,9 @@ describe('Documentation', () => {
       scalarType,
       createUnion(true, stringType, noneType),
     );
-    const docs = { params: [{ name: 'dv', doc: 'delta-v' }, { name: 'label' }] };
+    const docs = {
+      params: [{ name: 'dv', doc: 'delta-v' }, { name: 'label' }],
+    };
 
     expect(formatSignature('burn', type, docs)).toBe(
       'burn(dv: Scalar, label?: String): Scalar',

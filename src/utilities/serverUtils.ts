@@ -29,11 +29,7 @@ import { structureType } from '../typeChecker/ksTypes/primitives/structure';
 import { IType } from '../typeChecker/types';
 import { tokenTrackedType } from '../typeChecker/utilities/typeUtilities';
 import { DiagnosticUri } from '../types';
-import {
-  cleanCompletion,
-  cleanLocation,
-  cleanRange,
-} from './clean';
+import { cleanCompletion, cleanLocation, cleanRange } from './clean';
 import { DIAGNOSTICS, createDiagnosticUri } from './diagnosticsUtils';
 import { mapper } from './mapper';
 import { rangeAfter, rangeContainsPos } from './positionUtils';

@@ -18,7 +18,8 @@ import { Token } from '../models/token';
 export class SetResolver
   implements
     IExprVisitor<[], ISetResolverResult>,
-    ISuffixTermVisitor<[], ISetResolverResult> {
+    ISuffixTermVisitor<[], ISetResolverResult>
+{
   /**
    * Set resolver constructor
    */

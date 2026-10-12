@@ -5,7 +5,10 @@ import { Diagnostic } from 'vscode-languageserver';
 import { Scanner } from '../../src/scanner/scanner';
 import { Parser } from '../../src/parser/parser';
 import { SymbolTableBuilder } from '../../src/analysis/models/symbolTableBuilder';
-import { standardLibraryBuilder, bodyLibraryBuilder } from '../../src/analysis/standardLibrary';
+import {
+  standardLibraryBuilder,
+  bodyLibraryBuilder,
+} from '../../src/analysis/standardLibrary';
 import { PreResolver } from '../../src/analysis/preResolver';
 import { Resolver } from '../../src/analysis/resolver';
 import {
@@ -62,9 +65,7 @@ export const resolveSource = (
     symbolTableBuilder.linkDependency(
       standardLibraryBuilder(CaseKind.lowerCase),
     );
-    symbolTableBuilder.linkDependency(
-      bodyLibraryBuilder(CaseKind.lowerCase),
-    );
+    symbolTableBuilder.linkDependency(bodyLibraryBuilder(CaseKind.lowerCase));
   }
 
   for (const table of otherTables) {
@@ -91,12 +92,12 @@ export const resolveSource = (
 export const noParseErrors = (
   result: Pick<IResolveResults, 'scan' | 'parse'>,
 ): void => {
-  expect(result.scan.diagnostics.map(e => e.message)).toEqual([]);
-  expect(result.parse.diagnostics.map(e => e.message)).toEqual([]);
+  expect(result.scan.diagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.parse.diagnostics.map((e) => e.message)).toEqual([]);
 };
 
 export const noResolverErrors = (result: IResolveResults): void => {
-  expect(result.scan.diagnostics.map(e => e.message)).toEqual([]);
-  expect(result.parse.diagnostics.map(e => e.message)).toEqual([]);
-  expect(result.resolveDiagnostics.map(e => e.message)).toEqual([]);
+  expect(result.scan.diagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.parse.diagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.resolveDiagnostics.map((e) => e.message)).toEqual([]);
 };

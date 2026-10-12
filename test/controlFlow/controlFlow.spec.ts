@@ -42,15 +42,15 @@ const checkFlow = (source: string): IFlowResults => {
 };
 
 const noParseErrors = (result: IFlowResults): void => {
-  expect(result.scan.diagnostics.map(e => e.message)).toEqual([]);
-  expect(result.parse.diagnostics.map(e => e.message)).toEqual([]);
+  expect(result.scan.diagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.parse.diagnostics.map((e) => e.message)).toEqual([]);
 };
 
 const noErrors = (result: IFlowResults): void => {
-  expect(result.scan.diagnostics.map(e => e.message)).toEqual([]);
-  expect(result.parse.diagnostics.map(e => e.message)).toEqual([]);
+  expect(result.scan.diagnostics.map((e) => e.message)).toEqual([]);
+  expect(result.parse.diagnostics.map((e) => e.message)).toEqual([]);
   expect(result.flow).toBeDefined();
-  expect(result.flow!.reachable().map(e => e.message)).toEqual([]);
+  expect(result.flow!.reachable().map((e) => e.message)).toEqual([]);
 };
 
 const postReturnSource = `

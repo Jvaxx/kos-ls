@@ -1,6 +1,4 @@
-import {
-  createConnection,
-} from 'vscode-languageserver/node';
+import { createConnection } from 'vscode-languageserver/node';
 import { IoService, Document } from '../../src/services/ioService';
 import { empty } from '../../src/utilities/typeGuards';
 import { DocumentService } from '../../src/services/documentService';

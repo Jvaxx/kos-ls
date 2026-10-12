@@ -10,7 +10,14 @@
 import databaseJson from '../../../data/kos-1.6.0.1.json';
 import { KosDatabase, ParameterEntry, SuffixEntry, Documented } from './schema';
 import { mapNames, parseType, TypeExpression } from './typeExpression';
-import { Access, IParametricType, IType, OperatorKind, TypeDocs, TypeKind } from '../types';
+import {
+  Access,
+  IParametricType,
+  IType,
+  OperatorKind,
+  TypeDocs,
+  TypeKind,
+} from '../types';
 import { Type } from '../models/types/type';
 import { ParametricType } from '../models/parametricTypes/parametricType';
 import { Operator } from '../models/types/operator';
@@ -41,7 +48,10 @@ import { stackType } from '../ksTypes/collections/stack';
 import { uniqueSetType } from '../ksTypes/collections/uniqueset';
 import { rangeType } from '../ksTypes/collections/range';
 import { enumeratorType } from '../ksTypes/collections/enumerator';
-import { collectionType, enumerableType } from '../ksTypes/collections/enumerable';
+import {
+  collectionType,
+  enumerableType,
+} from '../ksTypes/collections/enumerable';
 import { vectorType } from '../ksTypes/collections/vector';
 import { directionType } from '../ksTypes/collections/direction';
 import { timeSpanType } from '../ksTypes/time/timespan';
@@ -157,7 +167,10 @@ const isParametric = (type: IType | IParametricType): type is IParametricType =>
 /**
  * Whether a type expression uses a type parameter
  */
-const usesParameter = (expression: TypeExpression, parameters: string[]): boolean =>
+const usesParameter = (
+  expression: TypeExpression,
+  parameters: string[],
+): boolean =>
   expression.kind === 'union'
     ? expression.types.some((t) => usesParameter(t, parameters))
     : parameters.includes(expression.name) ||
@@ -174,7 +187,10 @@ export function loadDatabase(database: KosDatabase): KosTypes {
     byLowerName.set(name.toLowerCase(), name);
   }
 
-  const docs = (entry: Documented & { units?: string }, params?: ParameterEntry[]): TypeDocs => {
+  const docs = (
+    entry: Documented & { units?: string },
+    params?: ParameterEntry[],
+  ): TypeDocs => {
     const result: TypeDocs = {};
     if (entry.doc !== undefined) {
       result.doc = entry.doc;
@@ -209,7 +225,9 @@ export function loadDatabase(database: KosDatabase): KosTypes {
     }
     if (isParametric(type)) {
       const [element] = expression.args;
-      return type.apply(element === undefined ? structureType : resolve(element));
+      return type.apply(
+        element === undefined ? structureType : resolve(element),
+      );
     }
     return type;
   };
@@ -271,10 +289,22 @@ export function loadDatabase(database: KosDatabase): KosTypes {
   }
 
   // any structure can be compared to any other
-  if (structureType.getOperator(OperatorKind.equal, structureType) === undefined) {
+  if (
+    structureType.getOperator(OperatorKind.equal, structureType) === undefined
+  ) {
     structureType.addOperators(
-      new Operator(structureType, OperatorKind.equal, booleanType, structureType),
-      new Operator(structureType, OperatorKind.notEqual, booleanType, structureType),
+      new Operator(
+        structureType,
+        OperatorKind.equal,
+        booleanType,
+        structureType,
+      ),
+      new Operator(
+        structureType,
+        OperatorKind.notEqual,
+        booleanType,
+        structureType,
+      ),
     );
   }
 
@@ -300,7 +330,10 @@ export function loadDatabase(database: KosDatabase): KosTypes {
           own.docs ??= docs(suffix, suffix.params);
           continue;
         }
-        const expressions = [suffix.type, ...(suffix.params ?? []).map((p) => p.type)];
+        const expressions = [
+          suffix.type,
+          ...(suffix.params ?? []).map((p) => p.type),
+        ];
         if (expressions.some((text) => usesParameter(parseType(text), ['T']))) {
           continue;
         }
@@ -318,7 +351,10 @@ export function loadDatabase(database: KosDatabase): KosTypes {
 
     type.docs = docs(structure);
     type.dynamic = structure.dynamic;
-    const parent = structure.inherits === undefined ? structureType : resolveText(structure.inherits);
+    const parent =
+      structure.inherits === undefined
+        ? structureType
+        : resolveText(structure.inherits);
     type.addSuper(noMap(parent));
 
     const seen = new Set<string>();
@@ -347,11 +383,23 @@ export function loadDatabase(database: KosDatabase): KosTypes {
           ? createVarFunctionType(
               name,
               returns,
-              variadicOf(entry.params.length === 1 ? variadic.type : 'Structure'),
+              variadicOf(
+                entry.params.length === 1 ? variadic.type : 'Structure',
+              ),
             )
-          : createFunctionType(name, returns, ...entry.params.map(parameterType));
+          : createFunctionType(
+              name,
+              returns,
+              ...entry.params.map(parameterType),
+            );
       type.docs = docs(entry, entry.params);
-      functions.push({ name, segments: nameSegments(name), type, lock: false, docs: type.docs });
+      functions.push({
+        name,
+        segments: nameSegments(name),
+        type,
+        lock: false,
+        docs: type.docs,
+      });
     }
   }
 
@@ -370,7 +418,9 @@ export function loadDatabase(database: KosDatabase): KosTypes {
   return {
     structure: (name) => {
       const found = byLowerName.get(name.toLowerCase());
-      return found === undefined ? undefined : resolve({ kind: 'name', name: found, args: [] });
+      return found === undefined
+        ? undefined
+        : resolve({ kind: 'name', name: found, args: [] });
     },
     functions,
     variables,

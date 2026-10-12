@@ -144,11 +144,7 @@ function listTable(lines: string[]): string[] {
 
   const header = headerRows > 0 ? rows[0] : rows[0].map(() => '');
   const body = headerRows > 0 ? rows.slice(1) : rows;
-  return [
-    line(header),
-    `|${' --- |'.repeat(width)}`,
-    ...body.map(line),
-  ];
+  return [line(header), `|${' --- |'.repeat(width)}`, ...body.map(line)];
 }
 
 /**
@@ -186,7 +182,10 @@ function simpleTable(lines: string[]): string[] {
   const cells = (line: string) =>
     spans.map((span, i) =>
       line
-        .slice(span.start, i === spans.length - 1 ? undefined : spans[i + 1].start)
+        .slice(
+          span.start,
+          i === spans.length - 1 ? undefined : spans[i + 1].start,
+        )
         .trim(),
     );
 
@@ -200,7 +199,11 @@ function simpleTable(lines: string[]): string[] {
   let header: string[] | undefined;
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
-    if (simpleTableBorder.test(line) || /^-+\s*$/.test(line.trim()) || isBlank(line)) {
+    if (
+      simpleTableBorder.test(line) ||
+      /^-+\s*$/.test(line.trim()) ||
+      isBlank(line)
+    ) {
       continue;
     }
     const row = cells(line);
@@ -240,7 +243,11 @@ export function rstToMarkdown(
   let i = 0;
 
   const fence = (block: string[], lang: string) => {
-    out.push('```' + lang, ...dedent(block).join('\n').trim().split('\n'), '```');
+    out.push(
+      '```' + lang,
+      ...dedent(block).join('\n').trim().split('\n'),
+      '```',
+    );
   };
 
   while (i < source.length) {
@@ -265,7 +272,9 @@ export function rstToMarkdown(
       } else if (kind === 'versionchanged' || kind === 'deprecated') {
         const label = kind === 'deprecated' ? 'Deprecated since' : 'Changed in';
         const text = rstToMarkdown(content, language).replace(/\n/g, ' ');
-        out.push(`*${label} kOS ${argument.trim()}${text ? `: ${text}` : '.'}*`);
+        out.push(
+          `*${label} kOS ${argument.trim()}${text ? `: ${text}` : '.'}*`,
+        );
       } else if (kind === 'code-block' || kind === 'code') {
         const options = content.findIndex((l) => !/^\s*:\w[\w-]*:/.test(l));
         fence(content.slice(Math.max(options, 0)), argument.trim() || language);

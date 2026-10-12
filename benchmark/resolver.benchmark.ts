@@ -8,7 +8,10 @@ import { SymbolTableBuilder } from '../src/analysis/models/symbolTableBuilder';
 import { Resolver } from '../src/analysis/resolver';
 import { SymbolTable } from '../src/analysis/models/symbolTable';
 import { typeInitializer } from '../src/typeChecker/initialize';
-import { standardLibraryBuilder, bodyLibraryBuilder } from '../src/analysis/standardLibrary';
+import {
+  standardLibraryBuilder,
+  bodyLibraryBuilder,
+} from '../src/analysis/standardLibrary';
 import { CaseKind } from '../src/utilities/enums';
 
 const testDir = join(__dirname, '../../../kerboscripts/parser_valid/');
@@ -29,8 +32,9 @@ suite('resolver', () => {
     typeInitializer();
 
     ap = parseSource(readFileSync(join(testDir, 'ap.ks'), 'utf8')).parse;
-    boostback = parseSource(readFileSync(join(testDir, 'boostback.ks'), 'utf8'))
-      .parse;
+    boostback = parseSource(
+      readFileSync(join(testDir, 'boostback.ks'), 'utf8'),
+    ).parse;
     allLanguage = parseSource(
       readFileSync(join(testDir, 'unitTests', 'allLanguage.ks'), 'utf8'),
     ).parse;

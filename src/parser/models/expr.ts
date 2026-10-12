@@ -111,7 +111,7 @@ export class Invalid extends Expr {
   }
 
   public toLines(): string[] {
-    return [this.tokens.map(t => t.lexeme).join(' ')];
+    return [this.tokens.map((t) => t.lexeme).join(' ')];
   }
 
   public accept<P extends unknown[], R>(
@@ -305,7 +305,10 @@ export class Unary extends Expr {
    * @param operator unary operator
    * @param factor factor
    */
-  constructor(public readonly operator: Token, public readonly factor: IExpr) {
+  constructor(
+    public readonly operator: Token,
+    public readonly factor: IExpr,
+  ) {
     super();
   }
 

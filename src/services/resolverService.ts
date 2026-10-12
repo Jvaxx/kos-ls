@@ -134,7 +134,9 @@ export class ResolverService {
    * @param volume lower case volume number or name
    */
   private volumeRoot(volume: string): Maybe<URI> {
-    return archiveNames.has(volume) ? this.rootVolume : this.volumes.get(volume);
+    return archiveNames.has(volume)
+      ? this.rootVolume
+      : this.volumes.get(volume);
   }
 
   /**

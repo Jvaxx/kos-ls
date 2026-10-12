@@ -11,7 +11,7 @@ const testDir = join(__dirname, 'fixtures/parser_valid/');
 
 describe('Scan all files', () => {
   test('scan all', () => {
-    walkDir(testDir, filePath => {
+    walkDir(testDir, (filePath) => {
       if (!basename(filePath).endsWith('.ks')) {
         return;
       }
@@ -20,7 +20,7 @@ describe('Scan all files', () => {
 
       const scanner = new Scanner(kosFile);
       const { tokens, diagnostics: scanErrors } = scanner.scanTokens();
-      const errorResult = scanErrors.map(error => ({ filePath, ...error }));
+      const errorResult = scanErrors.map((error) => ({ filePath, ...error }));
 
       expect(tokens.length > 0).toBe(true);
       expect(errorResult.length === 0).toBe(true);
@@ -208,9 +208,11 @@ describe('when scanning directives', () => {
     test('it tokenizes the directive', () => {
       for (const [tokenType, lexeme] of directiveMap) {
         const whitespace = ' '.repeat(Math.floor(Math.random() * 5));
-        const { directiveTokens: directives, diagnostics: scanDiagnostics, tokens } = scan(
-          `//${whitespace}#${lexeme}`,
-        );
+        const {
+          directiveTokens: directives,
+          diagnostics: scanDiagnostics,
+          tokens,
+        } = scan(`//${whitespace}#${lexeme}`);
 
         expect(tokens).toHaveLength(0);
         expect(scanDiagnostics).toHaveLength(0);
@@ -255,16 +257,20 @@ describe('when scanning directives', () => {
         const tokenCount = Math.floor(Math.random() * 3) + 1;
         const tokenWhitespace = Array(tokenCount)
           .fill(0)
-          .map(_ => ' '.repeat(getRandomInt(2) + 1));
+          .map((_) => ' '.repeat(getRandomInt(2) + 1));
         const lexemes = Array(tokenCount)
           .fill(0)
-          .map(_ => stringBodies[getRandomInt(stringBodies.length - 1)]);
+          .map((_) => stringBodies[getRandomInt(stringBodies.length - 1)]);
 
         let final = `//${directiveWhitespace}#${lexeme}`;
         for (const [whitespace, token] of zip(tokenWhitespace, lexemes)) {
           final += `${whitespace}"${token}"`;
         }
-        const { directiveTokens: directives, diagnostics: scanDiagnostics, tokens } = scan(final);
+        const {
+          directiveTokens: directives,
+          diagnostics: scanDiagnostics,
+          tokens,
+        } = scan(final);
 
         expect(tokens).toHaveLength(0);
         expect(scanDiagnostics).toHaveLength(0);
@@ -292,16 +298,20 @@ describe('when scanning directives', () => {
         const tokenCount = Math.floor(Math.random() * 3) + 1;
         const tokenWhitespace = Array(tokenCount)
           .fill(0)
-          .map(_ => ' '.repeat(getRandomInt(2) + 1));
+          .map((_) => ' '.repeat(getRandomInt(2) + 1));
         const lexemes = Array(tokenCount)
           .fill(0)
-          .map(_ => identifier[getRandomInt(identifier.length - 1)]);
+          .map((_) => identifier[getRandomInt(identifier.length - 1)]);
 
         let final = `//${directiveWhitespace}#${lexeme}`;
         for (const [whitespace, token] of zip(tokenWhitespace, lexemes)) {
           final += `${whitespace}${token}`;
         }
-        const { directiveTokens: directives, diagnostics: scanDiagnostics, tokens } = scan(final);
+        const {
+          directiveTokens: directives,
+          diagnostics: scanDiagnostics,
+          tokens,
+        } = scan(final);
 
         expect(tokens).toHaveLength(0);
         expect(scanDiagnostics).toHaveLength(0);
@@ -329,18 +339,22 @@ describe('when scanning directives', () => {
         const tokenCount = Math.floor(Math.random() * 3) + 1;
         const tokenWhitespace = Array(tokenCount)
           .fill(0)
-          .map(_ => ' '.repeat(getRandomInt(2) + 1));
+          .map((_) => ' '.repeat(getRandomInt(2) + 1));
 
         const lexemes = Array(tokenCount)
           .fill(0)
-          .map(_ => numbers[getRandomInt(numbers.length - 1)]);
+          .map((_) => numbers[getRandomInt(numbers.length - 1)]);
 
         let final = `//${directiveWhitespace}#${lexeme}`;
         for (const [whitespace, token] of zip(tokenWhitespace, lexemes)) {
           final += `${whitespace}${token}`;
         }
 
-        const { directiveTokens: directives, diagnostics: scanDiagnostics, tokens } = scan(final);
+        const {
+          directiveTokens: directives,
+          diagnostics: scanDiagnostics,
+          tokens,
+        } = scan(final);
 
         expect(tokens).toHaveLength(0);
         expect(scanDiagnostics).toHaveLength(0);
@@ -377,12 +391,18 @@ describe('When scanning comments', () => {
     expect(tokens[0].leadingComments).toEqual([
       {
         text: '// first',
-        range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+        range: {
+          start: { line: 0, character: 0 },
+          end: { line: 0, character: 8 },
+        },
         trailing: false,
       },
       {
         text: '// second',
-        range: { start: { line: 1, character: 2 }, end: { line: 1, character: 11 } },
+        range: {
+          start: { line: 1, character: 2 },
+          end: { line: 1, character: 11 },
+        },
         trailing: false,
       },
     ]);
@@ -418,7 +438,10 @@ describe('When scanning comments', () => {
       for (const { text, range } of comments) {
         expect(text.startsWith('//')).toBe(true);
         expect(
-          lines[range.start.line].slice(range.start.character, range.end.character),
+          lines[range.start.line].slice(
+            range.start.character,
+            range.end.character,
+          ),
         ).toBe(text);
       }
     });

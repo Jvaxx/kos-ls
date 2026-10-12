@@ -16,19 +16,22 @@ describe('completion case', () => {
     ['lowercase', 'ship', 'stagedeltav'],
     ['camelcase', 'ship', 'stageDeltaV'],
     ['pascalcase', 'Ship', 'StageDeltaV'],
-  ])('%s applies to symbols and suffixes', async (completionCase, symbol, suffix) => {
-    client = await TestClient.start(root, { settings: { completionCase } });
-    client.open('src/scratch.ks', text);
+  ])(
+    '%s applies to symbols and suffixes',
+    async (completionCase, symbol, suffix) => {
+      client = await TestClient.start(root, { settings: { completionCase } });
+      client.open('src/scratch.ks', text);
 
-    // after `local x is `
-    expect(await client.completionLabels('src/scratch.ks', 0, 11)).toContain(
-      symbol,
-    );
-    // after `ship:`
-    expect(await client.completionLabels('src/scratch.ks', 0, 16)).toContain(
-      suffix,
-    );
-  });
+      // after `local x is `
+      expect(await client.completionLabels('src/scratch.ks', 0, 11)).toContain(
+        symbol,
+      );
+      // after `ship:`
+      expect(await client.completionLabels('src/scratch.ks', 0, 16)).toContain(
+        suffix,
+      );
+    },
+  );
 
   test('settings are read from the legacy kos-vscode section', async () => {
     client = await TestClient.start(root, {

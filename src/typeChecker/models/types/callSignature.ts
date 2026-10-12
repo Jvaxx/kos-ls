@@ -85,7 +85,7 @@ export class CallSignature implements ICallSignature {
    */
   public toString(): string {
     const paramsStr = this.params()
-      .map(p => p.toString())
+      .map((p) => p.toString())
       .join(', ');
 
     return `(${paramsStr}) => ${this.returns().toString()}`;

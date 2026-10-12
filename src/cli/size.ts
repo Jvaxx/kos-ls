@@ -110,11 +110,16 @@ export async function main(
   }
 
   const show = (uri: string) => relative(cwd, URI.parse(uri).fsPath);
-  const width = Math.max(4, ...rows.map(({ path }) => relative(cwd, path).length));
+  const width = Math.max(
+    4,
+    ...rows.map(({ path }) => relative(cwd, path).length),
+  );
   const columns = (...cells: (string | number)[]) =>
     cells
       .map((cell, i) =>
-        i === 0 ? String(cell).padEnd(width) : String(cell).padStart(i === 4 ? 5 : 8),
+        i === 0
+          ? String(cell).padEnd(width)
+          : String(cell).padStart(i === 4 ? 5 : 8),
       )
       .join(' ');
 
@@ -135,7 +140,13 @@ export async function main(
     }
 
     io.out(
-      columns(relative(cwd, path), self.stripped, self.source, total, found.files.length) +
+      columns(
+        relative(cwd, path),
+        self.stripped,
+        self.source,
+        total,
+        found.files.length,
+      ) +
         (notes.length > 0 ? `  (${notes.join(', ')})` : '') +
         '\n',
     );

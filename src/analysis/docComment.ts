@@ -263,7 +263,10 @@ export const paramTag = (
  * @param scope its scope keywords, if any
  * @param keyword its keyword (`function`, `parameter`)
  */
-export const declarationStart = (scope: Maybe<Scope>, keyword: Token): Token => {
+export const declarationStart = (
+  scope: Maybe<Scope>,
+  keyword: Token,
+): Token => {
   const tokens = [scope?.declare, scope?.scope, keyword].filter(
     (token): token is Token => token !== undefined,
   );

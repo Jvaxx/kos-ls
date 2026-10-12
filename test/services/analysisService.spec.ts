@@ -444,7 +444,10 @@ describe('analysis service', () => {
     const baseUri = URI.file('/example/folder').toString();
 
     const documents = new Map([
-      [uri1, TextDocument.create(uri1, 'kos', 1.0, 'runOncePath("example2.ks").')],
+      [
+        uri1,
+        TextDocument.create(uri1, 'kos', 1.0, 'runOncePath("example2.ks").'),
+      ],
       [uri2, TextDocument.create(uri2, 'kos', 1.0, 'local unused is 1.')],
     ]);
     const docService = createMockDocumentService(documents);
@@ -460,7 +463,9 @@ describe('analysis service', () => {
     await analysisService.whenIdle();
 
     const propagated: Map<string, DiagnosticUri[]>[] = [];
-    analysisService.on('propagate', diagnostics => propagated.push(diagnostics));
+    analysisService.on('propagate', (diagnostics) =>
+      propagated.push(diagnostics),
+    );
 
     // example2.ks is deleted on disk
     documents.delete(uri2);

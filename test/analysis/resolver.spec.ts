@@ -35,10 +35,7 @@ import {
 import { CaseKind } from '../../src/utilities/enums';
 
 const fakeUri = 'C:\\fake.ks';
-const unitTestPath = join(
-  __dirname,
-  '../fixtures/parser_valid/unitTests',
-);
+const unitTestPath = join(__dirname, '../fixtures/parser_valid/unitTests');
 
 const makeRange = (
   sLine: number,
@@ -650,7 +647,9 @@ describe('resolver', () => {
 
         return diagnostics
           .filter((d) => d.code === DIAGNOSTICS.CLOBBER_BUILTIN)
-          .map((d) => `${d.range.start.line}: ${diagnosticText(d).split('.')[0]}`)
+          .map(
+            (d) => `${d.range.start.line}: ${diagnosticText(d).split('.')[0]}`,
+          )
           .sort();
       };
 
@@ -723,8 +722,11 @@ describe('resolver', () => {
         expect(names).toEqual(expect.arrayContaining(['ship', 'heading']));
         expect(
           resolveSource(
-            ['print 1.', '@clobberbuiltins on.', '{ @clobberbuiltins on. }']
-              .join('\n'),
+            [
+              'print 1.',
+              '@clobberbuiltins on.',
+              '{ @clobberbuiltins on. }',
+            ].join('\n'),
           ).resolveDiagnostics.map((d) => d.message),
         ).toEqual([
           'Clobber builtins was not declared at top of the file',

@@ -33,9 +33,7 @@ import { DiagnosticUri } from '../types';
 import { LogLevel } from '../utilities/enums';
 
 type NodeConstructor =
-  | Constructor<Expr.Expr>
-  | Constructor<Stmt.Stmt>
-  | Constructor;
+  Constructor<Expr.Expr> | Constructor<Stmt.Stmt> | Constructor;
 
 export class Parser {
   private uri: string;

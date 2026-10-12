@@ -177,7 +177,7 @@ export const keywordCompletions = (caseKind: CaseKind): CompletionItem[] => {
     casedKeywords.push(toCase(caseKind, ...segments));
   }
 
-  return casedKeywords.map(keyword => ({
+  return casedKeywords.map((keyword) => ({
     kind: CompletionItemKind.Keyword,
     label: keyword,
     data: undefined,

@@ -420,7 +420,7 @@ export class ParametricType implements IParametricType {
 
     const typeParameterStr =
       typeParameters.length > 0
-        ? `<${typeParameters.map(t => t.toString()).join(', ')}>`
+        ? `<${typeParameters.map((t) => t.toString()).join(', ')}>`
         : '';
 
     // no call signature just return type name

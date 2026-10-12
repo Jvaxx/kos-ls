@@ -79,9 +79,9 @@ describe('disk usage text', () => {
     expect(usageSummary(usage)).toBe(
       '120 B on disk (300 B source) · 200 B with the 1 file it runs · 1 run not followed',
     );
-    expect(usageSummary({ files: usage.files.slice(0, 1), unresolved: 0 })).toBe(
-      '120 B on disk (300 B source)',
-    );
+    expect(
+      usageSummary({ files: usage.files.slice(0, 1), unresolved: 0 }),
+    ).toBe('120 B on disk (300 B source)');
   });
 
   test('details', () => {

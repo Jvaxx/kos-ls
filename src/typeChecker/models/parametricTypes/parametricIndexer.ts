@@ -11,8 +11,10 @@ import { ParametricType } from './parametricType';
 import { IndexerBinder } from '../../binders/indexerBinder';
 import { empty } from '../../../utilities/typeGuards';
 
-export class ParametricIndexer extends ParametricType
-  implements IParametricIndexer {
+export class ParametricIndexer
+  extends ParametricType
+  implements IParametricIndexer
+{
   public readonly indexBinder: IndexerBinder;
   public readonly kind: TypeKind.indexer;
 

@@ -92,7 +92,6 @@ export class IoService {
             text: await readFileAsync(dirPath, 'utf-8'),
           };
         }
-
       }
     }
   }

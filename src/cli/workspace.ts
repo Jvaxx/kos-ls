@@ -179,7 +179,11 @@ export function checkPaths(
  * @param root workspace root
  * @param paths limits, none for the whole workspace
  */
-export const selected = (path: string, root: string, paths: string[]): boolean =>
+export const selected = (
+  path: string,
+  root: string,
+  paths: string[],
+): boolean =>
   paths.length === 0
     ? within(path, root)
     : paths.some((limit) => within(path, limit));

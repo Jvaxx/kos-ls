@@ -83,20 +83,17 @@ export interface ISuffixTerm extends ISuffixTermVisitable, RangeSequence {
 }
 
 export interface IStmtClass
-  extends Constructor<Stmt.Stmt>,
-    IExprVisitableClass {
+  extends Constructor<Stmt.Stmt>, IExprVisitableClass {
   grammar: GrammarNode[];
 }
 
 export interface IExprClass<T = Expr.Expr>
-  extends Constructor<T>,
-    IExprVisitableClass {
+  extends Constructor<T>, IExprVisitableClass {
   grammar: GrammarNode[];
 }
 
 export interface ISuffixTermClass<T = SuffixTerm.SuffixTermBase>
-  extends Constructor<T>,
-    ISuffixTermVisitableClass {
+  extends Constructor<T>, ISuffixTermVisitableClass {
   grammar: GrammarNode[];
 }
 
@@ -188,25 +185,14 @@ export type GrammarNode =
 export type RunStmtType = Stmt.Run | Stmt.RunPath | Stmt.RunOncePath;
 export type ScriptNode = IStmt | IExpr | ISuffixTerm;
 export type TreeNode =
-  | IScript
-  | IStmt
-  | IExpr
-  | ISuffixTerm
-  | IParameter
-  | IDeclScope;
+  IScript | IStmt | IExpr | ISuffixTerm | IParameter | IDeclScope;
 
 export interface IExprVisitable {
-  accept<P extends unknown[], R>(
-    visitor: IExprVisitor<P, R>,
-    parameters: P,
-  ): R;
+  accept<P extends unknown[], R>(visitor: IExprVisitor<P, R>, parameters: P): R;
 }
 
 export interface IExprVisitor<P extends unknown[], R> {
-  visitExprInvalid(
-    expr: Expr.Invalid,
-    parameters: P,
-  ): R;
+  visitExprInvalid(expr: Expr.Invalid, parameters: P): R;
   visitTernary(expr: Expr.Ternary, parameters: P): R;
   visitBinary(expr: Expr.Binary, parameters: P): R;
   visitUnary(expr: Expr.Unary, parameters: P): R;
@@ -223,46 +209,16 @@ export interface ISuffixTermVisitable {
 }
 
 export interface ISuffixTermVisitor<P extends unknown[], R> {
-  visitSuffixTermInvalid(
-    suffixTerm: SuffixTerm.Invalid,
-    parameters: P,
-  ): R;
-  visitSuffixTrailer(
-    suffixTerm: SuffixTerm.SuffixTrailer,
-    parameters: P,
-  ): R;
-  visitSuffixTerm(
-    suffixTerm: SuffixTerm.SuffixTerm,
-    parameters: P,
-  ): R;
-  visitCall(
-    suffixTerm: SuffixTerm.Call,
-    parameters: P,
-  ): R;
-  visitHashIndex(
-    suffixTerm: SuffixTerm.HashIndex,
-    parameters: P,
-  ): R;
-  visitBracketIndex(
-    suffixTerm: SuffixTerm.BracketIndex,
-    parameters: P,
-  ): R;
-  visitDelegate(
-    suffixTerm: SuffixTerm.Delegate,
-    parameters: P,
-  ): R;
-  visitLiteral(
-    suffixTerm: SuffixTerm.Literal,
-    parameters: P,
-  ): R;
-  visitIdentifier(
-    suffixTerm: SuffixTerm.Identifier,
-    parameters: P,
-  ): R;
-  visitGrouping(
-    suffixTerm: SuffixTerm.Grouping,
-    parameters: P,
-  ): R;
+  visitSuffixTermInvalid(suffixTerm: SuffixTerm.Invalid, parameters: P): R;
+  visitSuffixTrailer(suffixTerm: SuffixTerm.SuffixTrailer, parameters: P): R;
+  visitSuffixTerm(suffixTerm: SuffixTerm.SuffixTerm, parameters: P): R;
+  visitCall(suffixTerm: SuffixTerm.Call, parameters: P): R;
+  visitHashIndex(suffixTerm: SuffixTerm.HashIndex, parameters: P): R;
+  visitBracketIndex(suffixTerm: SuffixTerm.BracketIndex, parameters: P): R;
+  visitDelegate(suffixTerm: SuffixTerm.Delegate, parameters: P): R;
+  visitLiteral(suffixTerm: SuffixTerm.Literal, parameters: P): R;
+  visitIdentifier(suffixTerm: SuffixTerm.Identifier, parameters: P): R;
+  visitGrouping(suffixTerm: SuffixTerm.Grouping, parameters: P): R;
 }
 
 export interface IExprVisitableClass {
@@ -297,10 +253,7 @@ export interface ISuffixTermClassVisitor<T> {
 }
 
 export interface IStmtVisitable {
-  accept<P extends unknown[], R>(
-    visitor: IStmtVisitor<P, R>,
-    parameters: P,
-  ): R;
+  accept<P extends unknown[], R>(visitor: IStmtVisitor<P, R>, parameters: P): R;
 }
 
 export interface IStmtVisitor<P extends unknown[], R> {
@@ -309,26 +262,17 @@ export interface IStmtVisitor<P extends unknown[], R> {
   visitDeclFunction(decl: Func, parameters: P): R;
   visitDeclParameter(decl: Param, parameters: P): R;
 
-  visitStmtInvalid(
-    stmt: Stmt.Invalid,
-    parameters: P,
-  ): R;
+  visitStmtInvalid(stmt: Stmt.Invalid, parameters: P): R;
   visitBlock(stmt: Stmt.Block, parameters: P): R;
   visitExpr(stmt: Stmt.ExprStmt, parameters: P): R;
   visitOnOff(stmt: Stmt.OnOff, parameters: P): R;
   visitCommand(stmt: Stmt.Command, parameters: P): R;
-  visitCommandExpr(
-    stmt: Stmt.CommandExpr,
-    parameters: P,
-  ): R;
+  visitCommandExpr(stmt: Stmt.CommandExpr, parameters: P): R;
   visitUnset(stmt: Stmt.Unset, parameters: P): R;
   visitUnlock(stmt: Stmt.Unlock, parameters: P): R;
   visitSet(stmt: Stmt.Set, parameters: P): R;
   visitChain(stmt: Stmt.Chain, parameters: P): R;
-  visitDirective(
-    stmt: Stmt.Directive,
-    parameters: P,
-  ): R;
+  visitDirective(stmt: Stmt.Directive, parameters: P): R;
   visitIf(stmt: Stmt.If, parameters: P): R;
   visitElse(stmt: Stmt.Else, parameters: P): R;
   visitUntil(stmt: Stmt.Until, parameters: P): R;
@@ -347,10 +291,7 @@ export interface IStmtVisitor<P extends unknown[], R> {
   visitDelete(stmt: Stmt.Delete, parameters: P): R;
   visitRun(stmt: Stmt.Run, parameters: P): R;
   visitRunPath(stmt: Stmt.RunPath, parameters: P): R;
-  visitRunPathOnce(
-    stmt: Stmt.RunOncePath,
-    parameters: P,
-  ): R;
+  visitRunPathOnce(stmt: Stmt.RunOncePath, parameters: P): R;
   visitCompile(stmt: Stmt.Compile, parameters: P): R;
   visitList(stmt: Stmt.List, parameters: P): R;
   visitEmpty(stmt: Stmt.Empty, parameters: P): R;

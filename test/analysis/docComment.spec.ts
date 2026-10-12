@@ -94,7 +94,10 @@ describe('doc comments', () => {
 
   test('a parameter is documented by its statement, else its function', () => {
     const fn = parseDocComment(
-      first('// @param a {Scalar} from the function\nfunction f { }', TokenType.function),
+      first(
+        '// @param a {Scalar} from the function\nfunction f { }',
+        TokenType.function,
+      ),
     );
     const statement = parseDocComment(
       first('// from the statement\nparameter a.', TokenType.parameter),

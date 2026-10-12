@@ -13,7 +13,8 @@ import { Token } from '../models/token';
  * Identify all local identifiers in a provided expression
  */
 export class LocalResolver
-  implements IExprVisitor<[], Token[]>, ISuffixTermVisitor<[], Token[]> {
+  implements IExprVisitor<[], Token[]>, ISuffixTermVisitor<[], Token[]>
+{
   /**
    * Are we currently looking at a suffix trailer
    */

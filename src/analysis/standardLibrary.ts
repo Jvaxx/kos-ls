@@ -38,7 +38,9 @@ export const standardLibraryBuilder = (caseKind: CaseKind): SymbolTable => {
 
   for (const { segments, type } of functions) {
     const params = type.callSignature()?.params() ?? [];
-    const optional = params.filter((param) => param.noneType || param.kind === TypeKind.variadic).length;
+    const optional = params.filter(
+      (param) => param.noneType || param.kind === TypeKind.variadic,
+    ).length;
 
     libraryBuilder.declareFunction(
       ScopeKind.global,
@@ -60,7 +62,12 @@ export const standardLibraryBuilder = (caseKind: CaseKind): SymbolTable => {
     if (lock) {
       libraryBuilder.declareLock(ScopeKind.global, token, builtInRange, type);
     } else {
-      libraryBuilder.declareVariable(ScopeKind.global, token, builtInRange, type);
+      libraryBuilder.declareVariable(
+        ScopeKind.global,
+        token,
+        builtInRange,
+        type,
+      );
     }
   }
 

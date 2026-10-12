@@ -1,6 +1,5 @@
-import { createType, noMap } from "../../utilities/typeCreators";
-import { serializableType } from "../primitives/serializeableStructure";
+import { createType, noMap } from '../../utilities/typeCreators';
+import { serializableType } from '../primitives/serializeableStructure';
 
 export const timeBaseType = createType('TimeBase');
 timeBaseType.addSuper(noMap(serializableType));
-

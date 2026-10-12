@@ -524,9 +524,7 @@ export class AnalysisService extends EventEmitter<AnalysisEvents> {
     );
     const passes = linked ? [...order, ...order] : order;
 
-    const results: DiagnosticsByUri = new Map(
-      removed.map((uri) => [uri, []]),
-    );
+    const results: DiagnosticsByUri = new Map(removed.map((uri) => [uri, []]));
     for (const uri of passes) {
       const info = await this.analyzeLexical(uri, lexical.get(uri)!);
       results.set(uri, this.documentInfoDiagnostics(info));
@@ -577,7 +575,11 @@ export class AnalysisService extends EventEmitter<AnalysisEvents> {
 
     const dependencyTables = new Set([this.standardLibrary, this.bodyLibrary]);
     for (const dependency of edges.uris) {
-      const table = await this.dependencyTable(dependency, visiting, allowStale);
+      const table = await this.dependencyTable(
+        dependency,
+        visiting,
+        allowStale,
+      );
       if (!empty(table)) {
         dependencyTables.add(table);
       }
@@ -705,7 +707,10 @@ export class AnalysisService extends EventEmitter<AnalysisEvents> {
 
     const found: string[] = [];
     for (const preload of this.preload) {
-      if (preload !== uri && !empty(await this.documentService.loadDocument(preload))) {
+      if (
+        preload !== uri &&
+        !empty(await this.documentService.loadDocument(preload))
+      ) {
         found.push(preload);
       }
     }
@@ -1020,9 +1025,7 @@ export class AnalysisService extends EventEmitter<AnalysisEvents> {
    * Extract all diagnostics from a document info
    * @param documentInfo document info
    */
-  private documentInfoDiagnostics(
-    documentInfo: DocumentInfo,
-  ): DiagnosticUri[] {
+  private documentInfoDiagnostics(documentInfo: DocumentInfo): DiagnosticUri[] {
     const { lexicalInfo, semanticInfo, dependencyInfo } = documentInfo;
     return [
       ...lexicalInfo.diagnostics,

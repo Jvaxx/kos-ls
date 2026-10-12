@@ -16,8 +16,7 @@ export class KsParameter {
     public readonly name: Token,
     public readonly range: Range,
     public readonly docs?: TypeDocs,
-  )
-  { }
+  ) {}
 
   /**
    * What kind of symbol is represented in this case a parameter

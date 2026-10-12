@@ -148,10 +148,14 @@ describe('Function Scan', () => {
     noParseErrors(parseResult);
 
     const funcScanner = new FunctionScan();
-    const results = parseResult.parse.script.stmts.map(stmt =>
+    const results = parseResult.parse.script.stmts.map((stmt) =>
       stmt instanceof Decl.Func ? funcScanner.scan(stmt.block) : undefined,
     );
 
-    expect(results.map(result => result?.variadic)).toEqual([true, true, false]);
+    expect(results.map((result) => result?.variadic)).toEqual([
+      true,
+      true,
+      false,
+    ]);
   });
 });

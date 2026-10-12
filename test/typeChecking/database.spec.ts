@@ -7,7 +7,10 @@ import { stringType } from '../../src/typeChecker/ksTypes/primitives/string';
 import { booleanType } from '../../src/typeChecker/ksTypes/primitives/boolean';
 import { structureType } from '../../src/typeChecker/ksTypes/primitives/structure';
 import { vectorType } from '../../src/typeChecker/ksTypes/collections/vector';
-import { flowType, FlowUnionType } from '../../src/typeChecker/models/types/flowUnionType';
+import {
+  flowType,
+  FlowUnionType,
+} from '../../src/typeChecker/models/types/flowUnionType';
 import { derivedSuffix } from '../../src/typeChecker/utilities/typeHelpers';
 import { OperatorKind } from '../../src/typeChecker/types';
 import { createUnion } from '../../src/typeChecker/utilities/typeCreators';
@@ -98,7 +101,9 @@ describe('kOS database loader', () => {
     const parts = gadget.getSuffix('parts')!.assignmentType();
     expect(parts.toString()).toBe('List<Gadget>');
     expect(parts.indexer()!.assignmentType()).toBe(gadget);
-    expect(gadget.getSuffix('target')!.assignmentType().toString()).toContain('Vector');
+    expect(gadget.getSuffix('target')!.assignmentType().toString()).toContain(
+      'Vector',
+    );
   });
 
   test('builds call suffixes with optional parameters', () => {
@@ -109,14 +114,19 @@ describe('kOS database loader', () => {
   });
 
   test('documents structures, suffixes and parameters', () => {
-    expect(gadget.docs).toEqual({ doc: 'A gadget.', url: 'https://docs.example/gadget.html' });
+    expect(gadget.docs).toEqual({
+      doc: 'A gadget.',
+      url: 'https://docs.example/gadget.html',
+    });
     expect(gadget.getSuffix('power')!.docs).toEqual({
       doc: 'The power.',
       url: 'https://docs.example/gadget.html#attribute:GADGET:POWER',
       units: 'kW',
     });
     // aliases share the documentation
-    expect(gadget.getSuffix('pow')!.docs).toEqual(gadget.getSuffix('power')!.docs);
+    expect(gadget.getSuffix('pow')!.docs).toEqual(
+      gadget.getSuffix('power')!.docs,
+    );
     expect(gadget.getSuffix('tune')!.docs!.params).toEqual([
       { name: 'frequency', doc: 'in Hz' },
       { name: 'label', doc: undefined },
@@ -144,7 +154,7 @@ describe('kOS database loader', () => {
   });
 
   test('builds functions with aliases and variables with locks', () => {
-    const names = types.functions.map(f => f.name);
+    const names = types.functions.map((f) => f.name);
     expect(names).toEqual(['makeGadget', 'newGadget', 'printAll']);
 
     const [make, alias, printAll] = types.functions;
@@ -196,7 +206,9 @@ describe('Flow union type', () => {
     expect(type.assignmentType()).toBe(type);
 
     // a static union is a subtype only when every member is
-    expect(createUnion(false, gadget, scalarType).isSubtypeOf(scalarType)).toBe(false);
+    expect(createUnion(false, gadget, scalarType).isSubtypeOf(scalarType)).toBe(
+      false,
+    );
   });
 
   test('is unknown with an unknown member', () => {

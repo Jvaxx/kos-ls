@@ -22,7 +22,7 @@ export interface ITypeResultExpr<T extends IType> {
  * type result for a kerboscript suffix
  */
 export interface ITypeResultSuffix<
-  T extends SuffixTypeBuilder = SuffixTypeBuilder
+  T extends SuffixTypeBuilder = SuffixTypeBuilder,
 > {
   /**
    * resolved cumulative suffix types
@@ -396,8 +396,7 @@ export interface Access {
 /**
  * An interface representing a type's call signature with type parameters
  */
-export interface IParametricCallSignature
-  extends ITypeMappable<ICallSignature> {
+export interface IParametricCallSignature extends ITypeMappable<ICallSignature> {
   /**
    * The types of the parameters
    */

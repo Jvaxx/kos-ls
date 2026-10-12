@@ -205,13 +205,8 @@ describe('symbol service', () => {
   });
 
   test('can constructs a new instance', () => {
-    const {
-      server,
-      docService,
-      ioService,
-      resolverService,
-      analysisService,
-    } = dependencies;
+    const { server, docService, ioService, resolverService, analysisService } =
+      dependencies;
 
     expect(
       new SymbolService(
@@ -250,7 +245,10 @@ describe('symbol service', () => {
         const suffixDocs = new Map([
           [
             docUri.toString(),
-            makeDoc(docUri, ['local mass is 1.', 'print ship:mass.'].join('\n')),
+            makeDoc(
+              docUri,
+              ['local mass is 1.', 'print ship:mass.'].join('\n'),
+            ),
           ],
         ]);
         const suffixMocks = defaultMocks(suffixDocs);

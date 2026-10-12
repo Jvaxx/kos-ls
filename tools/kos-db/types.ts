@@ -131,7 +131,10 @@ const documentationWords: Record<string, string | null> = {
  * @param word word as written
  * @param resolve name resolver
  */
-function documentationName(word: string, resolve: NameResolver): string | undefined {
+function documentationName(
+  word: string,
+  resolve: NameResolver,
+): string | undefined {
   const lower = word.toLowerCase();
   if (lower in documentationWords) {
     return documentationWords[lower] ?? undefined;
@@ -153,9 +156,35 @@ const unitPattern =
  * Units written in the documentation
  */
 const knownUnits = new Set([
-  'm', 'km', 'm/s', 'm/s^2', 's', 'deg', 'degree', 'degrees', 'rad', 'kN',
-  'kNm', 'kPa', 'atm', 'Hz', '%', 'Mg', 'Mg/s', 't', 'kg', 'K', 'units/s',
-  'u', 'units', 'seconds', 'meters', 'deg/s', 'rad/s', 'g', 'N',
+  'm',
+  'km',
+  'm/s',
+  'm/s^2',
+  's',
+  'deg',
+  'degree',
+  'degrees',
+  'rad',
+  'kN',
+  'kNm',
+  'kPa',
+  'atm',
+  'Hz',
+  '%',
+  'Mg',
+  'Mg/s',
+  't',
+  'kg',
+  'K',
+  'units/s',
+  'u',
+  'units',
+  'seconds',
+  'meters',
+  'deg/s',
+  'rad/s',
+  'g',
+  'N',
 ]);
 
 /**
@@ -197,10 +226,13 @@ export function documentationType(
   if (
     roleNames.length > 0 &&
     !plain.startsWith('(') &&
-    (firstWord === undefined || documentationName(firstWord, resolve) === undefined)
+    (firstWord === undefined ||
+      documentationName(firstWord, resolve) === undefined)
   ) {
     const first = roleNames
-      .map((name) => plain.search(new RegExp(`\\b${name.replace(/\W/g, '')}\\b`)))
+      .map((name) =>
+        plain.search(new RegExp(`\\b${name.replace(/\W/g, '')}\\b`)),
+      )
       .filter((i) => i >= 0);
     if (first.length > 0) {
       plain = plain.slice(Math.min(...first));

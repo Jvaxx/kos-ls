@@ -146,8 +146,8 @@ export class ScriptFind extends TreeExecute<Maybe<IFindResult>> {
           node: this.isContext(node)
             ? node
             : this.isContext(searchResult)
-            ? searchResult
-            : undefined,
+              ? searchResult
+              : undefined,
         };
       }
       if (rangeContainsPos(searchResult.value, this.pos)) {
@@ -163,8 +163,8 @@ export class ScriptFind extends TreeExecute<Maybe<IFindResult>> {
         node: this.isContext(node)
           ? node
           : this.isContext(searchResult)
-          ? searchResult
-          : undefined,
+            ? searchResult
+            : undefined,
         token: searchResult.identifier,
       };
     }
@@ -209,6 +209,6 @@ export class ScriptFind extends TreeExecute<Maybe<IFindResult>> {
 
   // is the correct context
   private isContext(node: TreeNode): boolean {
-    return this.contexts.some(context => node instanceof context);
+    return this.contexts.some((context) => node instanceof context);
   }
 }

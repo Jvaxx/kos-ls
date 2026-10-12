@@ -109,7 +109,7 @@ export interface KsSet extends Location {
  */
 export interface IKsDeclared<
   TSymbol extends KsSymbol = KsSymbol,
-  TType extends IType = IType
+  TType extends IType = IType,
 > extends Location {
   /**
    * The underlying symbol declared

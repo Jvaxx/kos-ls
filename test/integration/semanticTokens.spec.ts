@@ -45,7 +45,9 @@ describe('semantic tokens', () => {
 
   test('functions, parameters and their declarations', async () => {
     expect(
-      await tokensOf('function f {\n    parameter p.\n    return p.\n}\nf(1).\n'),
+      await tokensOf(
+        'function f {\n    parameter p.\n    return p.\n}\nf(1).\n',
+      ),
     ).toEqual([
       'function keyword',
       'f function declaration',

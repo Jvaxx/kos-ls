@@ -23,12 +23,7 @@ import { SymbolTableBuilder } from './models/symbolTableBuilder';
 import { IDeferred, KsSymbolKind } from './types';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver';
 import { createDiagnostic, DIAGNOSTICS } from '../utilities/diagnosticsUtils';
-import {
-  bareIdentifier,
-  BuiltinKind,
-  checkClobber,
-  Clobber,
-} from './clobber';
+import { bareIdentifier, BuiltinKind, checkClobber, Clobber } from './clobber';
 import Denque from 'denque';
 import { Token } from '../models/token';
 import { LogLevel } from '../utilities/enums';
@@ -39,7 +34,8 @@ export class Resolver
   implements
     IStmtVisitor<[], Diagnostics>,
     IExprVisitor<[], Diagnostics>,
-    ISuffixTermVisitor<[], Diagnostics> {
+    ISuffixTermVisitor<[], Diagnostics>
+{
   /**
    * Script the resolver executes on
    */

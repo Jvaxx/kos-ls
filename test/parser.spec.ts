@@ -53,7 +53,7 @@ const tokenCheck = new TokenCheck();
 
 describe('Parse all test files', () => {
   test('parse all', () => {
-    walkDir(testDir, filePath => {
+    walkDir(testDir, (filePath) => {
       if (!basename(filePath).endsWith('.ks')) {
         return;
       }
@@ -72,7 +72,7 @@ describe('Parse all test files', () => {
   });
 
   test('parse all validate', () => {
-    walkDir(testDir, filePath => {
+    walkDir(testDir, (filePath) => {
       if (!basename(filePath).endsWith('.ks')) {
         return;
       }
@@ -122,7 +122,11 @@ interface IAtomTest {
   literal: Literal;
 }
 
-const atomTest = (source: string, type: TokenType, literal: Literal): IAtomTest => {
+const atomTest = (
+  source: string,
+  type: TokenType,
+  literal: Literal,
+): IAtomTest => {
   return {
     source,
     type,
@@ -290,7 +294,7 @@ describe('Parse expressions', () => {
       expect(errors).toHaveLength(0);
       expect(scanErrors).toHaveLength(0);
 
-      testAtom(value, atom => {
+      testAtom(value, (atom) => {
         expect(atom instanceof SuffixTerm.Literal).toBe(true);
         if (atom instanceof SuffixTerm.Literal) {
           expect(atom.token.type).toBe(expression.type);
@@ -328,7 +332,7 @@ describe('Parse expressions', () => {
       expect(errors).toHaveLength(0);
       expect(scanErrors).toHaveLength(0);
 
-      testAtom(value, atom => {
+      testAtom(value, (atom) => {
         expect(atom instanceof SuffixTerm.Identifier).toBe(true);
         if (atom instanceof SuffixTerm.Identifier) {
           expect(expression.type).toBe(atom.token.type);
@@ -377,19 +381,19 @@ describe('Parse expressions', () => {
 
       testSuffixTerm(
         value,
-        atom => {
+        (atom) => {
           expect(atom instanceof SuffixTerm.Identifier).toBe(true);
           if (atom instanceof SuffixTerm.Identifier) {
             expect(expression.callee).toBe(atom.token.lookup);
           }
         },
-        trailer => {
+        (trailer) => {
           expect(trailer instanceof SuffixTerm.Call).toBe(true);
           if (trailer instanceof SuffixTerm.Call) {
             expect(expression.args).toHaveLength(trailer.args.length);
 
             for (let i = 0; i < expression.args.length; i += 1) {
-              testAtom(trailer.args[i], atom => {
+              testAtom(trailer.args[i], (atom) => {
                 expect(atom instanceof expression.args[i]).toBe(true);
               });
             }
@@ -441,7 +445,7 @@ describe('Parse expressions', () => {
         if (
           expression.base.expr.prototype instanceof SuffixTerm.SuffixTermBase
         ) {
-          testSuffixTerm(value.factor, atom => {
+          testSuffixTerm(value.factor, (atom) => {
             expect(atom instanceof expression.base.expr).toBe(true);
             if (atom instanceof SuffixTerm.Literal) {
               expect(expression.base.literal).toBe(atom.token.literal);
@@ -505,7 +509,7 @@ describe('Parse expressions', () => {
         if (
           expression.leftArm.expr.prototype instanceof SuffixTerm.SuffixTermBase
         ) {
-          testSuffixTerm(value.left, atom => {
+          testSuffixTerm(value.left, (atom) => {
             expect(atom instanceof expression.leftArm.expr).toBe(true);
             if (atom instanceof SuffixTerm.Literal) {
               expect(expression.leftArm.literal).toBe(atom.token.literal);
@@ -519,7 +523,7 @@ describe('Parse expressions', () => {
           expression.rightArm.expr.prototype instanceof
           SuffixTerm.SuffixTermBase
         ) {
-          testSuffixTerm(value.right, atom => {
+          testSuffixTerm(value.right, (atom) => {
             expect(atom instanceof expression.rightArm.expr).toBe(true);
             if (atom instanceof SuffixTerm.Literal) {
               expect(expression.rightArm.literal).toBe(atom.token.literal);
@@ -567,7 +571,7 @@ describe('Parse expressions', () => {
         if (
           expression.trueArm.expr.prototype instanceof SuffixTerm.SuffixTermBase
         ) {
-          testSuffixTerm(value.trueExpr, atom => {
+          testSuffixTerm(value.trueExpr, (atom) => {
             expect(atom instanceof expression.trueArm.expr).toBe(true);
             if (atom instanceof SuffixTerm.Literal) {
               expect(expression.trueArm.literal).toBe(atom.token.literal);
@@ -581,7 +585,7 @@ describe('Parse expressions', () => {
           expression.condition.expr.prototype instanceof
           SuffixTerm.SuffixTermBase
         ) {
-          testSuffixTerm(value.condition, atom => {
+          testSuffixTerm(value.condition, (atom) => {
             expect(atom instanceof expression.condition.expr).toBe(true);
             if (atom instanceof SuffixTerm.Literal) {
               expect(expression.condition.literal).toBe(atom.token.literal);
@@ -597,7 +601,7 @@ describe('Parse expressions', () => {
           expression.falseArm.expr.prototype instanceof
           SuffixTerm.SuffixTermBase
         ) {
-          testSuffixTerm(value.falseExpr, atom => {
+          testSuffixTerm(value.falseExpr, (atom) => {
             expect(atom instanceof expression.falseArm.expr).toBe(true);
             if (atom instanceof SuffixTerm.Literal) {
               expect(expression.falseArm.literal).toBe(atom.token.literal);
@@ -679,7 +683,9 @@ describe('Parse statement', () => {
     ];
 
     for (const declaration of validDeclarations) {
-      const { script, diagnostics: parseDiagnostics } = parse(declaration.source);
+      const { script, diagnostics: parseDiagnostics } = parse(
+        declaration.source,
+      );
 
       expect(parseDiagnostics).toHaveLength(0);
       expect(script.stmts).toHaveLength(1);
@@ -760,7 +766,9 @@ describe('Parse statement', () => {
     ];
 
     for (const declaration of validDeclarations) {
-      const { script, diagnostics: parseDiagnostics } = parse(declaration.source);
+      const { script, diagnostics: parseDiagnostics } = parse(
+        declaration.source,
+      );
 
       expect(parseDiagnostics).toHaveLength(0);
       expect(script.stmts).toHaveLength(1);

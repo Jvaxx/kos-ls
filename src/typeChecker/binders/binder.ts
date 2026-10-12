@@ -28,7 +28,9 @@ export class Binder<T extends ITypeMappable> {
       );
     }
 
-    this.typeParameters = new Set(names.map(name => createTypeParameter(name)));
+    this.typeParameters = new Set(
+      names.map((name) => createTypeParameter(name)),
+    );
     this.applicationCache = new Map();
   }
 

@@ -152,8 +152,10 @@ export function validateOptions(raw: unknown): OptionsResult {
   }
 
   const keys = Object.keys(optionKinds) as (keyof FormatOptions)[];
-  for (const [rawKey, value] of Object.entries(raw as Record<string, unknown>)) {
-    const key = keys.find(k => k.toLowerCase() === rawKey.toLowerCase());
+  for (const [rawKey, value] of Object.entries(
+    raw as Record<string, unknown>,
+  )) {
+    const key = keys.find((k) => k.toLowerCase() === rawKey.toLowerCase());
     if (key === undefined) {
       errors.push(`Unknown format option ${rawKey}.`);
       continue;
@@ -169,9 +171,11 @@ export function validateOptions(raw: unknown): OptionsResult {
       Object.assign(options, { [key]: count });
     } else if (kind === 'boolean') {
       const flag =
-        typeof value === 'string' ? { true: true, false: false }[
-          value.toLowerCase() as 'true' | 'false'
-        ] : value;
+        typeof value === 'string'
+          ? { true: true, false: false }[
+              value.toLowerCase() as 'true' | 'false'
+            ]
+          : value;
       if (typeof flag !== 'boolean') {
         errors.push(`${key} must be true or false, not ${String(value)}.`);
         continue;
@@ -180,10 +184,12 @@ export function validateOptions(raw: unknown): OptionsResult {
     } else {
       const choice =
         typeof value === 'string'
-          ? kind.find(c => c.toLowerCase() === value.toLowerCase())
+          ? kind.find((c) => c.toLowerCase() === value.toLowerCase())
           : undefined;
       if (choice === undefined) {
-        errors.push(`${key} must be one of ${kind.join(', ')}, not ${String(value)}.`);
+        errors.push(
+          `${key} must be one of ${kind.join(', ')}, not ${String(value)}.`,
+        );
         continue;
       }
       Object.assign(options, { [key]: choice });
@@ -203,7 +209,10 @@ export function parseFormatFile(text: string): OptionsResult {
     try {
       return validateOptions(JSON.parse(text));
     } catch (err) {
-      return { options: {}, errors: [`Invalid JSON: ${(err as Error).message}`] };
+      return {
+        options: {},
+        errors: [`Invalid JSON: ${(err as Error).message}`],
+      };
     }
   }
 

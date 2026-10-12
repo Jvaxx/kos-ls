@@ -10,8 +10,7 @@ export type Literal = string | number | boolean | undefined;
  * Represents the core of an atomic unit of the kerboscript language
  */
 export interface TokenBase<T extends TokenType = TokenType>
-  extends Range,
-    Location {
+  extends Range, Location {
   /**
    * descriminated union tag
    */

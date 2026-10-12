@@ -1,3 +1,3 @@
-import { createType } from "../../utilities/typeCreators";
+import { createType } from '../../utilities/typeCreators';
 
 export const timeStampType = createType('TimeStamp');

@@ -49,7 +49,9 @@ describe('system locks and refused sets', () => {
       [3, 8],
       [4, 32],
     ]) {
-      expect(await hover(line, character)).toMatch(/^```kerboscript\n\(lock\) /);
+      expect(await hover(line, character)).toMatch(
+        /^```kerboscript\n\(lock\) /,
+      );
       expect(await hover(line, character)).toContain('[kOS documentation]');
     }
     expect(await hover(0, 6)).toContain(

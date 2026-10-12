@@ -17,9 +17,10 @@ export const isDirective = <T extends TokenType>(
  * Create a type guard for a given type
  * @param type type to guard
  */
-const makeDirectiveGuard = <T extends TokenType>(type: T) => (
-  directive: DirectiveTokens,
-): directive is DirectiveTokens<T> => isDirective(type, directive);
+const makeDirectiveGuard =
+  <T extends TokenType>(type: T) =>
+  (directive: DirectiveTokens): directive is DirectiveTokens<T> =>
+    isDirective(type, directive);
 
 /**
  * Determine if this directive is an include directive

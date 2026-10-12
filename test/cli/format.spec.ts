@@ -1,4 +1,10 @@
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'fs';
+import {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  rmSync,
+} from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { main, Output } from '../../src/cli/format';
@@ -8,8 +14,8 @@ describe('kos-ls format', () => {
   let out: string;
   let err: string;
   const io = (stdin = ''): Output => ({
-    out: text => (out += text),
-    err: text => (err += text),
+    out: (text) => (out += text),
+    err: (text) => (err += text),
     stdin: () => stdin,
   });
 
@@ -36,7 +42,9 @@ describe('kos-ls format', () => {
   test('files are formatted in place', () => {
     expect(main([join(root, 'a.ks'), join(root, 'lib')], io())).toBe(0);
     expect(readFileSync(join(root, 'a.ks'), 'utf8')).toBe('print 1.\n');
-    expect(readFileSync(join(root, 'lib', 'notes.txt'), 'utf8')).toBe('PRINT  1.\n');
+    expect(readFileSync(join(root, 'lib', 'notes.txt'), 'utf8')).toBe(
+      'PRINT  1.\n',
+    );
     expect(main(['--check', root], io())).toBe(0);
   });
 

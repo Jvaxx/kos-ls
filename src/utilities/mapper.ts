@@ -5,12 +5,13 @@ import { empty } from './typeGuards';
  * @param map the map to generate the function from
  * @param name the name of the mapping function
  */
-export const mapper = <TKey, TValue>(map: Map<TKey, TValue>, name: string) =>
-(key: TKey): TValue => {
-  const value = map.get(key);
-  if (empty(value)) {
-    throw new Error(`No mapping for ${String(key)} in ${name}`);
-  }
+export const mapper =
+  <TKey, TValue>(map: Map<TKey, TValue>, name: string) =>
+  (key: TKey): TValue => {
+    const value = map.get(key);
+    if (empty(value)) {
+      throw new Error(`No mapping for ${String(key)} in ${name}`);
+    }
 
-  return value;
-};
+    return value;
+  };

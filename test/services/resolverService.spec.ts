@@ -98,9 +98,7 @@ describe('resolver service', () => {
         uri.fsPath.endsWith('/arch/lib/b'),
       );
       service.rootVolume = URI.file('/arch');
-      expect(resolved(service, '/arch/boot/a.ks', 'lib/b')).toBe(
-        '/arch/lib/b',
-      );
+      expect(resolved(service, '/arch/boot/a.ks', 'lib/b')).toBe('/arch/lib/b');
     });
 
     test('designate the caller directory when nothing exists', () => {

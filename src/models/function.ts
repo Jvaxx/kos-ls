@@ -27,8 +27,7 @@ export class KsFunction {
     public readonly returnValue: boolean,
     public readonly variadic = false,
     public readonly docs?: TypeDocs,
-  ) {
-  }
+  ) {}
 
   /**
    * What kind of symbol is represented in this case a parameter

@@ -200,7 +200,7 @@ export const createParametricArgSuffixType = (
   const typePlaceholders = callSignature.getTypeParameters();
 
   callSignature.addParams(
-    ...params.map(p =>
+    ...params.map((p) =>
       mapTypeWithParameters(callSignature, typePlaceholders, p),
     ),
   );
@@ -393,15 +393,13 @@ export const createVarFunctionType = (
 /**
  * Create variadic type
  */
-export const createVarType = memoize(
-  (type: IType): VariadicType => {
-    if (type.kind !== TypeKind.basic) {
-      throw new Error('Must provide a basic type for variadic types');
-    }
+export const createVarType = memoize((type: IType): VariadicType => {
+  if (type.kind !== TypeKind.basic) {
+    throw new Error('Must provide a basic type for variadic types');
+  }
 
-    return new VariadicType(type);
-  },
-);
+  return new VariadicType(type);
+});
 
 /**
  * Create a type map with no parameter mapping

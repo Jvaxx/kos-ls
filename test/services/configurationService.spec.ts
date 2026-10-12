@@ -115,9 +115,8 @@ describe('configurationService', () => {
       const userConfig = parseWorkspaceConfiguration(configDoc);
       expect(userConfig.diagnostics).toHaveLength(0);
 
-      const expectedWorkspaceConfiguration = defaultWorkspaceConfiguration.merge(
-        userConfig.config,
-      );
+      const expectedWorkspaceConfiguration =
+        defaultWorkspaceConfiguration.merge(userConfig.config);
 
       configurationService.on(
         'change',
@@ -129,7 +128,7 @@ describe('configurationService', () => {
         },
       );
 
-      configurationService.on('error', diagnostics => {
+      configurationService.on('error', (diagnostics) => {
         expect(diagnostics).toHaveLength(0);
       });
 

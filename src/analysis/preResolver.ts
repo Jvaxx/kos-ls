@@ -40,7 +40,8 @@ export class PreResolver
   implements
     IExprVisitor<[], Diagnostics>,
     IStmtVisitor<[], Diagnostics>,
-    ISuffixTermVisitor<[], Diagnostics> {
+    ISuffixTermVisitor<[], Diagnostics>
+{
   /**
    * current script being processed
    */

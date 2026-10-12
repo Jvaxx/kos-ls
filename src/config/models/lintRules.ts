@@ -71,7 +71,7 @@ function toRule(lintTemplate: LintRule): { flat: LintRule[]; tree: LintRule } {
   const lintRule = LintRule.from({
     ...lintTemplate,
     diagnostics: lintTemplate.diagnostics.concat(
-      ...nested.map(n => n.diagnostics),
+      ...nested.map((n) => n.diagnostics),
     ),
     owned: nested,
   });

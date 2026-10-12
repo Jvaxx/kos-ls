@@ -118,12 +118,14 @@ export class TestClient {
       client.codeLensRefreshes += 1;
       return null;
     });
-    connection.onRequest('workspace/configuration', (params: ConfigurationParams) =>
-      params.items.map(({ section }: { section?: string }) =>
-        section === (options.section ?? 'kos-ls')
-          ? options.settings ?? null
-          : null,
-      ),
+    connection.onRequest(
+      'workspace/configuration',
+      (params: ConfigurationParams) =>
+        params.items.map(({ section }: { section?: string }) =>
+          section === (options.section ?? 'kos-ls')
+            ? (options.settings ?? null)
+            : null,
+        ),
     );
     connection.onRequest('client/registerCapability', () => null);
     connection.listen();
@@ -218,9 +220,9 @@ export class TestClient {
       )
       .map(
         (d) =>
-          `${d.range.start.line + 1}:${d.range.start.character + 1} ${
-            diagnosticText(d)
-          }`,
+          `${d.range.start.line + 1}:${d.range.start.character + 1} ${diagnosticText(
+            d,
+          )}`,
       );
   }
 
@@ -230,13 +232,15 @@ export class TestClient {
    */
   async allMessages(): Promise<string[]> {
     await this.settle();
-    return [...this.diagnostics].flatMap(([uri, diagnostics]) =>
-      diagnostics.map(
-        (d) =>
-          `${uri} ${d.range.start.line + 1}:${d.range.start.character + 1} ` +
-          diagnosticText(d),
-      ),
-    ).sort();
+    return [...this.diagnostics]
+      .flatMap(([uri, diagnostics]) =>
+        diagnostics.map(
+          (d) =>
+            `${uri} ${d.range.start.line + 1}:${d.range.start.character + 1} ` +
+            diagnosticText(d),
+        ),
+      )
+      .sort();
   }
 
   /**
@@ -288,10 +292,8 @@ export class TestClient {
     let line = 0;
     let character = 0;
     for (let i = 0; i < result.data.length; i += 5) {
-      const [deltaLine, deltaStart, length, type, modifiers] = result.data.slice(
-        i,
-        i + 5,
-      );
+      const [deltaLine, deltaStart, length, type, modifiers] =
+        result.data.slice(i, i + 5);
       line += deltaLine;
       character = deltaLine === 0 ? character + deltaStart : deltaStart;
       const names = semanticTokensLegend.tokenModifiers.filter(
@@ -389,7 +391,10 @@ export class TestClient {
 
   async inlayHints(
     path: string,
-    range: { start: { line: number; character: number }; end: { line: number; character: number } },
+    range: {
+      start: { line: number; character: number };
+      end: { line: number; character: number };
+    },
   ): Promise<InlayHint[] | null> {
     await this.settle();
     return this.connection.sendRequest('textDocument/inlayHint', {
@@ -408,7 +413,10 @@ export class TestClient {
 
   async rangeFormatting(
     path: string,
-    range: { start: { line: number; character: number }; end: { line: number; character: number } },
+    range: {
+      start: { line: number; character: number };
+      end: { line: number; character: number };
+    },
   ): Promise<TextEdit[] | null> {
     await this.settle();
     return this.connection.sendRequest('textDocument/rangeFormatting', {
@@ -447,7 +455,10 @@ export class TestClient {
       });
     return (highlights ?? [])
       .map(({ range: { start }, kind }) => ({ start, kind }))
-      .sort((a, b) => a.start.line - b.start.line || a.start.character - b.start.character)
+      .sort(
+        (a, b) =>
+          a.start.line - b.start.line || a.start.character - b.start.character,
+      )
       .map(
         ({ start, kind }) =>
           `${start.line + 1}:${start.character + 1} ` +

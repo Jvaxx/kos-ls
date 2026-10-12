@@ -74,7 +74,4 @@ export type ScanDirective<T extends TokenType = TokenType> = {
 };
 
 export type ScanResult =
-  | ScanToken
-  | ScanWhitespace
-  | ScanDiagnostic
-  | ScanDirective;
+  ScanToken | ScanWhitespace | ScanDiagnostic | ScanDirective;

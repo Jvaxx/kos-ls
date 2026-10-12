@@ -9,8 +9,8 @@ describe('kos-ls size', () => {
   let out: string;
   let err: string;
   const io: Output = {
-    out: text => (out += text),
-    err: text => (err += text),
+    out: (text) => (out += text),
+    err: (text) => (err += text),
   };
 
   beforeEach(() => {
@@ -22,7 +22,10 @@ describe('kos-ls size', () => {
       '{ "volumes": { "1": "src" }, "exclude": ["bin"] }\n',
     );
     // 34 bytes, 27 stripped
-    writeFileSync(join(root, 'src', 'main.ks'), 'run lib.\n  runpath("lib/a"). // a\n');
+    writeFileSync(
+      join(root, 'src', 'main.ks'),
+      'run lib.\n  runpath("lib/a"). // a\n',
+    );
     // 9 bytes
     writeFileSync(join(root, 'src', 'lib.ks'), 'print 1.\n');
     // a and b run each other: 13 and 18 bytes
@@ -80,7 +83,7 @@ describe('kos-ls size', () => {
 
   test('paths and --root limit the list', async () => {
     expect(await main(['src/lib'], io, root)).toBe(0);
-    expect(out.split('\n').filter(line => line.startsWith('src/'))).toEqual([
+    expect(out.split('\n').filter((line) => line.startsWith('src/'))).toEqual([
       expect.stringMatching(/^src\/lib\/a\.ks /),
       expect.stringMatching(/^src\/lib\/b\.ks /),
     ]);

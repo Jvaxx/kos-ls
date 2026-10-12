@@ -13,10 +13,8 @@ import * as Expr from '../parser/models/expr';
 import * as SuffixTerm from '../parser/models/suffixTerm';
 
 export abstract class TreeExecute<T>
-  implements
-    IExprVisitor<[], T>,
-    IStmtVisitor<[], T>,
-    ISuffixTermVisitor<[], T> {
+  implements IExprVisitor<[], T>, IStmtVisitor<[], T>, ISuffixTermVisitor<[], T>
+{
   constructor() {}
 
   protected abstract nodeAction(node: ScriptNode): T;

@@ -11,7 +11,10 @@ export class TypeNode<T extends IType = IType> implements Range {
    * @param type type at a suffix term node
    * @param node suffix term node
    */
-  constructor(public readonly type: T, public readonly node: SuffixTermBase) {}
+  constructor(
+    public readonly type: T,
+    public readonly node: SuffixTermBase,
+  ) {}
 
   /**
    * start position of the node

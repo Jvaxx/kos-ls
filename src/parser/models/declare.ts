@@ -15,7 +15,10 @@ export abstract class Decl extends Stmt {
 }
 
 export class Scope extends NodeBase {
-  constructor(public readonly scope?: Token, public readonly declare?: Token) {
+  constructor(
+    public readonly scope?: Token,
+    public readonly declare?: Token,
+  ) {
     super();
   }
 
@@ -285,11 +288,11 @@ export class Param extends Decl {
 
     const paramLines = joinLines(
       ', ',
-      ...this.requiredParameters.map(param => param.toLines()),
+      ...this.requiredParameters.map((param) => param.toLines()),
     );
     const defaultParamLines = joinLines(
       ', ',
-      ...this.optionalParameters.map(param => param.toLines()),
+      ...this.optionalParameters.map((param) => param.toLines()),
     );
 
     let lines: string[];

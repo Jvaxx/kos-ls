@@ -121,12 +121,20 @@ export function semanticTokens(
       const to =
         line === end.line
           ? end.character
-          : document.getText({
-              start: { line, character: 0 },
-              end: { line: line + 1, character: 0 },
-            }).replace(/\r?\n$/, '').length;
+          : document
+              .getText({
+                start: { line, character: 0 },
+                end: { line: line + 1, character: 0 },
+              })
+              .replace(/\r?\n$/, '').length;
       if (to > from) {
-        found.push({ line, character: from, length: to - from, type, modifiers });
+        found.push({
+          line,
+          character: from,
+          length: to - from,
+          type,
+          modifiers,
+        });
       }
     }
   };
@@ -210,7 +218,11 @@ function addToken(token: Token, add: Add): void {
       return;
   }
 
-  add(token.start, token.end, operators.has(token.type) ? 'operator' : 'keyword');
+  add(
+    token.start,
+    token.end,
+    operators.has(token.type) ? 'operator' : 'keyword',
+  );
 }
 
 /**
@@ -230,7 +242,9 @@ function nameToken(
       return { type: 'property', modifiers };
     }
     const method =
-      type.callSignature() !== undefined && !type.access.get && !type.access.set;
+      type.callSignature() !== undefined &&
+      !type.access.get &&
+      !type.access.set;
     modifiers.push('defaultLibrary');
     if (!method && !type.access.set) {
       modifiers.push('readonly');
@@ -257,7 +271,11 @@ function nameToken(
       // otherwise; the bodies are not in it
       if (builtin) {
         const { access } = symbolDocs(symbol, uri, tracker.declared.type);
-        if (access === undefined ? symbol.tag === KsSymbolKind.variable : !access.set) {
+        if (
+          access === undefined
+            ? symbol.tag === KsSymbolKind.variable
+            : !access.set
+        ) {
           modifiers.push('readonly');
         }
       }

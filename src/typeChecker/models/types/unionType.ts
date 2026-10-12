@@ -68,30 +68,32 @@ export class UnionType implements IType {
       throw new Error('Union must be at least two types');
     }
 
-    if (!types.every(type => type.kind === types[0].kind)) {
+    if (!types.every((type) => type.kind === types[0].kind)) {
       throw new Error('Union must be the same type');
     }
 
-    const sortedTypes = this.keepsOrder() ? [...types] : types.sort((a, b) => {
-      if (a.name < b.name) {
-        return -1;
-      }
+    const sortedTypes = this.keepsOrder()
+      ? [...types]
+      : types.sort((a, b) => {
+          if (a.name < b.name) {
+            return -1;
+          }
 
-      if (a.name > b.name) {
-        return 1;
-      }
+          if (a.name > b.name) {
+            return 1;
+          }
 
-      return 0;
-    });
+          return 0;
+        });
 
     this.param = isParameter;
     this.types = sortedTypes;
     this.name = 'Union';
-    this.anyType = sortedTypes.some(type => type.anyType);
-    this.noneType = sortedTypes.some(type => type.noneType);
+    this.anyType = sortedTypes.some((type) => type.anyType);
+    this.noneType = sortedTypes.some((type) => type.noneType);
     this.access = {
-      get: sortedTypes.every(type => type.access.get),
-      set: sortedTypes.every(type => type.access.set),
+      get: sortedTypes.every((type) => type.access.get),
+      set: sortedTypes.every((type) => type.access.set),
     };
     this.kind = sortedTypes[0].kind;
     this.typeTracker = new TypeTracker(new KsSuffix(this.name), this);
@@ -117,7 +119,7 @@ export class UnionType implements IType {
       // if every member has a subtype then we're a subtype
       for (const unionType of type.types) {
         if (
-          !this.types.some(thisUnionType =>
+          !this.types.some((thisUnionType) =>
             thisUnionType.isSubtypeOf(unionType),
           )
         ) {
@@ -129,7 +131,7 @@ export class UnionType implements IType {
     }
 
     // a union of subtypes is a subtype: `Vessel or Boolean` is a Structure
-    return this.types.every(member => member.isSubtypeOf(type));
+    return this.types.every((member) => member.isSubtypeOf(type));
   }
 
   /**
@@ -137,7 +139,7 @@ export class UnionType implements IType {
    */
   public assignmentType(): IType {
     const assignmentTypes = new Set(
-      this.types.map(type => type.assignmentType()),
+      this.types.map((type) => type.assignmentType()),
     );
     if (assignmentTypes.size > 1) {
       return new UnionType(false, ...assignmentTypes);
@@ -190,7 +192,7 @@ export class UnionType implements IType {
 
     const returns = new Set<IType>();
 
-    const same = this.types.every(type => {
+    const same = this.types.every((type) => {
       const typeIndexer = type.indexer();
       if (empty(typeIndexer)) {
         return false;
@@ -242,7 +244,7 @@ export class UnionType implements IType {
    * @param name name of the suffix
    */
   public hasSuffix(name: string): boolean {
-    return this.types.some(type => type.hasSuffix(name));
+    return this.types.some((type) => type.hasSuffix(name));
   }
 
   /**
@@ -302,7 +304,7 @@ export class UnionType implements IType {
       return true;
     }
 
-    return this.types.some(unionType => unionType.canCoerceFrom(type));
+    return this.types.some((unionType) => unionType.canCoerceFrom(type));
   }
 
   /**
@@ -332,28 +334,28 @@ export class UnionType implements IType {
    */
   public toString(): string {
     if (this.param) {
-      const optional = this.types.some(type => type.noneType);
+      const optional = this.types.some((type) => type.noneType);
 
       if (optional) {
         if (this.types.length <= 2) {
           return this.types
-            .filter(type => !type.noneType)
-            .map(type => `${type.toString()}?`)
+            .filter((type) => !type.noneType)
+            .map((type) => `${type.toString()}?`)
             .join(' or ');
         }
 
         const typeString = this.types
-          .filter(type => !type.noneType)
-          .map(type => type.toString())
+          .filter((type) => !type.noneType)
+          .map((type) => type.toString())
           .join(' or ');
 
         return `(${typeString})?`;
       }
 
-      return this.types.map(type => type.toString()).join(' or ');
+      return this.types.map((type) => type.toString()).join(' or ');
     }
 
-    return this.types.map(type => type.toString()).join(' or ');
+    return this.types.map((type) => type.toString()).join(' or ');
   }
 
   /**

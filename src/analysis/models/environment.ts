@@ -6,8 +6,7 @@ import { KsFunction } from '../../models/function';
 import { KsLock } from '../../models/lock';
 
 type TrackerKind<T extends KsSymbolKind> = T extends
-  | KsSymbolKind.variable
-  | KsSymbolKind.parameter
+  KsSymbolKind.variable | KsSymbolKind.parameter
   ? BasicTracker<KsVariable | KsParameter>
   : BasicTracker<KsFunction | KsLock>;
 

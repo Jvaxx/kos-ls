@@ -52,9 +52,7 @@ export class FailedConstructor {
 }
 
 export type NodeConstructor =
-  | Constructor<Expr>
-  | Constructor<Stmt>
-  | Constructor;
+  Constructor<Expr> | Constructor<Stmt> | Constructor;
 
 export const constructorToFailed = (constructor?: NodeConstructor) => {
   if (empty(constructor)) {
@@ -70,7 +68,7 @@ export const constructorToFailed = (constructor?: NodeConstructor) => {
   }
 
   return failedUnknown();
-}
+};
 
 export const failedExpr = (
   expr: Maybe<Constructor<Expr>>,

@@ -103,7 +103,8 @@ export class TypeChecker
   implements
     IStmtVisitor<[], Diagnostics>,
     IExprVisitor<[], ITypeResultExpr<IType>>,
-    ISuffixTermVisitor<[builder: SuffixTypeBuilder], Diagnostics> {
+    ISuffixTermVisitor<[builder: SuffixTypeBuilder], Diagnostics>
+{
   /**
    * the logger to logging information
    */
@@ -318,7 +319,7 @@ export class TypeChecker
         );
         const returns = this.tagType(comment?.returns, errors);
         const returnType = symbol.returnValue
-          ? returns ?? structureType
+          ? (returns ?? structureType)
           : noneType;
 
         const funcType = createFunctionType(
@@ -1517,7 +1518,7 @@ export class TypeChecker
       indexer.callSignature()?.params()[0].canCoerceFrom(indexResult.type);
     const indexers =
       type instanceof UnionType
-        ? type.types.map(member => member.indexer()).filter(notEmpty)
+        ? type.types.map((member) => member.indexer()).filter(notEmpty)
         : [];
     const indexer = indexers.find(accepts) ?? type.indexer();
 
@@ -1550,7 +1551,10 @@ export class TypeChecker
     builder.nodes.push(indexer.assignmentType());
 
     // check that index can be coerced into requested type
-    if (!type.anyType && !callSignature.params()[0].canCoerceFrom(indexResult.type)) {
+    if (
+      !type.anyType &&
+      !callSignature.params()[0].canCoerceFrom(indexResult.type)
+    ) {
       errors.push(
         createDiagnostic(
           suffixTerm.index,
@@ -1653,7 +1657,9 @@ export class TypeChecker
       const type = builder.current();
       const suffix =
         type.getSuffix(suffixTerm.token.lookup) ??
-        (type.anyType ? undefined : derivedSuffix(type, suffixTerm.token.lookup));
+        (type.anyType
+          ? undefined
+          : derivedSuffix(type, suffixTerm.token.lookup));
 
       // an unknown type (Structure) or one whose suffixes are added at
       // runtime (lexicon keys) can have any suffix
@@ -1794,14 +1800,14 @@ export class TypeChecker
         ? assignmentType.types
         : [assignmentType];
 
-    if (target && !members.some(member => target.canCoerceFrom(member))) {
+    if (target && !members.some((member) => target.canCoerceFrom(member))) {
       // None converts to an optional parameter's union: the value
       // failed to convert to the other members (`Vessel`, not `Vessel?`)
       const targetName =
         target instanceof UnionType && target.noneType
           ? target.types
-              .filter(type => !type.noneType)
-              .map(type => type.toString())
+              .filter((type) => !type.noneType)
+              .map((type) => type.toString())
               .join(' or ')
           : target.toString();
       errors.push(

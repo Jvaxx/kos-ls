@@ -35,7 +35,7 @@ export const walkDir = (
   dir: string,
   callback: (fileName: string) => void,
 ): void => {
-  readdirSync(dir).forEach(f => {
+  readdirSync(dir).forEach((f) => {
     const dirPath = join(dir, f);
     const isDirectory = statSync(dirPath).isDirectory();
     if (isDirectory) {

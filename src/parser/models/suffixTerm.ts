@@ -242,7 +242,7 @@ export class SuffixTerm extends SuffixTermBase {
   }
   public toLines(): string[] {
     const atomLines = this.atom.toLines();
-    const trailersLines = this.trailers.map(t => t.toLines());
+    const trailersLines = this.trailers.map((t) => t.toLines());
 
     return joinLines('', atomLines, ...trailersLines);
   }
@@ -299,7 +299,7 @@ export class Call extends SuffixTermBase {
       return [`${this.open.lexeme}${this.close.lexeme}`];
     }
 
-    const argsLines = this.args.map(a => a.toLines());
+    const argsLines = this.args.map((a) => a.toLines());
     const argsResult = joinLines(',', ...argsLines);
 
     argsResult[0] = `${this.open.lexeme}${argsResult[0]}`;
@@ -335,7 +335,10 @@ export class HashIndex extends SuffixTermBase {
    * @param indexer "#" token indicating a index
    * @param index index to be used
    */
-  constructor(public readonly indexer: Token, public readonly index: Token) {
+  constructor(
+    public readonly indexer: Token,
+    public readonly index: Token,
+  ) {
     super();
   }
 

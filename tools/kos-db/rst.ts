@@ -101,8 +101,15 @@ export function parseSignature(signature: string): {
       continue;
     }
     const variadic = raw.endsWith('...');
-    const paramName = raw.replace(/\.\.\.$/, '').replace(/=.*$/, '').trim();
-    params.push({ name: paramName, optional: optional || /=/.test(raw), variadic });
+    const paramName = raw
+      .replace(/\.\.\.$/, '')
+      .replace(/=.*$/, '')
+      .trim();
+    params.push({
+      name: paramName,
+      optional: optional || /=/.test(raw),
+      variadic,
+    });
     optional ||= opensNext;
   }
   return { prefix, name, params };
@@ -215,10 +222,18 @@ export function parseRst(text: string, file: string, model: RstModel): void {
       if (content.every(isBlank)) {
         const after: string[] = [];
         for (let j = i + 1; j < lines.length; j++) {
-          if (/^\.\.\s+(structure|attribute|method|function|global|object)::/.test(lines[j])) {
+          if (
+            /^\.\.\s+(structure|attribute|method|function|global|object)::/.test(
+              lines[j],
+            )
+          ) {
             break;
           }
-          if (j + 1 < lines.length && /^([=\-~^"'`#*+])\1{2,}\s*$/.test(lines[j + 1]) && !isBlank(lines[j])) {
+          if (
+            j + 1 < lines.length &&
+            /^([=\-~^"'`#*+])\1{2,}\s*$/.test(lines[j + 1]) &&
+            !isBlank(lines[j])
+          ) {
             break;
           }
           after.push(lines[j]);
@@ -232,7 +247,10 @@ export function parseRst(text: string, file: string, model: RstModel): void {
       if (structure.doc === '') {
         structure.doc = rstToMarkdown(pageIntroduction(lines));
       }
-      model.structures.set(upper, mergeStructure(model.structures.get(upper), structure));
+      model.structures.set(
+        upper,
+        mergeStructure(model.structures.get(upper), structure),
+      );
       current = model.structures.get(upper);
       continue;
     }
@@ -251,7 +269,8 @@ export function parseRst(text: string, file: string, model: RstModel): void {
       }
     } else if (kind === 'attribute' || kind === 'method') {
       // a prefix names the structure, else the enclosing structure does
-      const owner = prefix !== undefined ? structureFor(model, prefix, page) : current;
+      const owner =
+        prefix !== undefined ? structureFor(model, prefix, page) : current;
       if (owner === undefined) {
         continue;
       }
@@ -261,7 +280,10 @@ export function parseRst(text: string, file: string, model: RstModel): void {
       }
     } else if (kind === 'function') {
       entry.url = `${page}#function:${upper}`;
-      model.functions.set(upper, [...(model.functions.get(upper) ?? []), entry]);
+      model.functions.set(upper, [
+        ...(model.functions.get(upper) ?? []),
+        entry,
+      ]);
     } else {
       entry.url = `${page}#global:${upper}`;
       if (!model.globals.has(upper)) {
@@ -315,7 +337,14 @@ export function parseRstSections(
 
     // the section: up to the next title
     let end = i + 2;
-    while (end < lines.length && !(end + 1 < lines.length && underline.test(lines[end + 1]) && lines[end].trim() !== '')) {
+    while (
+      end < lines.length &&
+      !(
+        end + 1 < lines.length &&
+        underline.test(lines[end + 1]) &&
+        lines[end].trim() !== ''
+      )
+    ) {
       end++;
     }
 
@@ -463,7 +492,11 @@ function applyFields(
  * The structure a prefixed member belongs to, created if documented
  * before its structure directive
  */
-function structureFor(model: RstModel, name: string, page: string): RstStructure {
+function structureFor(
+  model: RstModel,
+  name: string,
+  page: string,
+): RstStructure {
   const upper = name.toUpperCase();
   let structure = model.structures.get(upper);
   if (structure === undefined) {
@@ -518,7 +551,8 @@ function mergeStructure(
 function readMembersTable(body: string[], structure: RstStructure): void {
   const text = body.join('\n');
 
-  const inherits = /(?:All|Every)\s+suffix(?:es)?\s+of\s+:struct:`~?([\w]+)`/i.exec(text);
+  const inherits =
+    /(?:All|Every)\s+suffix(?:es)?\s+of\s+:struct:`~?([\w]+)`/i.exec(text);
   if (inherits !== null) {
     structure.inherits = inherits[1];
   }
@@ -532,7 +566,8 @@ function readMembersTable(body: string[], structure: RstStructure): void {
   let columns = { type: 1, access: -1, doc: 2 };
   const header = rows.length > 0 ? split(rows[0]) : [];
   if (/^suffix|^name|^member/i.test(header[0] ?? '')) {
-    const find = (pattern: RegExp) => header.findIndex((cell, i) => i > 0 && pattern.test(cell));
+    const find = (pattern: RegExp) =>
+      header.findIndex((cell, i) => i > 0 && pattern.test(cell));
     columns = {
       type: find(/type/i),
       access: find(/get|set|access/i),
@@ -545,12 +580,14 @@ function readMembersTable(body: string[], structure: RstStructure): void {
   for (const row of rows) {
     const cells = split(row);
     const name =
-      /:(?:attr|meth|ref):`(?:[\w]+:)?([\w]+)(?:\([^`]*\))?(?:\s+<[^>]*>)?`/.exec(cells[0]) ??
-      /^:([A-Za-z]\w*)\b/.exec(cells[0]);
+      /:(?:attr|meth|ref):`(?:[\w]+:)?([\w]+)(?:\([^`]*\))?(?:\s+<[^>]*>)?`/.exec(
+        cells[0],
+      ) ?? /^:([A-Za-z]\w*)\b/.exec(cells[0]);
     if (name === null) {
       continue;
     }
-    const cell = (index: number) => (index > 0 ? cells[index] || undefined : undefined);
+    const cell = (index: number) =>
+      index > 0 ? cells[index] || undefined : undefined;
     structure.tableRows.set(name[1].toUpperCase(), {
       type: cell(columns.type),
       access: cell(columns.access),
@@ -566,13 +603,20 @@ function withoutTables(body: string[]): string[] {
   const out: string[] = [];
   for (let i = 0; i < body.length; i++) {
     if (simpleTableBorder.test(body[i].trim())) {
-      i = simpleTableEnd(body.map((l) => l.trim()), i) - 1;
+      i =
+        simpleTableEnd(
+          body.map((l) => l.trim()),
+          i,
+        ) - 1;
       continue;
     }
     if (/^\s*\.\.\s+(list-table|table)::/.test(body[i])) {
       const indent = indentOf(body[i]);
       i++;
-      while (i < body.length && (isBlank(body[i]) || indentOf(body[i]) > indent)) {
+      while (
+        i < body.length &&
+        (isBlank(body[i]) || indentOf(body[i]) > indent)
+      ) {
         i++;
       }
       i--;
@@ -594,7 +638,11 @@ function precedingProse(lines: string[], index: number): string[] {
       prose.splice(0, 1);
       break;
     }
-    if (/^\.\.\s/.test(lines[i]) && indentOf(lines[i]) === 0 && !/^\.\.\s+_/.test(lines[i])) {
+    if (
+      /^\.\.\s/.test(lines[i]) &&
+      indentOf(lines[i]) === 0 &&
+      !/^\.\.\s+_/.test(lines[i])
+    ) {
       break;
     }
     prose.unshift(lines[i]);
@@ -616,10 +664,16 @@ function pageIntroduction(lines: string[]): string[] {
   }
   const intro: string[] = [];
   for (let i = title + 1; i < lines.length; i++) {
-    if (i + 1 < lines.length && underline.test(lines[i + 1]) && lines[i].trim() !== '') {
+    if (
+      i + 1 < lines.length &&
+      underline.test(lines[i + 1]) &&
+      lines[i].trim() !== ''
+    ) {
       break;
     }
-    if (/^\.\.\s+(structure|attribute|method|function|global)::/.test(lines[i])) {
+    if (
+      /^\.\.\s+(structure|attribute|method|function|global)::/.test(lines[i])
+    ) {
       break;
     }
     intro.push(lines[i]);
@@ -632,9 +686,17 @@ function pageIntroduction(lines: string[]): string[] {
  * (`- **Variable name**: SHIP`, `- **Description**: ...`) and sections
  * titled with the variable name (`Core`, `ALT ALIAS`)
  */
-function readBindings(lines: string[], page: string, file: string, model: RstModel): void {
+function readBindings(
+  lines: string[],
+  page: string,
+  file: string,
+  model: RstModel,
+): void {
   const underline = /^([=\-~^"'`#*+])\1{2,}\s*$/;
-  const add = (name: string, entry: Omit<RstEntry, 'name' | 'kind' | 'file'>) => {
+  const add = (
+    name: string,
+    entry: Omit<RstEntry, 'name' | 'kind' | 'file'>,
+  ) => {
     const upper = name.toUpperCase();
     if (!model.globals.has(upper)) {
       model.globals.set(upper, { name, kind: 'global', file, ...entry });
@@ -672,7 +734,9 @@ function readBindings(lines: string[], page: string, file: string, model: RstMod
       add(title, {
         doc: rstToMarkdown([fields.get('description') ?? '']),
         url: `${page}#${sectionId(label ?? title)}`,
-        type: fields.get('type')?.replace(/`([^`<]+?)\s*<[^>]*>`__?/g, ':struct:`$1`'),
+        type: fields
+          .get('type')
+          ?.replace(/`([^`<]+?)\s*<[^>]*>`__?/g, ':struct:`$1`'),
         line: i + 1,
       });
       i = j - 1;
@@ -683,7 +747,10 @@ function readBindings(lines: string[], page: string, file: string, model: RstMod
     const title = /^(\w+)(?:\s+ALIAS)?\s*$/.exec(lines[i]);
     if (title !== null && underline.test(lines[i + 1] ?? '')) {
       let end = i + 2;
-      while (end < lines.length && !(underline.test(lines[end + 1] ?? '') && lines[end].trim() !== '')) {
+      while (
+        end < lines.length &&
+        !(underline.test(lines[end + 1] ?? '') && lines[end].trim() !== '')
+      ) {
         end++;
       }
       add(title[1], {

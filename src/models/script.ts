@@ -8,12 +8,13 @@ export class Script extends NodeBase implements IScript {
     public readonly uri: string,
     public readonly stmts: IStmt[],
     public readonly runStmts: RunStmtType[],
-    public lazyGlobal = true) {
+    public lazyGlobal = true,
+  ) {
     super();
   }
 
   public toLines(): string[] {
-    return flatten(this.stmts.map(stmt => stmt.toLines()));
+    return flatten(this.stmts.map((stmt) => stmt.toLines()));
   }
 
   public get start(): Position {

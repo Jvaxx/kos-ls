@@ -8,9 +8,9 @@ import { CaseKind } from './enums';
 export const toCase = (caseKind: CaseKind, ...segments: string[]): string => {
   switch (caseKind) {
     case CaseKind.lowerCase:
-      return segments.map(s => s.toLowerCase()).join('');
+      return segments.map((s) => s.toLowerCase()).join('');
     case CaseKind.upperCase:
-      return segments.map(s => s.toUpperCase()).join('');
+      return segments.map((s) => s.toUpperCase()).join('');
     case CaseKind.camelCase:
       return toCamelCase(...segments);
     case CaseKind.pascalCase:
@@ -24,7 +24,7 @@ export const toCase = (caseKind: CaseKind, ...segments: string[]): string => {
  */
 const toPascalCase = (...segments: string[]): string => {
   return segments
-    .map(s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
     .join('');
 };
 

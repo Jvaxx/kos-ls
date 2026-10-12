@@ -31,5 +31,5 @@ export const unWrap = <T>(value: Maybe<T>): T => {
  * @param values array of maybe T
  */
 export const unWrapMany = <T>(...values: Maybe<T>[]): T[] => {
-  return values.map(x => unWrap(x));
+  return values.map((x) => unWrap(x));
 };

@@ -42,9 +42,7 @@ describe('project model', () => {
     client = await TestClient.start(root);
     client.open('src/mission/hello.ks');
 
-    expect(missing(await client.messages('src/mission/hello.ks'))).toEqual(
-      [],
-    );
+    expect(missing(await client.messages('src/mission/hello.ks'))).toEqual([]);
   });
 
   test('without preload, preloaded symbols are missing', async () => {
@@ -94,18 +92,14 @@ describe('project model', () => {
     );
     client.filesChanged(['ksconfig.json', 2]);
 
-    expect(missing(await client.messages('src/mission/hello.ks'))).toEqual(
-      [],
-    );
+    expect(missing(await client.messages('src/mission/hello.ks'))).toEqual([]);
   });
 
   test('editing a dependency updates its dependents', async () => {
     client = await TestClient.start(root);
     client.open('src/mission/hello.ks');
     client.open('src/lib/state.ks');
-    expect(missing(await client.messages('src/mission/hello.ks'))).toEqual(
-      [],
-    );
+    expect(missing(await client.messages('src/mission/hello.ks'))).toEqual([]);
 
     // rename state_set: hello.ks now calls a function that does not exist
     client.change(
@@ -122,9 +116,7 @@ describe('project model', () => {
   test('a dependency changed on disk updates its dependents', async () => {
     client = await TestClient.start(root);
     client.open('src/mission/hello.ks');
-    expect(missing(await client.messages('src/mission/hello.ks'))).toEqual(
-      [],
-    );
+    expect(missing(await client.messages('src/mission/hello.ks'))).toEqual([]);
 
     writeFileSync(
       join(root, 'src/lib/state.ks'),

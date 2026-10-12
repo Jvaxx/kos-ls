@@ -80,11 +80,7 @@ describe('Include', () => {
       it('returns the string literal', () => {
         const include = new Include(
           createToken(TokenType.include, '// #include'),
-          createToken(
-            TokenType.string,
-            '"0://somePath.ks"',
-            '0://somePath.ks',
-          ),
+          createToken(TokenType.string, '"0://somePath.ks"', '0://somePath.ks'),
         );
 
         expect(include.includePath()).toBe('0://somePath.ks');

@@ -5,16 +5,23 @@ import * as SuffixTerm from '../parser/models/suffixTerm';
 import { getRandomInt } from '../utilities/randomUtils';
 import { mockLogger, mockTracer } from '../models/logger';
 import {
-  IExprClass, IExprClassVisitor,
-  IGrammarUnion, GrammarNode, IStmtClass,
-  IGrammarOptional, IGrammarRepeat, Distribution, ISuffixTermClass,
+  IExprClass,
+  IExprClassVisitor,
+  IGrammarUnion,
+  GrammarNode,
+  IStmtClass,
+  IGrammarOptional,
+  IGrammarRepeat,
+  Distribution,
+  ISuffixTermClass,
 } from '../parser/types';
 import { TokenType } from '../models/tokentypes';
 import { keywords } from '../utilities/constants';
 import { jStat } from 'jstat';
 
 const ALPHA_CHARSET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const ALPHA_NUMERIC_CHARSET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const ALPHA_NUMERIC_CHARSET =
+  '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 const ASCII_LOW = 35;
 const ASCII_HIGH = 126;
@@ -32,8 +39,8 @@ export class Generator implements IExprClassVisitor<string> {
   constructor(
     public readonly mutation: IMutation,
     public readonly logger: ILogger = mockLogger,
-    public readonly tracer: ITracer = mockTracer) {
-  }
+    public readonly tracer: ITracer = mockTracer,
+  ) {}
 
   public generateExpr(exprType?: IExprClass): string {
     try {
@@ -124,7 +131,9 @@ export class Generator implements IExprClassVisitor<string> {
   visitArrayIndex(exprClass: ISuffixTermClass<SuffixTerm.HashIndex>): string {
     return this.generateGrammarNodes(exprClass.grammar);
   }
-  visitArrayBracket(exprClass: ISuffixTermClass<SuffixTerm.BracketIndex>): string {
+  visitArrayBracket(
+    exprClass: ISuffixTermClass<SuffixTerm.BracketIndex>,
+  ): string {
     return this.generateGrammarNodes(exprClass.grammar);
   }
   visitDelegate(exprClass: ISuffixTermClass<SuffixTerm.Delegate>): string {
@@ -196,7 +205,7 @@ export class Generator implements IExprClassVisitor<string> {
   }
 
   private generateGrammarNodes(nodes: GrammarNode[]): string {
-    return nodes.map(node => this.generateGrammarNode(node)).join('');
+    return nodes.map((node) => this.generateGrammarNode(node)).join('');
   }
 
   private generateInteger(): string {
@@ -204,7 +213,10 @@ export class Generator implements IExprClassVisitor<string> {
   }
 
   private generateDouble(): string {
-    const number = jStat.lognormal.sample(DOUBLE_LOGNORM_MEAN, DOUBLE_LOGNORM_SIGMA);
+    const number = jStat.lognormal.sample(
+      DOUBLE_LOGNORM_MEAN,
+      DOUBLE_LOGNORM_SIGMA,
+    );
     let numberStr = number.toExponential(getRandomInt(20));
 
     const removeSign = Math.random();
@@ -219,18 +231,26 @@ export class Generator implements IExprClassVisitor<string> {
     let rngString = '';
 
     for (let i = 0; i < length; i += 1) {
-      const rngChar = Math.floor((Math.random() * (ASCII_HIGH - ASCII_LOW)) + ASCII_LOW);
+      const rngChar = Math.floor(
+        Math.random() * (ASCII_HIGH - ASCII_LOW) + ASCII_LOW,
+      );
       rngString += String.fromCharCode(rngChar);
     }
     return rngString;
   }
 
   private generateIdentifier(): string {
-    const length = Math.ceil(jStat.gamma.sample(ID_GAMMA_SHAPE, ID_GAMMA_SCALE));
-    let identifier = ALPHA_CHARSET[Math.floor(Math.random() * ALPHA_CHARSET.length)];
+    const length = Math.ceil(
+      jStat.gamma.sample(ID_GAMMA_SHAPE, ID_GAMMA_SCALE),
+    );
+    let identifier =
+      ALPHA_CHARSET[Math.floor(Math.random() * ALPHA_CHARSET.length)];
 
     for (let i = 1; i < length; i += 1) {
-      identifier += ALPHA_NUMERIC_CHARSET[Math.floor(Math.random() * ALPHA_NUMERIC_CHARSET.length)];
+      identifier +=
+        ALPHA_NUMERIC_CHARSET[
+          Math.floor(Math.random() * ALPHA_NUMERIC_CHARSET.length)
+        ];
     }
 
     if (keywords.has(identifier.toLowerCase())) {
@@ -426,8 +446,9 @@ export class Generator implements IExprClassVisitor<string> {
   }
 }
 
-const isNode = (node: GrammarNode)
-  : node is TokenType | IExprClass | IStmtClass | ISuffixTermClass => {
+const isNode = (
+  node: GrammarNode,
+): node is TokenType | IExprClass | IStmtClass | ISuffixTermClass => {
   if (Object.prototype.hasOwnProperty.call(node, 'tag')) {
     return false;
   }

@@ -9,8 +9,8 @@ describe('kos-ls check', () => {
   let out: string;
   let err: string;
   const io: Output = {
-    out: text => (out += text),
-    err: text => (err += text),
+    out: (text) => (out += text),
+    err: (text) => (err += text),
   };
 
   beforeEach(() => {
@@ -53,7 +53,10 @@ describe('kos-ls check', () => {
   });
 
   test('an error fails by default', async () => {
-    writeFileSync(join(root, 'src', 'main.ks'), 'run lib.\nprint shared.\nprint (.\n');
+    writeFileSync(
+      join(root, 'src', 'main.ks'),
+      'run lib.\nprint shared.\nprint (.\n',
+    );
     expect(await main([], io, root)).toBe(1);
     expect(out).toMatch(/^src\/main\.ks:3:\d+: error: /m);
     expect(err).toMatch(/^1 error, 2 warnings in 2 files$/m);

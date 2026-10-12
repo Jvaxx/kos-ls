@@ -62,7 +62,9 @@ let listTypes: Maybe<Map<string, IType>>;
  * The element type of a `list X in v.` target, by lower case name
  */
 export const listTypeMap = (): Map<string, IType> => {
-  listTypes ??= new Map(listElements.map(([target, name]) => [target, kosType(name)]));
+  listTypes ??= new Map(
+    listElements.map(([target, name]) => [target, kosType(name)]),
+  );
   return listTypes;
 };
 

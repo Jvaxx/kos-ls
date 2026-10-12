@@ -8,7 +8,11 @@ const file = 'src/scratch.ks';
 /**
  * The text of a hover
  */
-const hoverText = async (client: TestClient, line: number, character: number) => {
+const hoverText = async (
+  client: TestClient,
+  line: number,
+  character: number,
+) => {
   const hover = await client.hover(file, line, character);
   return (hover?.contents as MarkupContent | { value: string })?.value ?? '';
 };
@@ -52,7 +56,10 @@ describe('kOS database', () => {
   });
 
   test('wrong suffixes are reported with the kOS structure', async () => {
-    client.open(file, ['print ship:foo.', 'print ship:parts[0]:bar.'].join('\n'));
+    client.open(
+      file,
+      ['print ship:foo.', 'print ship:parts[0]:bar.'].join('\n'),
+    );
 
     expect(await client.messages(file)).toEqual([
       '1:12 Unable to find suffix foo on type Vessel',
@@ -79,7 +86,12 @@ describe('kOS database', () => {
   test('a called name is the function, else the variable', async () => {
     client.open(
       file,
-      ['local a is stage.', 'local b is time().', 'local c is time.', 'print a. print b. print c.'].join('\n'),
+      [
+        'local a is stage.',
+        'local b is time().',
+        'local c is time.',
+        'print a. print b. print c.',
+      ].join('\n'),
     );
 
     expect(await hoverText(client, 0, 6)).toContain('a: Stage');
@@ -138,7 +150,9 @@ describe('kOS database', () => {
       '4:11 Call expected 2 parameters but was called with 3 arguments',
       '5:5 Call expected 1 required parameters but was called with 0 arguments',
     ]);
-    const severities = (await client.diagnosticsFor(file)).map(d => d.severity);
+    const severities = (await client.diagnosticsFor(file)).map(
+      (d) => d.severity,
+    );
     expect(severities).toEqual([
       DiagnosticSeverity.Warning,
       DiagnosticSeverity.Warning,
@@ -169,4 +183,3 @@ describe('kOS database', () => {
     expect(await client.messages(file)).toEqual([]);
   });
 });
-

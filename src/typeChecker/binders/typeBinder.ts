@@ -116,7 +116,7 @@ export class TypeBinder extends Binder<Type> {
 
     // convert coercions
     newType.addCoercion(
-      ...Array.from(type.coercions()).map(c =>
+      ...Array.from(type.coercions()).map((c) =>
         this.applyToType(c, typeArguments),
       ),
     );

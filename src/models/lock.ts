@@ -17,8 +17,7 @@ export class KsLock {
     public readonly scope: ScopeKind,
     public readonly name: Token,
     public readonly range: Range,
-  )
-  { }
+  ) {}
 
   /**
    * What kind of symbol is represented in this case a lock

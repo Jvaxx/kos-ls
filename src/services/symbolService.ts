@@ -166,17 +166,17 @@ export class SymbolService extends EventEmitter {
     // retrieve all loaded symbols tables
     const symbolTables = this.documentService
       .getAllDocuments()
-      .map(doc => this.getSymbolTable(doc.uri))
+      .map((doc) => this.getSymbolTable(doc.uri))
       .filter(notEmpty);
 
     // get all symbols
-    const symbols = flatten(symbolTables.map(table => table.allSymbols()));
-    const includeSymbols = symbols.filter(symbol =>
+    const symbols = flatten(symbolTables.map((table) => table.allSymbols()));
+    const includeSymbols = symbols.filter((symbol) =>
       symbol.name.lookup.includes(query),
     );
 
     // determine levenshtein distance to query
-    let symbolDistance: [KsBaseSymbol, number][] = symbols.map(symbol => [
+    let symbolDistance: [KsBaseSymbol, number][] = symbols.map((symbol) => [
       symbol,
       levenshteinDistance(
         query,
@@ -198,7 +198,9 @@ export class SymbolService extends EventEmitter {
       toSymbolInformation([...new Set([...includeSymbols, ...topSymbols])]) ??
       [];
 
-    return langSymbols.filter(symbol => symbol.name.length > query.length - 1);
+    return langSymbols.filter(
+      (symbol) => symbol.name.length > query.length - 1,
+    );
   }
 
   /**
@@ -253,7 +255,7 @@ export class SymbolService extends EventEmitter {
         ? [declaration, ...sets, ...usages]
         : [...sets, ...usages];
 
-    return refLocations.map(loc => cleanLocation(loc));
+    return refLocations.map((loc) => cleanLocation(loc));
   }
 
   /**
@@ -415,13 +417,13 @@ export class SymbolService extends EventEmitter {
 
     highlights.push(
       ...sets
-        .filter(set => set.uri === uri)
-        .map(set => this.toHighlight(set, DocumentHighlightKind.Write)),
+        .filter((set) => set.uri === uri)
+        .map((set) => this.toHighlight(set, DocumentHighlightKind.Write)),
     );
     highlights.push(
       ...usages
-        .filter(usage => usage.uri === uri)
-        .map(usage => this.toHighlight(usage, DocumentHighlightKind.Read)),
+        .filter((usage) => usage.uri === uri)
+        .map((usage) => this.toHighlight(usage, DocumentHighlightKind.Read)),
     );
     return highlights;
   }

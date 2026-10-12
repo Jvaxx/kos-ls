@@ -38,7 +38,7 @@ benchmark('temp', () => {
   }[] = [];
 
   // jit warm up
-  walkDir(testDir, filePath => {
+  walkDir(testDir, (filePath) => {
     const size = statSync(filePath).size;
 
     const kosFile = readFileSync(filePath, 'utf8');

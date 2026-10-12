@@ -29,8 +29,8 @@ export interface Output {
 }
 
 const processOutput: Output = {
-  out: text => process.stdout.write(text),
-  err: text => process.stderr.write(text),
+  out: (text) => process.stdout.write(text),
+  err: (text) => process.stderr.write(text),
   stdin: () => readFileSync(0, 'utf8'),
 };
 
@@ -79,7 +79,7 @@ export function main(args: string[], io: Output = processOutput): number {
 
   let status = 0;
   const reported = new Set<string>();
-  for (const file of paths.flatMap(path => kosFiles(path, io))) {
+  for (const file of paths.flatMap((path) => kosFiles(path, io))) {
     let source: string;
     try {
       source = readFileSync(file, 'utf8');
@@ -132,9 +132,9 @@ function kosFiles(path: string, io: Output): string[] {
   }
 
   return readdirSync(path, { withFileTypes: true })
-    .filter(entry => !entry.name.startsWith('.'))
+    .filter((entry) => !entry.name.startsWith('.'))
     .sort((a, b) => a.name.localeCompare(b.name))
-    .flatMap(entry => {
+    .flatMap((entry) => {
       const child = join(path, entry.name);
       if (entry.isDirectory()) {
         return kosFiles(child, io);

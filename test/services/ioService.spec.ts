@@ -26,10 +26,10 @@ describe('ioService', () => {
       // only scripts: the configuration is read from the workspace root
       expect(documents).toHaveLength(2);
       expect(
-        documents.find(doc => basename(doc.uri) === 'example.ks'),
+        documents.find((doc) => basename(doc.uri) === 'example.ks'),
       ).toBeDefined();
       expect(
-        documents.find(doc => basename(doc.uri) === 'empty.ks'),
+        documents.find((doc) => basename(doc.uri) === 'empty.ks'),
       ).toBeDefined();
     });
   });
@@ -44,10 +44,10 @@ describe('ioService', () => {
         );
         expect(entities).toHaveLength(4);
 
-        expect(entities.filter(e => e.kind === IoKind.file)).toHaveLength(3);
-        expect(entities.filter(e => e.kind === IoKind.directory)).toHaveLength(
-          1,
-        );
+        expect(entities.filter((e) => e.kind === IoKind.file)).toHaveLength(3);
+        expect(
+          entities.filter((e) => e.kind === IoKind.directory),
+        ).toHaveLength(1);
 
         const example = URI.file(join(loadDir, 'example.ks')).toString();
         const empty = URI.file(join(loadDir, 'empty')).toString();
@@ -55,9 +55,9 @@ describe('ioService', () => {
         const ksConfig = URI.file(join(loadDir, 'ksconfig.json')).toString();
 
         for (const path of [example, empty, other, ksConfig]) {
-          expect(entities.filter(e => e.uri.toString() === path)).toHaveLength(
-            1,
-          );
+          expect(
+            entities.filter((e) => e.uri.toString() === path),
+          ).toHaveLength(1);
         }
       });
     });
@@ -69,10 +69,10 @@ describe('ioService', () => {
         const entities = ioService.statDirectory(URI.file(loadDir));
         expect(entities).toHaveLength(4);
 
-        expect(entities.filter(e => e.kind === IoKind.file)).toHaveLength(3);
-        expect(entities.filter(e => e.kind === IoKind.directory)).toHaveLength(
-          1,
-        );
+        expect(entities.filter((e) => e.kind === IoKind.file)).toHaveLength(3);
+        expect(
+          entities.filter((e) => e.kind === IoKind.directory),
+        ).toHaveLength(1);
 
         const example = URI.file(join(loadDir, 'example.ks')).toString();
         const empty = URI.file(join(loadDir, 'empty')).toString();
@@ -80,9 +80,9 @@ describe('ioService', () => {
         const ksConfig = URI.file(join(loadDir, 'ksconfig.json')).toString();
 
         for (const path of [example, empty, other, ksConfig]) {
-          expect(entities.filter(e => e.uri.toString() === path)).toHaveLength(
-            1,
-          );
+          expect(
+            entities.filter((e) => e.uri.toString() === path),
+          ).toHaveLength(1);
         }
       });
     });
@@ -102,8 +102,8 @@ describe('ioService', () => {
         expect(blankUri).toBeDefined();
 
         const match = [ksUri, ksmUri, blankUri]
-          .map(uri => uri!.toString())
-          .every(uri => uri === ksUri!.toString());
+          .map((uri) => uri!.toString())
+          .every((uri) => uri === ksUri!.toString());
 
         expect(match).toBe(true);
 

@@ -29,7 +29,12 @@ import {
 } from '../../src/typeChecker/database/typeExpression';
 import { CsClass, CsSuffix } from './csharp';
 import { RstEntry, RstModel, RstParameter, RstStructure } from './rst';
-import { csharpType, documentationType, NameResolver, splitGeneric } from './types';
+import {
+  csharpType,
+  documentationType,
+  NameResolver,
+  splitGeneric,
+} from './types';
 
 export interface PreviousParameter {
   type: string;
@@ -122,7 +127,15 @@ export class Report {
 /**
  * Collection structures whose element type the C# often leaves out
  */
-const collections = new Set(['List', 'UniqueSet', 'Queue', 'Stack', 'Iterator', 'Enumerable', 'Collection']);
+const collections = new Set([
+  'List',
+  'UniqueSet',
+  'Queue',
+  'Stack',
+  'Iterator',
+  'Enumerable',
+  'Collection',
+]);
 
 /**
  * Names used by the documentation that are not kOS type names
@@ -282,7 +295,7 @@ export class CamelCase {
             ? end === lower.length && this.letters.has(word)
               ? 1
               : 0
-            : this.words.get(word) ?? 0;
+            : (this.words.get(word) ?? 0);
         if (count === 0) {
           continue;
         }
@@ -307,7 +320,9 @@ export class CamelCase {
       return lower;
     }
     return split.words
-      .map((word, i) => (i === 0 ? word : word[0].toUpperCase() + word.slice(1)))
+      .map((word, i) =>
+        i === 0 ? word : word[0].toUpperCase() + word.slice(1),
+      )
       .join('');
   }
 }
@@ -320,14 +335,21 @@ export class CamelCase {
 class ClassIndex {
   private readonly byName = new Map<string, CsClass[]>();
 
-  constructor(classes: CsClass[], private readonly report: Report) {
+  constructor(
+    classes: CsClass[],
+    private readonly report: Report,
+  ) {
     // partial classes: merge their parts
     const unique = new Map<string, CsClass>();
     for (const cls of classes) {
       const key = `${cls.namespace}.${cls.name}\`${cls.generics.length}`;
       const previous = unique.get(key);
       if (previous === undefined) {
-        unique.set(key, { ...cls, suffixes: [...cls.suffixes], getters: [...cls.getters] });
+        unique.set(key, {
+          ...cls,
+          suffixes: [...cls.suffixes],
+          getters: [...cls.getters],
+        });
         continue;
       }
       previous.kosNames.push(...cls.kosNames);
@@ -383,7 +405,8 @@ class ClassIndex {
     visible.push(...from.usings);
 
     for (const namespace of visible) {
-      const prefix = segments.length > 0 ? `${namespace}.${segments.join('.')}` : namespace;
+      const prefix =
+        segments.length > 0 ? `${namespace}.${segments.join('.')}` : namespace;
       const found = candidates.filter((c) => c.namespace === prefix);
       if (found.length === 1) {
         return found[0];
@@ -444,7 +467,10 @@ interface Building {
  * Merge the sources into a database
  * @param input sources
  */
-export function merge(input: MergeInput): { database: KosDatabase; report: Report } {
+export function merge(input: MergeInput): {
+  database: KosDatabase;
+  report: Report;
+} {
   const report = new Report();
   const index = new ClassIndex(input.classes, report);
   const camel = new CamelCase();
@@ -510,13 +536,20 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
   const folded = named.filter((cls) => owner(cls).folded !== undefined);
 
   const rootScore = (cls: CsClass, name: string) =>
-    cls.name === name ? 0 : cls.name.toLowerCase().startsWith(name.toLowerCase()) ? 1 : 2;
+    cls.name === name
+      ? 0
+      : cls.name.toLowerCase().startsWith(name.toLowerCase())
+        ? 1
+        : 2;
 
   for (const cls of roots.sort((a, b) => a.file.localeCompare(b.file))) {
     const name = nameOf(cls)!;
     const existing = structures.get(name);
     if (existing !== undefined) {
-      const keep = rootScore(existing.root, name) <= rootScore(cls, name) ? existing.root : cls;
+      const keep =
+        rootScore(existing.root, name) <= rootScore(cls, name)
+          ? existing.root
+          : cls;
       const drop = keep === cls ? existing.root : cls;
       report.add(
         'C# classes sharing a kOS name with an unrelated class (ignored)',
@@ -602,24 +635,26 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     csharpNames.set(cls.name, building.name);
   }
 
-  const resolveCsharp = (from: CsClass): NameResolver => (name) => {
-    const cls = index.resolve(name, from);
-    if (cls === undefined) {
-      return undefined;
-    }
-    const building = classStructure.get(cls);
-    if (building !== undefined) {
-      return building.name;
-    }
-    // an unnamed class: its nearest named ancestor
-    for (const ancestor of index.ancestors(cls)) {
-      const found = classStructure.get(ancestor);
-      if (found !== undefined) {
-        return found.name;
+  const resolveCsharp =
+    (from: CsClass): NameResolver =>
+    (name) => {
+      const cls = index.resolve(name, from);
+      if (cls === undefined) {
+        return undefined;
       }
-    }
-    return undefined;
-  };
+      const building = classStructure.get(cls);
+      if (building !== undefined) {
+        return building.name;
+      }
+      // an unnamed class: its nearest named ancestor
+      for (const ancestor of index.ancestors(cls)) {
+        const found = classStructure.get(ancestor);
+        if (found !== undefined) {
+          return found.name;
+        }
+      }
+      return undefined;
+    };
 
   const kosName: NameResolver = (name) => {
     const lower = name.toLowerCase();
@@ -645,8 +680,15 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       (c) => c.base !== undefined && index.resolve(c.base, c) === parent,
     );
     let inherits = parentStructure.name;
-    if (child?.base !== undefined && parentStructure.entry.parameters !== undefined) {
-      const result = csharpType(child.base, resolveCsharp(child), child.generics);
+    if (
+      child?.base !== undefined &&
+      parentStructure.entry.parameters !== undefined
+    ) {
+      const result = csharpType(
+        child.base,
+        resolveCsharp(child),
+        child.generics,
+      );
       if ('type' in result) {
         inherits = result.type;
       }
@@ -659,8 +701,17 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
   // suffixes from the C# registrations
   // -------------------------------------------------------------------
 
-  const typeOf = (text: string, cls: CsClass, building: Building, where: string) => {
-    const result = csharpType(text, resolveCsharp(cls), building.entry.parameters ?? []);
+  const typeOf = (
+    text: string,
+    cls: CsClass,
+    building: Building,
+    where: string,
+  ) => {
+    const result = csharpType(
+      text,
+      resolveCsharp(cls),
+      building.entry.parameters ?? [],
+    );
     if ('unknown' in result) {
       report.add('C# types without a kOS structure', `\`${text}\` (${where})`);
       return 'Structure';
@@ -669,14 +720,22 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     const extra = cls.generics.slice(1);
     return extra.length === 0
       ? result.type
-      : formatType(mapNames(parseType(result.type), (n) => (extra.includes(n) ? 'Structure' : n)));
+      : formatType(
+          mapNames(parseType(result.type), (n) =>
+            extra.includes(n) ? 'Structure' : n,
+          ),
+        );
   };
 
   // suffixes the overrides add, which the previous database has too
   const overridden = new Set<string>();
-  const overrideStructures = (input.overrides as { structures?: Record<string, { suffixes?: object }> } | undefined)
-    ?.structures;
-  for (const [structure, { suffixes }] of Object.entries(overrideStructures ?? {})) {
+  const overrideStructures = (
+    input.overrides as
+      { structures?: Record<string, { suffixes?: object }> } | undefined
+  )?.structures;
+  for (const [structure, { suffixes }] of Object.entries(
+    overrideStructures ?? {},
+  )) {
     for (const suffix of Object.keys(suffixes ?? {})) {
       overridden.add(`${structure}:${suffix.toUpperCase()}`);
     }
@@ -691,10 +750,15 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     const where = `${building.name}:${suffix.names?.[0] ?? '?'}, ${suffix.file}:${suffix.line}`;
     const g = suffix.generics.map((text) => typeOf(text, cls, building, where));
     let entry: SuffixEntry | undefined;
-    const call = (returns: string | undefined, params: string[]): SuffixEntry => ({
+    const call = (
+      returns: string | undefined,
+      params: string[],
+    ): SuffixEntry => ({
       access: 'call',
       type: returns ?? 'None',
-      ...(params.length > 0 ? { params: params.map((type) => ({ type })) } : {}),
+      ...(params.length > 0
+        ? { params: params.map((type) => ({ type })) }
+        : {}),
     });
 
     switch (suffix.kind) {
@@ -725,7 +789,9 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
         entry = {
           access: 'call',
           type: g[0],
-          params: [{ type: g[1] ?? 'Structure', optional: true, variadic: true }],
+          params: [
+            { type: g[1] ?? 'Structure', optional: true, variadic: true },
+          ],
         };
         break;
       case 'OptionalArgsSuffix':
@@ -748,7 +814,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     if (suffix.names === undefined || suffix.names.length === 0) {
       building.entry.dynamic = true;
       building.computed.push(entry);
-      report.add('Suffixes with computed names (structure marked dynamic)', where);
+      report.add(
+        'Suffixes with computed names (structure marked dynamic)',
+        where,
+      );
       return;
     }
 
@@ -788,7 +857,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       const target = index.resolve(suffix.owner, cls);
       const building = target && classStructure.get(target);
       if (building === undefined) {
-        report.add('Global suffixes of unknown classes', `${suffix.owner} (${suffix.file}:${suffix.line})`);
+        report.add(
+          'Global suffixes of unknown classes',
+          `${suffix.owner} (${suffix.file}:${suffix.line})`,
+        );
         continue;
       }
       addSuffix(building, cls, suffix);
@@ -796,7 +868,9 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
   }
 
   // addons: a suffix of the addon list for each kOSAddon class
-  const addonList = [...structures.values()].find((b) => b.root.name === 'AddonList');
+  const addonList = [...structures.values()].find(
+    (b) => b.root.name === 'AddonList',
+  );
   for (const cls of index.all.filter((c) => c.addon !== undefined)) {
     const building = classStructure.get(cls);
     if (addonList === undefined || building === undefined) {
@@ -819,7 +893,6 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
   // previous definitions
   // -------------------------------------------------------------------
 
-
   const previousType = (
     text: string,
     where: string,
@@ -839,17 +912,26 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
         return found;
       });
       if (unknown !== undefined) {
-        report.add('Previous definitions: unknown type names', `\`${unknown}\` (${where})`);
+        report.add(
+          'Previous definitions: unknown type names',
+          `\`${unknown}\` (${where})`,
+        );
         return undefined;
       }
       return formatType(normalizeUnion(type));
     } catch {
-      report.add('Previous definitions: unreadable types', `\`${text}\` (${where})`);
+      report.add(
+        'Previous definitions: unreadable types',
+        `\`${text}\` (${where})`,
+      );
       return undefined;
     }
   };
 
-  const previousParams = (params: PreviousParameter[], where: string): ParameterEntry[] | undefined => {
+  const previousParams = (
+    params: PreviousParameter[],
+    where: string,
+  ): ParameterEntry[] | undefined => {
     const result: ParameterEntry[] = [];
     for (const param of params) {
       const type = previousType(param.type, where);
@@ -870,11 +952,17 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     const name = kosName(type.name);
     if (name === undefined || !structures.has(name)) {
       if (name !== 'Structure') {
-        report.add('Previous definitions: structures not in kOS', `${type.name}${name ? ` (${name})` : ''}`);
+        report.add(
+          'Previous definitions: structures not in kOS',
+          `${type.name}${name ? ` (${name})` : ''}`,
+        );
       }
       continue;
     }
-    previousStructures.set(name, [...(previousStructures.get(name) ?? []), type]);
+    previousStructures.set(name, [
+      ...(previousStructures.get(name) ?? []),
+      type,
+    ]);
   }
 
   // -------------------------------------------------------------------
@@ -903,7 +991,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     }
   }
   const descendants = (name: string): string[] =>
-    (children.get(name) ?? []).flatMap((child) => [child, ...descendants(child)]);
+    (children.get(name) ?? []).flatMap((child) => [
+      child,
+      ...descendants(child),
+    ]);
 
   const ancestors = (name: string): string[] => {
     const parent = structures.get(name)?.inherits?.replace(/<.*$/, '');
@@ -913,7 +1004,11 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
   // documented on the structure, else on a child (shared suffixes
   // documented per child), else on an ancestor (overridden suffixes)
   const documentedMember = (structure: string, names: string[]) => {
-    for (const where of [structure, ...descendants(structure), ...ancestors(structure)]) {
+    for (const where of [
+      structure,
+      ...descendants(structure),
+      ...ancestors(structure),
+    ]) {
       for (const doc of docStructures.get(where) ?? []) {
         for (const name of names) {
           const member = doc.members.get(name);
@@ -936,7 +1031,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     }
     const result = documentationType(text, docName);
     for (const name of result.unknown) {
-      report.add('Documentation: unknown type names', `\`${name}\` in "${text}" (${where})`);
+      report.add(
+        'Documentation: unknown type names',
+        `\`${name}\` in "${text}" (${where})`,
+      );
     }
     return result;
   };
@@ -956,13 +1054,22 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       (c) => c.access === first.access && c.type === first.type,
     );
     for (const doc of docStructures.get(building.name) ?? []) {
-      for (const upper of new Set([...doc.members.keys(), ...doc.tableRows.keys()])) {
-        if (building.keys.has(upper) || inherited(building, upper, structures)) {
+      for (const upper of new Set([
+        ...doc.members.keys(),
+        ...doc.tableRows.keys(),
+      ])) {
+        if (
+          building.keys.has(upper) ||
+          inherited(building, upper, structures)
+        ) {
           continue;
         }
         const member = doc.members.get(upper);
         const key = camel.of(member?.name ?? upper);
-        const typed = docType(member?.type ?? doc.tableRows.get(upper)?.type, `${building.name}:${key}`);
+        const typed = docType(
+          member?.type ?? doc.tableRows.get(upper)?.type,
+          `${building.name}:${key}`,
+        );
         building.entry.suffixes[key] = same
           ? { ...first }
           : {
@@ -970,7 +1077,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
               type: typed.type ?? 'Structure',
             };
         building.keys.set(upper, key);
-        report.add('Suffixes with computed names, added from the documentation', `${building.name}:${key}`);
+        report.add(
+          'Suffixes with computed names, added from the documentation',
+          `${building.name}:${key}`,
+        );
       }
     }
   }
@@ -988,7 +1098,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       entry.url = mainDoc.url;
     }
 
-    const previousSuffixes = new Map<string, { suffix: PreviousType['suffixes'][number]; type: PreviousType }>();
+    const previousSuffixes = new Map<
+      string,
+      { suffix: PreviousType['suffixes'][number]; type: PreviousType }
+    >();
     for (const type of previousStructures.get(name) ?? []) {
       for (const suffix of type.suffixes) {
         previousSuffixes.set(suffix.name.toUpperCase(), { suffix, type });
@@ -997,10 +1110,14 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
 
     for (const [key, suffix] of Object.entries(entry.suffixes)) {
       suffixCount++;
-      const upperNames = [key, ...(suffix.aliases ?? [])].map((n) => n.toUpperCase());
+      const upperNames = [key, ...(suffix.aliases ?? [])].map((n) =>
+        n.toUpperCase(),
+      );
       const where = `${name}:${key}`;
       const found = documentedMember(name, upperNames);
-      const old = upperNames.map((n) => previousSuffixes.get(n)).find((l) => l !== undefined);
+      const old = upperNames
+        .map((n) => previousSuffixes.get(n))
+        .find((l) => l !== undefined);
 
       // documentation text and url
       if (found !== undefined) {
@@ -1035,7 +1152,13 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       }
       const previous =
         old && previousType(old.suffix.type, where, entry.parameters);
-      suffix.type = refine(suffix.type, documented.type, previous, where, report);
+      suffix.type = refine(
+        suffix.type,
+        documented.type,
+        previous,
+        where,
+        report,
+      );
 
       // parameters
       const docParams = found?.member?.params;
@@ -1051,12 +1174,19 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
             ...(p.variadic ? { variadic: true } : {}),
           }));
         if (params === undefined) {
-          report.add('Optional-argument suffixes without parameters (any accepted)', where);
-          suffix.params = [{ type: 'Structure', optional: true, variadic: true }];
+          report.add(
+            'Optional-argument suffixes without parameters (any accepted)',
+            where,
+          );
+          suffix.params = [
+            { type: 'Structure', optional: true, variadic: true },
+          ];
         } else if (params.length > 0) {
           // OptionalArgsSuffix: arguments from the end can be left out
           suffix.params = params.map((p) => ({ ...p, optional: true }));
-          const required = (old?.suffix.params ?? []).filter((p) => !p.optional && !p.variadic).length;
+          const required = (old?.suffix.params ?? []).filter(
+            (p) => !p.optional && !p.variadic,
+          ).length;
           suffix.params.forEach((p, i) => {
             if (i < required) {
               delete p.optional;
@@ -1082,9 +1212,18 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
 
     // documented or previously defined suffixes the C# does not have
     for (const doc of docs) {
-      for (const upper of new Set([...doc.members.keys(), ...doc.tableRows.keys()])) {
-        if (!building.keys.has(upper) && !inherited(building, upper, structures)) {
-          report.add('Documented suffixes not in the C#', `${name}:${upper} (${doc.file})`);
+      for (const upper of new Set([
+        ...doc.members.keys(),
+        ...doc.tableRows.keys(),
+      ])) {
+        if (
+          !building.keys.has(upper) &&
+          !inherited(building, upper, structures)
+        ) {
+          report.add(
+            'Documented suffixes not in the C#',
+            `${name}:${upper} (${doc.file})`,
+          );
         }
       }
     }
@@ -1094,7 +1233,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
         !inherited(building, upper, structures) &&
         !overridden.has(`${name}:${upper}`)
       ) {
-        report.add('Previous definitions: suffixes not in the C#', `${name}:${upper} (was ${type.name})`);
+        report.add(
+          'Previous definitions: suffixes not in the C#',
+          `${name}:${upper} (was ${type.name})`,
+        );
       }
     }
   }
@@ -1113,8 +1255,12 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
   }
 
   const functions: Record<string, FunctionEntry> = {};
-  const functionClasses = index.all.filter((c) => c.functionNames !== undefined);
-  for (const cls of functionClasses.sort((a, b) => a.functionNames![0].localeCompare(b.functionNames![0]))) {
+  const functionClasses = index.all.filter(
+    (c) => c.functionNames !== undefined,
+  );
+  for (const cls of functionClasses.sort((a, b) =>
+    a.functionNames![0].localeCompare(b.functionNames![0]),
+  )) {
     const names = cls.functionNames!.filter((n) => !/_deprecated$/i.test(n));
     if (names.length === 0) {
       continue;
@@ -1122,10 +1268,14 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
 
     const where = `${names[0]}() (${cls.file})`;
     const key = camel.of(names[0]);
-    const old = names.map((n) => previousFunctions.get(n.toLowerCase())).find((l) => l !== undefined);
+    const old = names
+      .map((n) => previousFunctions.get(n.toLowerCase()))
+      .find((l) => l !== undefined);
     // functions documented as globals (`.. global:: HUDTEXT`) as a last
     // resort
-    let overloads = names.flatMap((n) => input.docs.functions.get(n.toUpperCase()) ?? []);
+    let overloads = names.flatMap(
+      (n) => input.docs.functions.get(n.toUpperCase()) ?? [],
+    );
     if (overloads.length === 0) {
       overloads = names
         .map((n) => input.docs.globals.get(n.toUpperCase()))
@@ -1144,7 +1294,11 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     if (known !== undefined) {
       entry.params = known;
     } else if (longest !== undefined) {
-      const fewest = Math.min(...overloads.map((o) => (o.params ?? []).filter((p) => !p.optional).length));
+      const fewest = Math.min(
+        ...overloads.map(
+          (o) => (o.params ?? []).filter((p) => !p.optional).length,
+        ),
+      );
       entry.params = (longest.params ?? []).map((p, i) => ({
         type: docType(p.type, where).type ?? 'Structure',
         ...(p.optional || i >= fewest ? { optional: true } : {}),
@@ -1153,7 +1307,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       report.add('Functions typed from the documentation only', where);
     } else {
       entry.params = [{ type: 'Structure', optional: true, variadic: true }];
-      report.add('Functions without a signature (any arguments accepted)', where);
+      report.add(
+        'Functions without a signature (any arguments accepted)',
+        where,
+      );
     }
 
     // the documented result, else the previous one
@@ -1161,7 +1318,11 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     if (documentedReturns === 'Structure') {
       documentedReturns = undefined;
     }
-    if (returns !== undefined && documentedReturns !== undefined && returns !== documentedReturns) {
+    if (
+      returns !== undefined &&
+      documentedReturns !== undefined &&
+      returns !== documentedReturns
+    ) {
       report.add(
         'Function results: documentation and previous definitions differ (documentation kept)',
         `${where}: ${documentedReturns}, was ${returns}`,
@@ -1171,13 +1332,21 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       documentedReturns ??
       returns ??
       (cls.functionShape?.returns === false ? 'None' : 'Structure');
-    if (returns === undefined && documentedReturns === undefined && cls.functionShape?.returns !== false) {
+    if (
+      returns === undefined &&
+      documentedReturns === undefined &&
+      cls.functionShape?.returns !== false
+    ) {
       report.add('Functions without a result type (Structure)', where);
     }
 
     // the C# pops a fixed number of arguments unless it counts them
     const shape = cls.functionShape;
-    if (shape !== undefined && !shape.variable && !entry.params.some((p) => p.variadic)) {
+    if (
+      shape !== undefined &&
+      !shape.variable &&
+      !entry.params.some((p) => p.variadic)
+    ) {
       if (shape.pops !== entry.params.length) {
         report.add(
           'Functions whose parameter count differs from the C# pops (check)',
@@ -1186,13 +1355,18 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       }
     }
     if (shape !== undefined && shape.returns && entry.returns === 'None') {
-      report.add('Functions returning a value in C# but None here (check)', where);
+      report.add(
+        'Functions returning a value in C# but None here (check)',
+        where,
+      );
     }
 
     if (longest !== undefined) {
       // the overload with as many parameters, else the longest
       const matching =
-        overloads.find((o) => (o.params?.length ?? 0) === entry.params.length) ?? longest;
+        overloads.find(
+          (o) => (o.params?.length ?? 0) === entry.params.length,
+        ) ?? longest;
       nameParameters(entry.params, matching.params ?? [], where, report);
       const docs = overloads.map((o) => o.doc).filter((d) => d !== '');
       if (docs.length > 0) {
@@ -1203,8 +1377,7 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       // constructors are documented with their structure: list(), lex()
       const created = structures.get(entry.returns.replace(/<.*$/, ''));
       const isConstructor =
-        created !== undefined &&
-        names.some((n) => kosName(n) === created.name);
+        created !== undefined && names.some((n) => kosName(n) === created.name);
       if (isConstructor && created.entry.doc !== undefined) {
         entry.doc = created.entry.doc;
         entry.url = created.entry.url;
@@ -1221,7 +1394,9 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
 
   for (const [name, builtin] of previousFunctions) {
     const found = Object.entries(functions).some(
-      ([key, f]) => key.toLowerCase() === name || f.aliases?.some((a) => a.toLowerCase() === name),
+      ([key, f]) =>
+        key.toLowerCase() === name ||
+        f.aliases?.some((a) => a.toLowerCase() === name),
     );
     if (!found) {
       report.add('Previous definitions: functions not in the C#', builtin.name);
@@ -1234,16 +1409,26 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
 
   const vessel = structures.get('Vessel');
   const variables: Record<string, VariableEntry> = {};
-  const bindings = new Map<string, { setter: boolean; getter: boolean; where: string }>();
+  const bindings = new Map<
+    string,
+    { setter: boolean; getter: boolean; where: string }
+  >();
   for (const cls of index.all) {
     for (const getter of cls.getters) {
       for (const name of getter.names ?? []) {
         if (name.includes(':')) {
-          report.add('Bound variables with invalid names (ignored)', `${name} (${getter.file})`);
+          report.add(
+            'Bound variables with invalid names (ignored)',
+            `${name} (${getter.file})`,
+          );
           continue;
         }
         const upper = name.toUpperCase();
-        const binding = bindings.get(upper) ?? { setter: false, getter: false, where: `${getter.file}:${getter.line}` };
+        const binding = bindings.get(upper) ?? {
+          setter: false,
+          getter: false,
+          where: `${getter.file}:${getter.line}`,
+        };
         if (getter.setter) {
           binding.setter = true;
         } else {
@@ -1254,12 +1439,18 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
     }
   }
   for (const name of input.shipShortcuts) {
-    const binding = bindings.get(name) ?? { setter: false, getter: true, where: 'VesselTarget.ShortCuttableShipSuffixes' };
+    const binding = bindings.get(name) ?? {
+      setter: false,
+      getter: true,
+      where: 'VesselTarget.ShortCuttableShipSuffixes',
+    };
     binding.getter = true;
     bindings.set(name, binding);
   }
 
-  for (const [upper, binding] of [...bindings].sort(([a], [b]) => a.localeCompare(b))) {
+  for (const [upper, binding] of [...bindings].sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
     const old = previousVariables.get(upper.toLowerCase());
     const key = camel.of(old?.name ?? upper);
     const where = `${upper} (${binding.where})`;
@@ -1274,15 +1465,20 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       entry.access = 'getset';
     }
 
-    const shortcut = input.shipShortcuts.includes(upper) && vessel !== undefined
-      ? vessel.entry.suffixes[vessel.keys.get(upper) ?? ''] ??
-        inheritedSuffix(vessel, upper, structures)
-      : undefined;
+    const shortcut =
+      input.shipShortcuts.includes(upper) && vessel !== undefined
+        ? (vessel.entry.suffixes[vessel.keys.get(upper) ?? ''] ??
+          inheritedSuffix(vessel, upper, structures))
+        : undefined;
 
     const previous = old && previousType(old.type, where);
     const docTyped = docType(documented?.type, where);
     entry.type = previous ?? shortcut?.type ?? docTyped.type ?? 'Structure';
-    if (previous !== undefined && shortcut !== undefined && previous !== shortcut.type) {
+    if (
+      previous !== undefined &&
+      shortcut !== undefined &&
+      previous !== shortcut.type
+    ) {
       report.add(
         'Bound variables whose previous type differs from the SHIP suffix (previous kept)',
         `${where}: ${previous} before, ${shortcut.type} as suffix`,
@@ -1299,7 +1495,9 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       entry.doc = documented.doc;
       entry.url = documented.url;
     } else if (shortcut !== undefined) {
-      entry.doc = `Shortcut for \`SHIP:${upper}\`.` + (shortcut.doc ? `\n\n${shortcut.doc}` : '');
+      entry.doc =
+        `Shortcut for \`SHIP:${upper}\`.` +
+        (shortcut.doc ? `\n\n${shortcut.doc}` : '');
       entry.url = shortcut.url;
     } else {
       report.add('Bound variables without documentation', where);
@@ -1312,7 +1510,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
 
   for (const [name, builtin] of previousVariables) {
     if (!bindings.has(name.toUpperCase())) {
-      report.add('Previous definitions: variables not bound in the C#', builtin.name);
+      report.add(
+        'Previous definitions: variables not bound in the C#',
+        builtin.name,
+      );
     }
   }
 
@@ -1339,7 +1540,10 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
       const keys = new Set(Object.keys(old));
       for (const key of Object.keys(now)) {
         if (!keys.has(key)) {
-          report.add('Entries added by the overrides (check the names)', `${kind} ${key}`);
+          report.add(
+            'Entries added by the overrides (check the names)',
+            `${kind} ${key}`,
+          );
         }
       }
     };
@@ -1369,7 +1573,11 @@ export function merge(input: MergeInput): { database: KosDatabase; report: Repor
 /**
  * Whether an upper case suffix name is inherited from an ancestor
  */
-function inherited(building: Building, upper: string, structures: Map<string, Building>): boolean {
+function inherited(
+  building: Building,
+  upper: string,
+  structures: Map<string, Building>,
+): boolean {
   return inheritedSuffix(building, upper, structures) !== undefined;
 }
 
@@ -1381,7 +1589,8 @@ function inheritedSuffix(
   upper: string,
   structures: Map<string, Building>,
 ): SuffixEntry | undefined {
-  let current = building.inherits && structures.get(building.inherits.replace(/<.*$/, ''));
+  let current =
+    building.inherits && structures.get(building.inherits.replace(/<.*$/, ''));
   const seen = new Set<Building>();
   while (current && !seen.has(current)) {
     seen.add(current);
@@ -1389,7 +1598,8 @@ function inheritedSuffix(
     if (key !== undefined) {
       return current.entry.suffixes[key];
     }
-    current = current.inherits && structures.get(current.inherits.replace(/<.*$/, ''));
+    current =
+      current.inherits && structures.get(current.inherits.replace(/<.*$/, ''));
   }
   return undefined;
 }
@@ -1402,7 +1612,11 @@ function normalizeUnion(type: TypeExpression): TypeExpression {
   if (type.kind === 'name') {
     return { ...type, args: type.args.map(normalizeUnion) };
   }
-  const members = [...new Map(type.types.map((t) => [formatType(normalizeUnion(t)), normalizeUnion(t)])).entries()]
+  const members = [
+    ...new Map(
+      type.types.map((t) => [formatType(normalizeUnion(t)), normalizeUnion(t)]),
+    ).entries(),
+  ]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([, t]) => t);
   return members.length === 1 ? members[0] : { kind: 'union', types: members };
@@ -1422,7 +1636,9 @@ function refine(
   where: string,
   report: Report,
 ): string {
-  const candidates = [documented, previous].filter((t): t is string => t !== undefined && t !== 'Structure');
+  const candidates = [documented, previous].filter(
+    (t): t is string => t !== undefined && t !== 'Structure',
+  );
   const bare = parseType(csharp);
 
   for (const candidate of candidates) {
@@ -1446,16 +1662,23 @@ function refine(
 
     // `Structure` from the C#: any value, the other source says which
     if (csharp === 'Structure') {
-      report.add('Types made precise (C# says Structure)', `${where}: ${candidate}`);
+      report.add(
+        'Types made precise (C# says Structure)',
+        `${where}: ${candidate}`,
+      );
       return candidate;
     }
   }
 
   const differing = candidates.filter(
-    (c) => c !== csharp && !(bare.kind === 'name' && c.startsWith(`${bare.name}<`)),
+    (c) =>
+      c !== csharp && !(bare.kind === 'name' && c.startsWith(`${bare.name}<`)),
   );
   if (differing.length > 0 && csharp !== 'None') {
-    report.add('Types that differ from the C# (C# kept)', `${where}: ${csharp}, also ${differing.join(', ')}`);
+    report.add(
+      'Types that differ from the C# (C# kept)',
+      `${where}: ${csharp}, also ${differing.join(', ')}`,
+    );
   }
   return csharp;
 }
@@ -1500,7 +1723,12 @@ function nameParameters(
 /**
  * Compare the documented access of a suffix with the C# one
  */
-function checkAccess(suffix: SuffixEntry, member: RstEntry, where: string, report: Report): void {
+function checkAccess(
+  suffix: SuffixEntry,
+  member: RstEntry,
+  where: string,
+  report: Report,
+): void {
   const text = member.access?.toLowerCase();
   if (text === undefined || suffix.access === 'call') {
     return;
@@ -1529,8 +1757,12 @@ export function deepMerge(base: unknown, override: unknown): unknown {
   ) {
     return override;
   }
-  const result: Record<string, unknown> = { ...(base as Record<string, unknown>) };
-  for (const [written, value] of Object.entries(override as Record<string, unknown>)) {
+  const result: Record<string, unknown> = {
+    ...(base as Record<string, unknown>),
+  };
+  for (const [written, value] of Object.entries(
+    override as Record<string, unknown>,
+  )) {
     if (written.startsWith('$')) {
       continue;
     }
@@ -1538,7 +1770,9 @@ export function deepMerge(base: unknown, override: unknown): unknown {
     const key =
       written in result
         ? written
-        : (Object.keys(result).find((k) => k.toLowerCase() === written.toLowerCase()) ?? written);
+        : (Object.keys(result).find(
+            (k) => k.toLowerCase() === written.toLowerCase(),
+          ) ?? written);
     if (value === null) {
       delete result[key];
     } else {
@@ -1559,12 +1793,18 @@ function validate(database: KosDatabase, report: Report): void {
     try {
       mapNames(parseType(text), (name) => {
         if (!known.has(name) && !parameters.includes(name)) {
-          report.add('Invalid types in the database', `\`${text}\` (${where}): unknown \`${name}\``);
+          report.add(
+            'Invalid types in the database',
+            `\`${text}\` (${where}): unknown \`${name}\``,
+          );
         }
         return name;
       });
     } catch {
-      report.add('Invalid types in the database', `\`${text}\` (${where}): malformed`);
+      report.add(
+        'Invalid types in the database',
+        `\`${text}\` (${where}): malformed`,
+      );
     }
   };
 

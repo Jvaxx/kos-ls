@@ -218,7 +218,7 @@ export class Graph<T> {
    * @param nodes nodes to construct graph from
    */
   public static fromNodes<T>(nodes: GraphNode<T>[]): Graph<T> {
-    const graph = new Graph(...nodes.map(node => node.value()));
+    const graph = new Graph(...nodes.map((node) => node.value()));
 
     for (const sourceNode of nodes) {
       for (const targetNode of sourceNode.adjacentNodes()) {

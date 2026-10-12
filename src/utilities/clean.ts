@@ -31,7 +31,7 @@ export const cleanCompletion = (completion: CompletionItem): CompletionItem => {
     textEdit: completion.textEdit,
     additionalTextEdits:
       completion.additionalTextEdits &&
-      completion.additionalTextEdits.map(edit => cleanTextEdit(edit)),
+      completion.additionalTextEdits.map((edit) => cleanTextEdit(edit)),
     commitCharacters: completion.commitCharacters,
     command: completion.command && cleanCommand(completion.command),
     data: completion.data as unknown,
@@ -90,7 +90,9 @@ export const cleanDiagnostic = (diagnostics: Diagnostic): Diagnostic => {
     message: diagnostics.message,
     relatedInformation:
       diagnostics.relatedInformation &&
-      diagnostics.relatedInformation.map(info => cleanRelatedInformation(info)),
+      diagnostics.relatedInformation.map((info) =>
+        cleanRelatedInformation(info),
+      ),
   };
 };
 

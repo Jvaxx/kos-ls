@@ -16,7 +16,7 @@ benchmark('temp', () => {
     filePath: string;
   }
 
-  walkDir(testDir, filePath => {
+  walkDir(testDir, (filePath) => {
     const kosFile = readFileSync(filePath, 'utf8');
     const scanner = new Scanner(kosFile);
     const { tokens } = scanner.scanTokens();
@@ -28,7 +28,7 @@ benchmark('temp', () => {
   let results: IBenchResult[] = [];
 
   for (let i = 0; i < 10; i += 1) {
-    walkDir(testDir, filePath => {
+    walkDir(testDir, (filePath) => {
       const size = statSync(filePath).size;
 
       const kosFile = readFileSync(filePath, 'utf8');

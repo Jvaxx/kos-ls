@@ -136,7 +136,9 @@ describe('code actions', () => {
         'function f { parameter v. print v. }\nf(list()).\n';
       const actions = await actionsFor(text, 1);
       expect(titles(actions)).toEqual(['Change to Vessel']);
-      expect(apply(actions[0], text)).toMatch(/^\/\/ @param v \{List<Vessel>\}/);
+      expect(apply(actions[0], text)).toMatch(
+        /^\/\/ @param v \{List<Vessel>\}/,
+      );
     });
   });
 

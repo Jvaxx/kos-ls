@@ -164,14 +164,16 @@ export class SymbolTable implements GraphNode<SymbolTable> {
    * @param pos position to check
    */
   public scopedSymbols(pos: Position): KsBaseSymbol[] {
-    return this.scopedTrackers(pos).map(tracker => tracker.declared.symbol);
+    return this.scopedTrackers(pos).map((tracker) => tracker.declared.symbol);
   }
 
   /**
    * Get all imported symbols relative to this script
    */
   public importedSymbols(): KsBaseSymbol[] {
-    return [...this.importedTrackers()].map(tracker => tracker.declared.symbol);
+    return [...this.importedTrackers()].map(
+      (tracker) => tracker.declared.symbol,
+    );
   }
 
   /**
@@ -234,7 +236,7 @@ export class SymbolTable implements GraphNode<SymbolTable> {
    */
   private scopedTracker(
     pos: Position,
-    trackerFilter: (x: BasicTracker) => boolean = _ => true,
+    trackerFilter: (x: BasicTracker) => boolean = (_) => true,
   ): Maybe<BasicTracker> {
     const tracker = this.scopedTrackerDepth(pos, this.rootScope, trackerFilter);
     if (!empty(tracker)) {

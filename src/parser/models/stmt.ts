@@ -60,7 +60,7 @@ export class Invalid extends Stmt {
    * Convert this invalid statement into a set of line
    */
   public toLines(): string[] {
-    return [this.tokens.map(t => t.lexeme).join(' ')];
+    return [this.tokens.map((t) => t.lexeme).join(' ')];
   }
 
   /**
@@ -137,7 +137,7 @@ export class Block extends Stmt {
   }
 
   public toLines(): string[] {
-    const lines = flatten(this.stmts.map(stmt => stmt.toLines()));
+    const lines = flatten(this.stmts.map((stmt) => stmt.toLines()));
 
     if (lines.length === 0) {
       return [`${this.open.lexeme} ${this.close.lexeme}`];
@@ -148,7 +148,7 @@ export class Block extends Stmt {
     }
 
     return [`${this.open.lexeme}`].concat(
-      ...lines.map(line => `    ${line}`),
+      ...lines.map((line) => `    ${line}`),
       `${this.close.lexeme}`,
     );
   }
@@ -1348,7 +1348,10 @@ export class Run extends Stmt {
       : [`${this.run.lexeme} ${this.path.lexeme} ${this.identifier.lexeme}`];
 
     if (!empty(this.open) && !empty(this.args) && !empty(this.close)) {
-      const argsLines = joinLines(', ', ...this.args.map(arg => arg.toLines()));
+      const argsLines = joinLines(
+        ', ',
+        ...this.args.map((arg) => arg.toLines()),
+      );
       argsLines[0] = `${this.open.lexeme}${argsLines[0]}`;
       argsLines[argsLines.length - 1] = `${argsLines[argsLines.length - 1]}${
         this.close.lexeme
@@ -1376,8 +1379,8 @@ export class Run extends Stmt {
     return !empty(this.expr)
       ? this.expr.end
       : !empty(this.args)
-      ? this.args[this.args.length - 1].end
-      : this.identifier.end;
+        ? this.args[this.args.length - 1].end
+        : this.identifier.end;
   }
 
   public get ranges(): Range[] {
@@ -1432,7 +1435,7 @@ export class RunPath extends Stmt {
     let lines = this.path.toLines();
 
     if (!empty(this.args)) {
-      lines = joinLines(', ', lines, ...this.args.map(arg => arg.toLines()));
+      lines = joinLines(', ', lines, ...this.args.map((arg) => arg.toLines()));
     }
 
     lines[0] = `${this.runPath.lexeme}${this.open.lexeme}${lines[0]}`;
@@ -1489,7 +1492,7 @@ export class RunOncePath extends Stmt {
     let lines = this.path.toLines();
 
     if (!empty(this.args)) {
-      lines = joinLines(', ', lines, ...this.args.map(arg => arg.toLines()));
+      lines = joinLines(', ', lines, ...this.args.map((arg) => arg.toLines()));
     }
 
     lines[0] = `${this.runPath.lexeme}${this.open.lexeme}${lines[0]}`;
@@ -1624,8 +1627,8 @@ export class List extends Stmt {
     return !empty(this.target)
       ? this.target.end
       : !empty(this.collection)
-      ? this.collection.end
-      : this.list.end;
+        ? this.collection.end
+        : this.list.end;
   }
 
   public get ranges(): Range[] {

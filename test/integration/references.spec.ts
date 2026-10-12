@@ -75,7 +75,7 @@ describe('references and highlights', () => {
     ]);
   });
 
-  test('kOS names cannot be renamed, the script\'s can', async () => {
+  test("kOS names cannot be renamed, the script's can", async () => {
     const text = 'lock steering to up.\nlock x to 1.\nprint x + steering.\n';
     await start({ 'a.ks': text });
     client.open('a.ks', text);

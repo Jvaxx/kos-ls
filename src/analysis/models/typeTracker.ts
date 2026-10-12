@@ -1,13 +1,22 @@
-import { SymbolTrackerBase, IKsDeclared, TrackerKind, KsSymbol } from '../types';
+import {
+  SymbolTrackerBase,
+  IKsDeclared,
+  TrackerKind,
+  KsSymbol,
+} from '../types';
 import { Location, Range, Position } from 'vscode-languageserver';
 import { builtIn } from '../../utilities/constants';
 import { IType } from '../../typeChecker/types';
 
-export class TypeTracker<T extends KsSymbol = KsSymbol>
-  implements SymbolTrackerBase<T> {
+export class TypeTracker<
+  T extends KsSymbol = KsSymbol,
+> implements SymbolTrackerBase<T> {
   public declared: IKsDeclared<T, IType>;
 
-  constructor(symbol: T, public type: IType) {
+  constructor(
+    symbol: T,
+    public type: IType,
+  ) {
     this.declared = {
       symbol,
       type,

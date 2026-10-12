@@ -35,7 +35,12 @@ describe('LintManager', () => {
   describe('When constructing using the from rules static method', () => {
     test('It has the appropriate properties', () => {
       const lintRules: LintRule[] = [
-        new LintRule('example-rule1', 'error', [DIAGNOSTICS.TYPE_NO_SETTER], []),
+        new LintRule(
+          'example-rule1',
+          'error',
+          [DIAGNOSTICS.TYPE_NO_SETTER],
+          [],
+        ),
         new LintRule(
           'example-rule2',
           'hint',
@@ -59,7 +64,12 @@ describe('LintManager', () => {
     describe('When no owning rules', () => {
       test('it altered correctly', () => {
         const lintRules: LintRule[] = [
-          new LintRule('example-rule1', 'error', [DIAGNOSTICS.TYPE_NO_SETTER], []),
+          new LintRule(
+            'example-rule1',
+            'error',
+            [DIAGNOSTICS.TYPE_NO_SETTER],
+            [],
+          ),
           new LintRule(
             'example-rule2',
             'off',

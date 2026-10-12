@@ -17,8 +17,9 @@ import { IType } from '../../typeChecker/types';
 import { empty } from '../../utilities/typeGuards';
 import { flowType } from '../../typeChecker/models/types/flowUnionType';
 
-export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
-  implements SymbolTrackerBase {
+export class BasicTracker<
+  T extends KsBaseSymbol = KsBaseSymbol,
+> implements SymbolTrackerBase {
   public readonly declared: IKsDeclared<T, IType>;
 
   /**
@@ -90,9 +91,9 @@ export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
     // the last set before the location. Sets not type checked yet are
     // left out: in `set x to x + 1.` x has the type it had before
     const ranges = this.sets.filter(
-      set => set.uri === loc.uri && !empty(set.type),
+      (set) => set.uri === loc.uri && !empty(set.type),
     );
-    const found = binaryPreviousKey(ranges, loc.range.start, x => x.range);
+    const found = binaryPreviousKey(ranges, loc.range.start, (x) => x.range);
     const current = (found && found.type) || this.declared.type;
     if (empty(current)) {
       return current;
@@ -101,7 +102,10 @@ export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
     // with the other types it is given anywhere, as kOS types at runtime.
     // Given an unknown value (Structure), it may be anything
     const others: IType[] = [];
-    for (const type of [this.declared.type, ...this.sets.map(set => set.type)]) {
+    for (const type of [
+      this.declared.type,
+      ...this.sets.map((set) => set.type),
+    ]) {
       if (!empty(type) && type !== current) {
         others.push(type);
       }
@@ -120,8 +124,8 @@ export class BasicTracker<T extends KsBaseSymbol = KsBaseSymbol>
       return;
     }
 
-    const ranges = this.sets.filter(set => set.uri === loc.uri);
-    const nearestSet = binaryRightKey(ranges, loc.range.start, x => x.range);
+    const ranges = this.sets.filter((set) => set.uri === loc.uri);
+    const nearestSet = binaryRightKey(ranges, loc.range.start, (x) => x.range);
 
     if (!empty(nearestSet) && locationEqual(nearestSet, loc)) {
       nearestSet.type = type;

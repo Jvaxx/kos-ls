@@ -159,7 +159,12 @@ function skipString(source: string, i: number): number {
  * @param open index of an opening bracket: ( [ { or <
  */
 export function matchBracket(source: string, open: number): number {
-  const pairs: Record<string, string> = { '(': ')', '[': ']', '{': '}', '<': '>' };
+  const pairs: Record<string, string> = {
+    '(': ')',
+    '[': ']',
+    '{': '}',
+    '<': '>',
+  };
   const opener = source[open];
   const closer = pairs[opener];
   let depth = 0;
@@ -238,7 +243,9 @@ export function parseNames(text: string): string[] | undefined {
     return [single];
   }
 
-  const array = /^new\s*(?:string\s*)?\[\s*\]\s*\{([\s\S]*)\}$/.exec(text.trim());
+  const array = /^new\s*(?:string\s*)?\[\s*\]\s*\{([\s\S]*)\}$/.exec(
+    text.trim(),
+  );
   if (array === null) {
     return undefined;
   }
@@ -303,7 +310,9 @@ export function extractClasses(source: string, file: string): CsClass[] {
   const code = stripComments(source);
   const found: { cls: CsClass; start: number; end: number }[] = [];
 
-  const usings = [...code.matchAll(/^\s*using\s+([\w.]+)\s*;/gm)].map((m) => m[1]);
+  const usings = [...code.matchAll(/^\s*using\s+([\w.]+)\s*;/gm)].map(
+    (m) => m[1],
+  );
   const namespaces: { name: string; start: number; end: number }[] = [];
   for (const match of code.matchAll(/\bnamespace\s+([\w.]+)\s*([{;])/g)) {
     const open = match.index + match[0].length - 1;

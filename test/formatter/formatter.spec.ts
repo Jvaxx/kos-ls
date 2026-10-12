@@ -20,7 +20,7 @@ const format = (source: string, options?: Partial<FormatOptions>): string => {
 
 // tokens as the parser sees them: kOS is case-insensitive
 const tokensOf = (source: string): string[] =>
-  new Scanner(source).scanTokens().tokens.map(token => {
+  new Scanner(source).scanTokens().tokens.map((token) => {
     const lexeme =
       token.type === TokenType.string ? token.lexeme : token.lookup;
     return `${TokenType[token.type]} ${lexeme.replace(/\s+/g, '')}`;
@@ -29,9 +29,9 @@ const tokensOf = (source: string): string[] =>
 const commentsOf = (source: string): string[] => {
   const { tokens, trailingComments } = new Scanner(source).scanTokens();
   return tokens
-    .flatMap(token => token.leadingComments ?? [])
+    .flatMap((token) => token.leadingComments ?? [])
     .concat(trailingComments)
-    .map(comment => comment.text.trimEnd());
+    .map((comment) => comment.text.trimEnd());
 };
 
 // the tree printed back, in lowercase as keyword case may change, and
@@ -47,7 +47,7 @@ const astOf = (source: string): string => {
 
 describe('Formatter on every fixture', () => {
   const files: string[] = [];
-  walkDir(fixtures, file => {
+  walkDir(fixtures, (file) => {
     if (file.endsWith('.ks')) {
       files.push(file);
     }
@@ -78,7 +78,7 @@ describe('Formatter on every fixture', () => {
       },
     ],
   ];
-  const cases = files.flatMap(file =>
+  const cases = files.flatMap((file) =>
     styles.map(([name, options]) => [
       `${file.slice(fixtures.length)} (${name})`,
       file,
@@ -86,45 +86,47 @@ describe('Formatter on every fixture', () => {
     ]),
   ) as [string, string, Partial<FormatOptions>][];
 
-  test.each(cases)(
-    '%s',
-    (_, file, options) => {
-      const source = readFileSync(file, 'utf8');
-      const once = format(source, options);
+  test.each(cases)('%s', (_, file, options) => {
+    const source = readFileSync(file, 'utf8');
+    const once = format(source, options);
 
-      // idempotence
-      expect(format(once, options)).toBe(once);
+    // idempotence
+    expect(format(once, options)).toBe(once);
 
-      // same meaning: same tokens, same tree
-      expect(tokensOf(once)).toEqual(tokensOf(source));
-      expect(astOf(once)).toBe(astOf(source));
+    // same meaning: same tokens, same tree
+    expect(tokensOf(once)).toEqual(tokensOf(source));
+    expect(astOf(once)).toBe(astOf(source));
 
-      // every comment kept, in order; reflowed, its words
-      const words = (comments: string[]) =>
-        comments.flatMap(comment =>
-          comment.replace(/^\/\//, '').split(/\s+/).filter(word => word),
-        );
-      if (options.ReflowComments === false) {
-        expect(commentsOf(once)).toEqual(commentsOf(source));
-      } else {
-        expect(words(commentsOf(once))).toEqual(words(commentsOf(source)));
-      }
+    // every comment kept, in order; reflowed, its words
+    const words = (comments: string[]) =>
+      comments.flatMap((comment) =>
+        comment
+          .replace(/^\/\//, '')
+          .split(/\s+/)
+          .filter((word) => word),
+      );
+    if (options.ReflowComments === false) {
+      expect(commentsOf(once)).toEqual(commentsOf(source));
+    } else {
+      expect(words(commentsOf(once))).toEqual(words(commentsOf(source)));
+    }
 
-      // the edits give the same text
-      const result = formatText(source, options);
-      if ('error' in result) {
-        throw new Error(result.error);
-      }
-      const document = TextDocument.create('file:///a.ks', 'kos', 1, source);
-      expect(TextDocument.applyEdits(document, result.edits)).toBe(once);
+    // the edits give the same text
+    const result = formatText(source, options);
+    if ('error' in result) {
+      throw new Error(result.error);
+    }
+    const document = TextDocument.create('file:///a.ks', 'kos', 1, source);
+    expect(TextDocument.applyEdits(document, result.edits)).toBe(once);
 
-      // edits neither overlap nor touch
-      for (let i = 1; i < result.edits.length; i += 1) {
-        const end = document.offsetAt(result.edits[i - 1].range.end);
-        expect(document.offsetAt(result.edits[i].range.start)).toBeGreaterThan(end);
-      }
-    },
-  );
+    // edits neither overlap nor touch
+    for (let i = 1; i < result.edits.length; i += 1) {
+      const end = document.offsetAt(result.edits[i - 1].range.end);
+      expect(document.offsetAt(result.edits[i].range.start)).toBeGreaterThan(
+        end,
+      );
+    }
+  });
 });
 
 describe('Formatter rules', () => {
@@ -145,7 +147,9 @@ describe('Formatter rules', () => {
       'set x to not a and defined b.\n',
     );
     expect(format('set x to 1 e 5.')).toBe('set x to 1e5.\n');
-    expect(format('LOCAL a TO 5,b IS a+1.')).toBe('local a to 5, b is a + 1.\n');
+    expect(format('LOCAL a TO 5,b IS a+1.')).toBe(
+      'local a to 5, b is a + 1.\n',
+    );
     expect(format('set a to 1 , b to 2.')).toBe('set a to 1, b to 2.\n');
   });
 
@@ -157,7 +161,9 @@ describe('Formatter rules', () => {
   });
 
   test('blocks', () => {
-    expect(format('if a { print 1. } else if b { print 2. } else { print 3. }')).toBe(
+    expect(
+      format('if a { print 1. } else if b { print 2. } else { print 3. }'),
+    ).toBe(
       [
         'if a {',
         '    print 1.',
@@ -179,7 +185,9 @@ describe('Formatter rules', () => {
 
   test('from loops keep their header on one line', () => {
     expect(
-      format('from {local i is 0.} until i>3 step {set i to i+1.} do {print i.}'),
+      format(
+        'from {local i is 0.} until i>3 step {set i to i+1.} do {print i.}',
+      ),
     ).toBe(
       'from { local i is 0. } until i > 3 step { set i to i + 1. } do {\n' +
         '    print i.\n' +
@@ -214,7 +222,9 @@ describe('Formatter rules', () => {
         '',
       ].join('\n'),
     );
-    expect(format('local g is { return { if a { return 1. } return 2. }. }.')).toBe(
+    expect(
+      format('local g is { return { if a { return 1. } return 2. }. }.'),
+    ).toBe(
       [
         'local g is {',
         '    return {',
@@ -241,10 +251,14 @@ describe('Formatter rules', () => {
     expect(expand('foo(1, { return 1. }, 2).')).toBe(
       'foo(1, {\n    return 1.\n}, 2).\n',
     );
-    expect(format('local e is {}.', { AllowShortLambdasOnASingleLine: 'Empty' })).toBe(
-      'local e is {}.\n',
-    );
-    expect(expand('set l to list(list("a", { return 1. }), list("b", { return 2. })).')).toBe(
+    expect(
+      format('local e is {}.', { AllowShortLambdasOnASingleLine: 'Empty' }),
+    ).toBe('local e is {}.\n');
+    expect(
+      expand(
+        'set l to list(list("a", { return 1. }), list("b", { return 2. })).',
+      ),
+    ).toBe(
       [
         'set l to list(',
         '    list("a", {',
@@ -506,9 +520,9 @@ describe('Formatter rules', () => {
     expect(format(source, { KeywordCase: 'Preserve', IndentWidth: 2 })).toBe(
       'IF a {\n  PRINT 1.\n} ELSE {\n  PRINT 2.\n}\n',
     );
-    expect(format('set list to list(). list x in y.', { KeywordCase: 'Upper' })).toBe(
-      'SET list TO list().\nLIST x IN y.\n',
-    );
+    expect(
+      format('set list to list(). list x in y.', { KeywordCase: 'Upper' }),
+    ).toBe('SET list TO list().\nLIST x IN y.\n');
     expect(
       format('print 1. // a\nprint 22. // b', {
         AlignTrailingComments: false,

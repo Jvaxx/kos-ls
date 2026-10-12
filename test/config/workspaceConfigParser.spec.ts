@@ -11,12 +11,7 @@ import {
 const exampleConfigUri = URI.file('/example/ksconfig.json');
 
 function makeDocument(source: string): TextDocument {
-  return TextDocument.create(
-    exampleConfigUri.toString(),
-    'json',
-    1,
-    source,
-  );
+  return TextDocument.create(exampleConfigUri.toString(), 'json', 1, source);
 }
 
 describe('WorkspaceConfigParser', () => {
@@ -190,9 +185,8 @@ describe('WorkspaceConfigParser', () => {
               }`,
             );
 
-            const { config, diagnostics } = parseWorkspaceConfiguration(
-              multiple,
-            );
+            const { config, diagnostics } =
+              parseWorkspaceConfiguration(multiple);
 
             expect(diagnostics).toHaveLength(0);
             expect(config.rootVolumePath).toBe(undefined);
@@ -231,9 +225,8 @@ describe('WorkspaceConfigParser', () => {
                 '{"linting": { "invalid-rul": "hint" } }',
               );
 
-              const { config, diagnostics } = parseWorkspaceConfiguration(
-                invalid,
-              );
+              const { config, diagnostics } =
+                parseWorkspaceConfiguration(invalid);
 
               expect(diagnostics).toHaveLength(1);
               expect(diagnostics[0].code).toBe(
@@ -255,9 +248,8 @@ describe('WorkspaceConfigParser', () => {
                 '{"linting": { "symbol-may-not-exist": "fake" } }',
               );
 
-              const { config, diagnostics } = parseWorkspaceConfiguration(
-                invalid,
-              );
+              const { config, diagnostics } =
+                parseWorkspaceConfiguration(invalid);
 
               expect(diagnostics).toHaveLength(1);
               expect(diagnostics[0].code).toBe(
@@ -317,9 +309,7 @@ describe('WorkspaceConfigParser kos-ls properties', () => {
     expect(config.preloadUris().map((uri) => uri.fsPath)).toEqual([
       '/example/src/lib/std.ks',
     ]);
-    expect(config.isExcluded(URI.file('/example/bin/mission/a.ks'))).toBe(
-      true,
-    );
+    expect(config.isExcluded(URI.file('/example/bin/mission/a.ks'))).toBe(true);
     expect(config.isExcluded(URI.file('/example/boot'))).toBe(true);
     expect(config.isExcluded(URI.file('/example/binary/a.ks'))).toBe(false);
     expect(config.isExcluded(URI.file('/example/src/a.ks'))).toBe(false);
@@ -350,8 +340,9 @@ describe('WorkspaceConfigParser kos-ls properties', () => {
     );
     expect(on.diagnostics).toHaveLength(0);
     expect(on.config.clobberBuiltins).toBe(true);
-    expect(parseWorkspaceConfiguration(makeDocument('{}')).config.clobberBuiltins)
-      .toBeUndefined();
+    expect(
+      parseWorkspaceConfiguration(makeDocument('{}')).config.clobberBuiltins,
+    ).toBeUndefined();
 
     // a later config keeps an explicit false
     const off = parseWorkspaceConfiguration(
@@ -390,7 +381,7 @@ describe('WorkspaceConfigParser kos-ls properties', () => {
         '{ "format": { "IndentWidth": "two", "Foo": 1 } }',
       );
       const { diagnostics } = parseWorkspaceConfiguration(document);
-      expect(diagnostics.map(d => d.message)).toEqual([
+      expect(diagnostics.map((d) => d.message)).toEqual([
         'IndentWidth must be a whole number, not two.',
         'Unknown format option Foo.',
       ]);

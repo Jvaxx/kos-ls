@@ -1,7 +1,4 @@
-import {
-	createConnection,
-	ProposedFeatures,
-} from 'vscode-languageserver/node';
+import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
 import { KLS } from './kls';
 import { getConnectionPrimitives } from './utilities/serverUtils';
 import { Logger } from './models/logger';
@@ -23,14 +20,18 @@ program
   .option('--clientProcessId <id>', 'Id of the attached client process')
   .parse(process.argv);
 
-const options = program.opts()
+const options = program.opts();
 
 // get connection primitives based on command argument
 const { reader, writer } = getConnectionPrimitives(options);
 
 // Create a connection for the server. The connection uses Node's IPC or stdin and stdout
 // Also include all preview / proposed LSP features.
-export const connection = createConnection(ProposedFeatures.all, reader, writer)
+export const connection = createConnection(
+  ProposedFeatures.all,
+  reader,
+  writer,
+);
 
 // REMOVE ME TODO probably need to refactor the type modules as
 // structure and the primitives have a dependency loop

@@ -26,8 +26,7 @@ import { diagnosticText } from '../utilities/diagnosticsUtils';
  * into it, or why the source cannot be formatted
  */
 export type FormatResult =
-  | { text: string; edits: TextEdit[] }
-  | { error: string };
+  { text: string; edits: TextEdit[] } | { error: string };
 
 /**
  * Format a whole Kerboscript source
@@ -70,7 +69,7 @@ export function formatRange(
   const end: Position = { line: endLine, character: Number.MAX_SAFE_INTEGER };
 
   const edits = result.edits.filter(
-    edit => before(edit.range.start, end) && before(start, edit.range.end),
+    (edit) => before(edit.range.start, end) && before(start, edit.range.end),
   );
   return { text: result.text, edits: merge(edits) };
 }
@@ -401,7 +400,7 @@ function render(
   for (;;) {
     roles = annotate(ast.script, tokens, expanded, options);
     const current = roles;
-    texts = tokens.map(token =>
+    texts = tokens.map((token) =>
       current.names.has(token) ? token.lexeme : tokenText(token, options),
     );
     const lines = buildLines(tokens, texts, trailingComments, roles, options);
@@ -594,8 +593,8 @@ function annotate(
 
   // statement blocks, which are always expanded
   const statementOpens = blocks
-    .filter(block => !headers.has(block) && !lambdas.has(block))
-    .map(block => index.get(block.open) ?? -1);
+    .filter((block) => !headers.has(block) && !lambdas.has(block))
+    .map((block) => index.get(block.open) ?? -1);
 
   for (const block of blocks) {
     const open = index.get(block.open) ?? -1;
@@ -614,7 +613,7 @@ function annotate(
       lambda &&
       options.AllowShortLambdasOnASingleLine === 'All' &&
       !expanded.has(open) &&
-      !statementOpens.some(i => open < i && i < close);
+      !statementOpens.some((i) => open < i && i < close);
     if (short && !comments && block.stmts.length > 0) {
       roles.shortLambdas.push([open, close]);
     }
@@ -625,8 +624,8 @@ function annotate(
         block.stmts.length === 0 && !comments
           ? 'empty'
           : (header || short) && !comments
-          ? 'inline'
-          : 'expanded',
+            ? 'inline'
+            : 'expanded',
       continues: header || lambda,
       statement: !header && !lambda,
     };
@@ -847,7 +846,13 @@ function buildLines(
         push(holder, item());
         const body: BlockBody = { lines: [] };
         push(holder, { text: '', space: false, mustBreak: false, block: body });
-        ctx = { lines: body.lines, level: 0, current: undefined, body, outer: ctx };
+        ctx = {
+          lines: body.lines,
+          level: 0,
+          current: undefined,
+          body,
+          outer: ctx,
+        };
       } else {
         push(line(blank), { ...item(), open: block.layout === 'inline' });
       }
@@ -1101,7 +1106,7 @@ function layout(
     if (previous !== undefined && (choice(k) || items[k].mustBreak)) {
       const broken = breakFirst || items[k].mustBreak;
       const comma = previous.token !== undefined && previous.text === ',';
-      const top = frames.map(frame => !frame.group).lastIndexOf(true);
+      const top = frames.map((frame) => !frame.group).lastIndexOf(true);
       frames.forEach((frame, j) => {
         if (frame.commas === undefined || (j === top && previous.open)) {
           return;
@@ -1148,10 +1153,10 @@ function layout(
       const sep = atStart
         ? 0
         : item.trailing
-        ? options.SpacesBeforeTrailingComments
-        : item.space
-        ? 1
-        : 0;
+          ? options.SpacesBeforeTrailingComments
+          : item.space
+            ? 1
+            : 0;
       const start = column + sep;
       for (let g = 0; g < opens[k]; g += 1) {
         frames.push({ align: start, indent, group: true });
@@ -1165,8 +1170,7 @@ function layout(
         continuation: item.continuation,
       });
       const newline = item.text.indexOf('\n');
-      const end =
-        newline === -1 ? start + item.text.length : start + newline;
+      const end = newline === -1 ? start + item.text.length : start + newline;
       if (!item.trailing) {
         penalty +=
           penaltyExcess *
@@ -1183,7 +1187,8 @@ function layout(
           align: column + (item.text === '{' ? 1 : 0),
           indent,
           group: false,
-          commas: item.call && !options.BinPackArguments ? 'unknown' : undefined,
+          commas:
+            item.call && !options.BinPackArguments ? 'unknown' : undefined,
         });
       }
       if (item.close) {
@@ -1205,12 +1210,14 @@ function layout(
       indent,
       frames,
       penalty,
-      breaks: breakFirst ? { item: state.next, rest: state.breaks } : state.breaks,
+      breaks: breakFirst
+        ? { item: state.next, rest: state.breaks }
+        : state.breaks,
     };
   };
 
   const breakPenalty = (k: number, column: number, frames: Frame[]) => {
-    const brackets = frames.filter(frame => !frame.group).length;
+    const brackets = frames.filter((frame) => !frame.group).length;
     const operandGroups = frames.length - brackets;
     const short = limit === Infinity ? 0 : (limit - column) / limit;
     return (
@@ -1230,7 +1237,7 @@ function layout(
       return lineIndent + options.ContinuationIndentWidth;
     }
     if (items[k].ownLine) {
-      const bracket = [...frames].reverse().find(frame => !frame.group);
+      const bracket = [...frames].reverse().find((frame) => !frame.group);
       return bracket?.indent ?? lineIndent;
     }
     if (!top.group && items[k - 1].open) {
@@ -1249,11 +1256,9 @@ function layout(
     penalty: 0,
     breaks: undefined,
   };
-  const chosen = search(initial, items.length, step, choice) ?? firstFit(
-    initial,
-    items.length,
-    step,
-  );
+  const chosen =
+    search(initial, items.length, step, choice) ??
+    firstFit(initial, items.length, step);
 
   // replay the chosen breaks
   const breaks = new Set<number>();
@@ -1261,14 +1266,18 @@ function layout(
     breaks.add(list.item);
   }
   const out: PhysicalLine[] = [];
-  let current: PhysicalLine = { blank: line.blank, indent: lineIndent, pieces: [] };
+  let current: PhysicalLine = {
+    blank: line.blank,
+    indent: lineIndent,
+    pieces: [],
+  };
   out.push(current);
   const sink: Sink = {
-    line: indent => {
+    line: (indent) => {
       current = { blank: 0, indent, pieces: [] };
       out.push(current);
     },
-    piece: piece => current.pieces.push(piece),
+    piece: (piece) => current.pieces.push(piece),
     body: (body, indent) => {
       if (body.comment !== undefined) {
         current.pieces.push({
@@ -1319,7 +1328,7 @@ function search(
 
     const key = `${state.next} ${state.column} ${state.indent} ${state.frames
       .map(
-        frame =>
+        (frame) =>
           `${frame.align},${frame.indent},${frame.group},${frame.commas ?? ''}`,
       )
       .join(' ')}`;
@@ -1391,10 +1400,16 @@ class Heap<T> {
         const left = 2 * i + 1;
         const right = left + 1;
         let smallest = i;
-        if (left < items.length && this.compare(items[left], items[smallest]) < 0) {
+        if (
+          left < items.length &&
+          this.compare(items[left], items[smallest]) < 0
+        ) {
           smallest = left;
         }
-        if (right < items.length && this.compare(items[right], items[smallest]) < 0) {
+        if (
+          right < items.length &&
+          this.compare(items[right], items[smallest]) < 0
+        ) {
           smallest = right;
         }
         if (smallest === i) {
@@ -1458,7 +1473,11 @@ function splitGroups(items: Item[]): void {
       if (parent !== undefined && group.multiline > 0) {
         parent.current = true;
       }
-    } else if (group !== undefined && item.token !== undefined && item.text === ',') {
+    } else if (
+      group !== undefined &&
+      item.token !== undefined &&
+      item.text === ','
+    ) {
       finish(group);
       group.starts.push(k + 1);
     }
@@ -1503,7 +1522,7 @@ function reflowComments(
       ) {
         end += 1;
       }
-      const texts = lines.slice(i, end).map(block => block.pieces[0].text);
+      const texts = lines.slice(i, end).map((block) => block.pieces[0].text);
       reflow(texts, limit - line.indent).forEach((text, n) =>
         out.push({
           blank: n === 0 ? line.blank : 0,
@@ -1553,8 +1572,7 @@ function reflowLines(texts: string[], width: number): string[] {
       return [content, undefined];
     }
     // no break before a `//` inside the comment: its line would start `////`
-    const breaks = (at: number) =>
-      at > 0 && !content.startsWith('//', at + 1);
+    const breaks = (at: number) => at > 0 && !content.startsWith('//', at + 1);
     let at = content.lastIndexOf(' ', width - marker.length);
     while (at > 0 && !breaks(at)) {
       at = content.lastIndexOf(' ', at - 1);
@@ -1700,7 +1718,7 @@ function alignTrailingComments(lines: PhysicalLine[], spaces: number): void {
     }
 
     const group = lines.slice(i, end);
-    const column = Math.max(...group.map(line => width(line) as number));
+    const column = Math.max(...group.map((line) => width(line) as number));
     for (const line of group) {
       line.pieces[line.pieces.length - 1].sep =
         column + spaces - (width(line) as number);
@@ -1731,12 +1749,15 @@ function sameContent(
   // reflowed comments keep their words, not their lines
   const commentsOf = (list: Token[], trailing: Comment[]) => {
     const comments = list
-      .flatMap(token => token.leadingComments ?? [])
+      .flatMap((token) => token.leadingComments ?? [])
       .concat(trailing)
-      .map(comment => comment.text.trimEnd());
+      .map((comment) => comment.text.trimEnd());
     return reflowed
-      ? comments.flatMap(comment =>
-          comment.replace(/^\/\//, '').split(/\s+/).filter(word => word !== ''),
+      ? comments.flatMap((comment) =>
+          comment
+            .replace(/^\/\//, '')
+            .split(/\s+/)
+            .filter((word) => word !== ''),
         )
       : comments;
   };
@@ -1744,10 +1765,7 @@ function sameContent(
   for (let i = 0; i < tokens.length; i += 1) {
     const before = tokens[i];
     const after = scanned.tokens[i];
-    if (
-      before.type !== after.type ||
-      texts[i] !== after.lexeme
-    ) {
+    if (before.type !== after.type || texts[i] !== after.lexeme) {
       return `token ${before.lexeme} at ${before.start.line + 1}:${
         before.start.character + 1
       }`;
@@ -1800,7 +1818,9 @@ function edits(
 
     const newText = text.slice(outStart, outEnd);
     if (source.slice(offset(sourceStart), offset(sourceEnd)) !== newText) {
-      result.push(TextEdit.replace({ start: sourceStart, end: sourceEnd }, newText));
+      result.push(
+        TextEdit.replace({ start: sourceStart, end: sourceEnd }, newText),
+      );
     }
 
     if (i < tokens.length && texts[i] !== tokens[i].lexeme) {

@@ -206,7 +206,7 @@ describe('document service', () => {
     const docs = ['example 1', 'example 2', 'example 3', 'example 4'];
     let i = 0;
 
-    docService.on('change', document => {
+    docService.on('change', (document) => {
       expect(serverDocs.size).toBe(0);
       expect(clientDocs.size).toBe(i + 1);
       expect(document.uri).toBe(uris[i].toString());
@@ -343,7 +343,7 @@ describe('document service', () => {
 
     let first = true;
 
-    docService.on('change', document => {
+    docService.on('change', (document) => {
       if (first) {
         expect(document.uri).toBe(uri.toString());
         expect(document.getText()).toBe(content);
@@ -373,7 +373,7 @@ describe('document service', () => {
       }
     });
 
-    docService.on('close', closeUri => {
+    docService.on('close', (closeUri) => {
       expect(closeUri).toBe(uri.toString());
 
       expect(serverDocs.size).toBe(1);
@@ -499,7 +499,7 @@ describe('document service', () => {
       const configContents = '{ "example": "example" }';
       const configUri = URI.file('/example/folder/ksconfig.json');
 
-      docService.on('configChange', text => {
+      docService.on('configChange', (text) => {
         expect(text.getText()).toBe(configContents);
       });
 
@@ -546,10 +546,13 @@ describe('document service', () => {
       ];
       docService['clientConfigDoc'] = configDoc;
 
-      docService.on('configChange', document => {
+      docService.on('configChange', (document) => {
         expect(document.getText()).toBe(
           TextDocument.applyEdits(configDoc, [
-            { range: (edits[0] as { range: Range }).range, newText: edits[0].text },
+            {
+              range: (edits[0] as { range: Range }).range,
+              newText: edits[0].text,
+            },
           ]),
         );
       });
@@ -582,7 +585,7 @@ describe('document service', () => {
       const subConfigUri = URI.file('/example/folder/sub/ksconfig.json');
       const configUri = URI.file('/example/folder/ksconfig.json');
 
-      const changed = new Promise<TextDocument>(resolve =>
+      const changed = new Promise<TextDocument>((resolve) =>
         docService.once('configChange', resolve),
       );
 

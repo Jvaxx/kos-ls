@@ -7,7 +7,9 @@ describe('RST to Markdown', () => {
       convertInline(
         'A :struct:`Vessel`, :attr:`~Vessel:MASS`, :ref:`parts <parts and modules>`, ``SHIP``, :math:`x^2` and `site <https://x.org>`_',
       ),
-    ).toBe('A `Vessel`, `MASS`, parts, `SHIP`, $x^2$ and [site](https://x.org)');
+    ).toBe(
+      'A `Vessel`, `MASS`, parts, `SHIP`, $x^2$ and [site](https://x.org)',
+    );
     expect(convertInline(':meth:`String:MATCHESPATTERN`\\ .')).toBe(
       '`String:MATCHESPATTERN`.',
     );
@@ -74,7 +76,9 @@ describe('RST extraction', () => {
       name: 'PARTSNAMED',
       params: [{ name: 'name', optional: false, variadic: false }],
     });
-    expect(parseSignature('GeoCoordinates:ALTITUDEPOSITION (altitude)')).toMatchObject({
+    expect(
+      parseSignature('GeoCoordinates:ALTITUDEPOSITION (altitude)'),
+    ).toMatchObject({
       name: 'ALTITUDEPOSITION',
       params: [{ name: 'altitude' }],
     });
@@ -146,7 +150,9 @@ describe('RST extraction', () => {
     // a member without prefix belongs to the current structure
     expect(engine.members.get('PARTSNAMED')).toMatchObject({
       returns: ':struct:`List` of :struct:`Part` objects',
-      params: [{ name: 'name', type: ':struct:`String`', doc: 'Name of the parts' }],
+      params: [
+        { name: 'name', type: ':struct:`String`', doc: 'Name of the parts' },
+      ],
       doc: 'Parts with this name.',
     });
   });
@@ -177,7 +183,12 @@ describe('RST extraction', () => {
       [{ name: 'a', optional: false, variadic: false }],
       [
         { name: 'a', optional: false, variadic: false, type: 'number' },
-        { name: 'b', optional: false, variadic: false, type: ':struct:`Scalar`' },
+        {
+          name: 'b',
+          optional: false,
+          variadic: false,
+          type: ':struct:`Scalar`',
+        },
       ],
     ]);
     expect(model.functions.get('ROUND')![1].returns).toBe('(number) rounded');

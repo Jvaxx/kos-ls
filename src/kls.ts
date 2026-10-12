@@ -37,7 +37,10 @@ import {
 } from 'vscode-languageserver';
 import { DiskUsage, usageDetails, usageSummary } from './analysis/diskSize';
 import { relative } from 'path';
-import { semanticTokens, semanticTokensLegend } from './services/semanticTokens';
+import {
+  semanticTokens,
+  semanticTokensLegend,
+} from './services/semanticTokens';
 import { codeActions } from './services/codeActions';
 import { ClientConfiguration, IClientCapabilities } from './types';
 import { KsSymbolKind, SymbolTracker, KsBaseSymbol } from './analysis/types';
@@ -72,10 +75,7 @@ import { FormatOptions } from './formatter/options';
 import { cleanDiagnostic } from './utilities/clean';
 import { IType, TypeKind } from './typeChecker/types';
 import { FoldableService } from './services/foldableService';
-import {
-  AnalysisService,
-  DiagnosticsByUri,
-} from './services/analysisService';
+import { AnalysisService, DiagnosticsByUri } from './services/analysisService';
 import { IFindResult } from './parser/types';
 import { ResolverService } from './services/resolverService';
 import { WorkspaceConfiguration } from './config/models/workspaceConfiguration';
@@ -249,7 +249,9 @@ export class KLS {
    */
   private track(operation: Promise<unknown>): void {
     const settled = operation
-      .catch((err) => logException(this.logger, this.tracer, err, LogLevel.error))
+      .catch((err) =>
+        logException(this.logger, this.tracer, err, LogLevel.error),
+      )
       .finally(() => this.pending.delete(settled));
     this.pending.add(settled);
   }
@@ -269,7 +271,6 @@ export class KLS {
    * Start the language server listening to requests from the client
    */
   public listen(): void {
-
     this.connection.onInitialize(this.onInitialize.bind(this));
     this.connection.onInitialized((params) => {
       this.track(this.onInitialized(params));
@@ -339,12 +340,14 @@ export class KLS {
       hasConfiguration: false,
       hasWorkspaceFolder: false,
     };
-    const serverConfiguration: Partial<Writeable<
-      Pick<
-        ServerConfiguration,
-        'clientCapability' | 'workspaceFolder' | 'workspaceUri'
+    const serverConfiguration: Partial<
+      Writeable<
+        Pick<
+          ServerConfiguration,
+          'clientCapability' | 'workspaceFolder' | 'workspaceUri'
+        >
       >
-    >> = {
+    > = {
       clientCapability,
     };
 
@@ -352,8 +355,8 @@ export class KLS {
     clientCapability.hasConfiguration = !!capabilities.workspace?.configuration;
 
     // does the client support workspace folders
-    clientCapability.hasWorkspaceFolder = !!capabilities.workspace
-      ?.workspaceFolders;
+    clientCapability.hasWorkspaceFolder =
+      !!capabilities.workspace?.workspaceFolders;
 
     // can file watchers be registered
     clientCapability.hasWatchedFiles =
@@ -464,7 +467,7 @@ export class KLS {
 
     // register workspace changes
     if (clientCapability.hasWorkspaceFolder) {
-      this.connection.workspace.onDidChangeWorkspaceFolders(_ => {
+      this.connection.workspace.onDidChangeWorkspaceFolders((_) => {
         // TODO dump all documents
         this.logger.log('Workspace folder change event received.');
       });
@@ -796,7 +799,7 @@ export class KLS {
       // which some clients show as a prompt that waits for an answer
       this.logFailure(
         this.connection.sendNotification(ShowMessageNotification.type, {
-        type: MessageType.Info,
+          type: MessageType.Info,
           message: usageDetails(usage, name),
         }),
       );
@@ -1024,7 +1027,9 @@ export class KLS {
   private clearExcluded(uri: string): void {
     const { workspaceConfiguration } = this.configurationService;
     if (workspaceConfiguration.isExcluded(URI.parse(uri))) {
-      this.logFailure(this.connection.sendDiagnostics({ uri, diagnostics: [] }));
+      this.logFailure(
+        this.connection.sendDiagnostics({ uri, diagnostics: [] }),
+      );
     }
   }
 
@@ -1033,22 +1038,21 @@ export class KLS {
    * have configurations then return the default configurations.
    */
   private async getClientSettings(): Promise<ClientConfiguration> {
-    const {
-      clientCapability,
-      workspaceUri,
-    } = this.configurationService.serverConfiguration;
+    const { clientCapability, workspaceUri } =
+      this.configurationService.serverConfiguration;
 
     if (!clientCapability.hasConfiguration) {
       return defaultClientConfiguration;
     }
 
     const sections = [serverName, ...legacyServerNames];
-    const settings: unknown[] = await this.connection.workspace.getConfiguration(
-      sections.map((section) => ({
-        scopeUri: workspaceUri?.toString(),
-        section,
-      })),
-    );
+    const settings: unknown[] =
+      await this.connection.workspace.getConfiguration(
+        sections.map((section) => ({
+          scopeUri: workspaceUri?.toString(),
+          section,
+        })),
+      );
 
     const found = settings.find(
       (setting) => typeof setting === 'object' && setting !== null,
@@ -1306,5 +1310,4 @@ export class KLS {
 
     return undefined;
   }
-
 }

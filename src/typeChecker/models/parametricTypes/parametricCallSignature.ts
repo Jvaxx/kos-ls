@@ -121,7 +121,7 @@ export class GenericCallSignature implements IParametricCallSignature {
       throw new Error('Parameters not set');
     }
 
-    return this.paramMaps.map(p => p.type);
+    return this.paramMaps.map((p) => p.type);
   }
 
   /**
@@ -198,7 +198,7 @@ export class GenericCallSignature implements IParametricCallSignature {
       );
     }
 
-    const paramsStr = this.paramMaps.map(p => p.type.toString()).join(', ');
+    const paramsStr = this.paramMaps.map((p) => p.type.toString()).join(', ');
     return `(${paramsStr}) => ${this.returnMaps.type.toString()}`;
   }
 }

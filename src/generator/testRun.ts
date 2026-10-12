@@ -6,7 +6,11 @@ import { Parser } from '../parser/parser';
 import { INodeResult, IExpr } from '../parser/types';
 import { Diagnostic } from 'vscode-languageserver';
 
-const generator = new Generator({ active: false, rate: 0 }, consoleLogger, consoleTracer);
+const generator = new Generator(
+  { active: false, rate: 0 },
+  consoleLogger,
+  consoleTracer,
+);
 // scan source file
 const scan = (source: string) => {
   const scanner = new Scanner(source);
@@ -14,7 +18,9 @@ const scan = (source: string) => {
 };
 
 // parse source
-const parseExpression = (source: string): [INodeResult<IExpr>, Diagnostic[]] => {
+const parseExpression = (
+  source: string,
+): [INodeResult<IExpr>, Diagnostic[]] => {
   const { tokens, diagnostics: scanErrors } = scan(source);
   const parser = new Parser('', tokens);
   return [parser.parseExpression(), scanErrors];
@@ -34,11 +40,10 @@ while (true) {
       const [{ errors }, scanErrors] = parseExpression(source);
       if (errors.length > 0 || scanErrors.length > 0) {
         console.log('Source: ', source);
-        errors.map(error => console.log('Parse Error: ', error));
-        scanErrors.map(error => console.log('Parse Error: ', error));
+        errors.map((error) => console.log('Parse Error: ', error));
+        scanErrors.map((error) => console.log('Parse Error: ', error));
         process.exit();
       }
-
     } catch (err) {
       console.log(err);
     }

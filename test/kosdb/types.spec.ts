@@ -1,4 +1,8 @@
-import { csharpType, documentationType, splitGeneric } from '../../tools/kos-db/types';
+import {
+  csharpType,
+  documentationType,
+  splitGeneric,
+} from '../../tools/kos-db/types';
 import { CamelCase, deepMerge } from '../../tools/kos-db/merge';
 
 /**
@@ -43,24 +47,34 @@ describe('kOS database types', () => {
 
   describe('C# types', () => {
     test('maps classes and primitives to kOS structures', () => {
-      expect(csharpType('ListValue<PartValue>', resolve)).toEqual({ type: 'List<Part>' });
-      expect(csharpType('kOS.Suffixed.TimeStamp', resolve)).toEqual({ type: 'TimeStamp' });
+      expect(csharpType('ListValue<PartValue>', resolve)).toEqual({
+        type: 'List<Part>',
+      });
+      expect(csharpType('kOS.Suffixed.TimeStamp', resolve)).toEqual({
+        type: 'TimeStamp',
+      });
       expect(csharpType('double', resolve)).toEqual({ type: 'Scalar' });
       expect(csharpType('bool', resolve)).toEqual({ type: 'Boolean' });
       expect(csharpType('object', resolve)).toEqual({ type: 'Structure' });
     });
 
     test('keeps generic parameters in scope and only element types', () => {
-      expect(csharpType('ListValue<T>', resolve, ['T'])).toEqual({ type: 'List<T>' });
+      expect(csharpType('ListValue<T>', resolve, ['T'])).toEqual({
+        type: 'List<T>',
+      });
       // CollectionValue<T, C>: the container type is left out
-      expect(csharpType('ListValue<PartValue, List<PartValue>>', resolve)).toEqual({
+      expect(
+        csharpType('ListValue<PartValue, List<PartValue>>', resolve),
+      ).toEqual({
         type: 'List<Part>',
       });
     });
 
     test('reports unknown names, except generic method parameters', () => {
       expect(csharpType('Widget', resolve)).toEqual({ unknown: 'Widget' });
-      expect(csharpType('ListValue<Widget>', resolve)).toEqual({ unknown: 'Widget' });
+      expect(csharpType('ListValue<Widget>', resolve)).toEqual({
+        unknown: 'Widget',
+      });
       expect(csharpType('TValue', resolve)).toEqual({ type: 'Structure' });
     });
   });
@@ -72,36 +86,50 @@ describe('kOS database types', () => {
         unknown: [],
       });
       expect(
-        documentationType(':struct:`List` of :struct:`Part` objects', resolve).type,
+        documentationType(':struct:`List` of :struct:`Part` objects', resolve)
+          .type,
       ).toBe('List<Part>');
-      expect(documentationType(':struct:`List <list>` of strings', resolve).type).toBe(
-        'List<String>',
+      expect(
+        documentationType(':struct:`List <list>` of strings', resolve).type,
+      ).toBe('List<String>');
+      expect(documentationType('List<Scalar>', resolve).type).toBe(
+        'List<Scalar>',
       );
-      expect(documentationType('List<Scalar>', resolve).type).toBe('List<Scalar>');
       expect(documentationType('number', resolve).type).toBe('Scalar');
     });
 
     test('reads alternatives and units', () => {
-      expect(documentationType(':struct:`Vessel` or :struct:`Boolean`', resolve).type).toBe(
-        'Vessel | Boolean',
-      );
       expect(
-        documentationType(':struct:`DockingPort`, or the :struct:`String` "None" if none', resolve)
+        documentationType(':struct:`Vessel` or :struct:`Boolean`', resolve)
           .type,
+      ).toBe('Vessel | Boolean');
+      expect(
+        documentationType(
+          ':struct:`DockingPort`, or the :struct:`String` "None" if none',
+          resolve,
+        ).type,
       ).toBe('DockingPort | String');
       expect(documentationType(':struct:`Scalar` (m/s)', resolve)).toEqual({
         type: 'Scalar',
         units: 'm/s',
         unknown: [],
       });
-      expect(documentationType(':struct:`Scalar` (deg)', resolve).units).toBe('deg');
+      expect(documentationType(':struct:`Scalar` (deg)', resolve).units).toBe(
+        'deg',
+      );
       expect(documentationType('Scalar in seconds', resolve).units).toBe('s');
     });
 
     test('ignores prose around the type', () => {
-      expect(documentationType('A position :struct:`Vector`', resolve).type).toBe('Vector');
-      expect(documentationType(':struct:`Scalar`. range = [0,1]', resolve).type).toBe('Scalar');
-      expect(documentationType(':struct:`Vector` - the position', resolve).type).toBe('Vector');
+      expect(
+        documentationType('A position :struct:`Vector`', resolve).type,
+      ).toBe('Vector');
+      expect(
+        documentationType(':struct:`Scalar`. range = [0,1]', resolve).type,
+      ).toBe('Scalar');
+      expect(
+        documentationType(':struct:`Vector` - the position', resolve).type,
+      ).toBe('Vector');
     });
 
     test('reports unknown structures without guessing', () => {
@@ -179,9 +207,12 @@ describe('kOS database types', () => {
 
     test('match keys case-insensitively', () => {
       expect(
-        deepMerge({ suffixes: { reBoot: { access: 'call', type: 'None' } } }, {
-          suffixes: { reboot: { type: 'Boolean' } },
-        }),
+        deepMerge(
+          { suffixes: { reBoot: { access: 'call', type: 'None' } } },
+          {
+            suffixes: { reboot: { type: 'Boolean' } },
+          },
+        ),
       ).toEqual({ suffixes: { reBoot: { access: 'call', type: 'Boolean' } } });
     });
   });

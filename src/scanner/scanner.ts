@@ -13,7 +13,10 @@ import { Token, Comment } from '../models/token';
 import { empty } from '../utilities/typeGuards';
 import { mockLogger, mockTracer, logException } from '../models/logger';
 import { DiagnosticSeverity } from 'vscode-languageserver';
-import { DIAGNOSTICS, createDiagnosticUri } from '../utilities/diagnosticsUtils';
+import {
+  DIAGNOSTICS,
+  createDiagnosticUri,
+} from '../utilities/diagnosticsUtils';
 import { MutableMarker, Marker } from './models/marker';
 import { DirectiveTokens } from '../directives/types';
 import { DiagnosticUri } from '../types';
@@ -274,7 +277,10 @@ export class Scanner {
       text,
       range: {
         start: startPosition,
-        end: new Marker(startPosition.line, startPosition.character + text.length),
+        end: new Marker(
+          startPosition.line,
+          startPosition.character + text.length,
+        ),
       },
       trailing: startPosition.line === this.lastTokenLine,
     });
@@ -615,7 +621,7 @@ export class Scanner {
         range: {
           start: this.startPosition.toImmutable(),
           end: this.currentPosition.toImmutable(),
-        }
+        },
       },
       message,
       DiagnosticSeverity.Error,

@@ -36,7 +36,10 @@ describe('Formatter options lookup', () => {
 
   test('.kos-format wins over ksconfig.json in the same directory', () => {
     writeFileSync(join(root, 'a', '.kos-format'), '{ "KeywordCase": "Upper" }');
-    writeFileSync(join(root, 'a', 'ksconfig.json'), '{ "format": { "IndentWidth": 8 } }');
+    writeFileSync(
+      join(root, 'a', 'ksconfig.json'),
+      '{ "format": { "IndentWidth": 8 } }',
+    );
     expect(findFormatOptions(join(root, 'a', 'x.ks')).options).toEqual({
       KeywordCase: 'Upper',
     });

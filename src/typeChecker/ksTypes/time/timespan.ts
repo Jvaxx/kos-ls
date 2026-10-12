@@ -1,4 +1,3 @@
-import { createType } from "../../utilities/typeCreators";
+import { createType } from '../../utilities/typeCreators';
 
 export const timeSpanType = createType('TimeSpan');
-

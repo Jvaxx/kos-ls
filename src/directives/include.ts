@@ -9,9 +9,7 @@ import { DiagnosticSeverity } from 'vscode-languageserver';
 import { DirectiveTokens } from './types';
 
 type IncludeTypes =
-  | TokenType.string
-  | TokenType.identifier
-  | TokenType.fileIdentifier;
+  TokenType.string | TokenType.identifier | TokenType.fileIdentifier;
 
 export class Include {
   /**

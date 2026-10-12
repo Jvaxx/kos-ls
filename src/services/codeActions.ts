@@ -174,7 +174,13 @@ async function clobberBuiltin(
   );
   if (!empty(rename)) {
     actions.push(
-      quickFix(context, diagnostic, `Rename ${name} to ${newName}`, rename, true),
+      quickFix(
+        context,
+        diagnostic,
+        `Rename ${name} to ${newName}`,
+        rename,
+        true,
+      ),
     );
   }
 

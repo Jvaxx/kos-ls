@@ -24,7 +24,9 @@ export class FlowUnionType extends UnionType {
    * @param type the type to check against
    */
   public isSubtypeOf(type: IParametricType): boolean {
-    return type === this || this.types.some(member => member.isSubtypeOf(type));
+    return (
+      type === this || this.types.some((member) => member.isSubtypeOf(type))
+    );
   }
 
   /**
@@ -64,7 +66,7 @@ export class FlowUnionType extends UnionType {
    * The types, the one at the use first
    */
   public toString(): string {
-    return this.types.map(type => type.toString()).join(' or ');
+    return this.types.map((type) => type.toString()).join(' or ');
   }
 }
 

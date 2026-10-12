@@ -105,7 +105,10 @@ export class SymbolTableBuilder {
    * @param uri the file uri
    * @param logger a logger object
    */
-  constructor(public readonly uri: string, logger: ILogger = mockLogger) {
+  constructor(
+    public readonly uri: string,
+    logger: ILogger = mockLogger,
+  ) {
     this.logger = logger;
     this.global = new Environment();
     this.rootNode = {
@@ -389,12 +392,12 @@ export class SymbolTableBuilder {
       );
       diagnostic =
         empty(shadowTracker) || this.hidesBuiltin(shadowTracker)
-        ? undefined
-        : this.shadowSymbolHint(
-            token,
-            KsSymbolKind.variable,
-            shadowTracker.declared.symbol,
-          );
+          ? undefined
+          : this.shadowSymbolHint(
+              token,
+              KsSymbolKind.variable,
+              shadowTracker.declared.symbol,
+            );
     }
 
     const scopeNode = this.selectScopeNode(scopeKind);
@@ -455,12 +458,12 @@ export class SymbolTableBuilder {
       );
       diagnostic =
         empty(shadowTracker) || this.hidesBuiltin(shadowTracker)
-        ? undefined
-        : this.shadowSymbolHint(
-            token,
-            KsSymbolKind.function,
-            shadowTracker.declared.symbol,
-          );
+          ? undefined
+          : this.shadowSymbolHint(
+              token,
+              KsSymbolKind.function,
+              shadowTracker.declared.symbol,
+            );
     }
 
     const scopeNode = this.selectScopeNode(scopeKind);
@@ -527,12 +530,12 @@ export class SymbolTableBuilder {
       );
       diagnostic =
         empty(shadowTracker) || this.hidesBuiltin(shadowTracker)
-        ? undefined
-        : this.shadowSymbolHint(
-            token,
-            KsSymbolKind.lock,
-            shadowTracker.declared.symbol,
-          );
+          ? undefined
+          : this.shadowSymbolHint(
+              token,
+              KsSymbolKind.lock,
+              shadowTracker.declared.symbol,
+            );
     }
 
     const scopeNode = this.selectScopeNode(scopeKind);
@@ -590,12 +593,12 @@ export class SymbolTableBuilder {
       );
       diagnostic =
         empty(shadowTracker) || this.hidesBuiltin(shadowTracker)
-        ? undefined
-        : this.shadowSymbolHint(
-            token,
-            KsSymbolKind.parameter,
-            shadowTracker.declared.symbol,
-          );
+          ? undefined
+          : this.shadowSymbolHint(
+              token,
+              KsSymbolKind.parameter,
+              shadowTracker.declared.symbol,
+            );
     }
 
     const scopeNode = this.selectScopeNode(scopeKind);
