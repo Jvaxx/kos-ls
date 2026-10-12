@@ -65,6 +65,13 @@ describe('documentation', () => {
     expect(chained.value).toContain('(suffix) radius: Scalar');
   });
 
+  test('hover in the coordinates of print at', async () => {
+    client.open(file, 'print "x" at (0, terminal:height).\n');
+
+    const suffix = (await client.hover(file, 0, 26))!.contents as MarkupContent;
+    expect(suffix.value).toContain('(suffix) height: Scalar');
+  });
+
   test('signature help while a call is typed', async () => {
     client.open(file, 'local p is ship:partsnamed("x").\nprint heading(90, ');
 

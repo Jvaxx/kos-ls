@@ -983,6 +983,15 @@ export class TypeChecker
 
     this.checkGetter(stmt.expr, errors, result.type, structureType);
 
+    // the column and line of `print ... at (x, y)`
+    for (const coordinate of [stmt.x, stmt.y]) {
+      if (!empty(coordinate)) {
+        const coordinateResult = this.checkExpr(coordinate);
+        errors.push(...coordinateResult.errors);
+        this.checkGetter(coordinate, errors, coordinateResult.type, scalarType);
+      }
+    }
+
     return errors;
   }
 

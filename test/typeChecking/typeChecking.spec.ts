@@ -415,6 +415,11 @@ print(ship:control:neutralize).
 print(ship:control:resetTrim).
 `;
 
+const printAtSource = `
+print "x" at (0, terminal:heigth).
+print "x" at ("a", terminal:height).
+`;
+
 const noSetterSource = `
 set ship:up to v(1, 1, 1).
 
@@ -790,6 +795,20 @@ describe('typeChecker', () => {
           expect(errors).toHaveLength(1);
           expect(errors[0].code).toBe(DIAGNOSTICS.TYPE_MISSING_SUFFIX);
           expect(errors[0].range.start.line).toBe(2);
+        });
+      });
+
+      describe('print at', () => {
+        test('checks the column and line', () => {
+          const results = checkSource(printAtSource, true);
+          noResolverErrors(results);
+
+          const errors = results.typeCheckDiagnostics;
+          expect(errors.map((error) => error.code)).toEqual([
+            DIAGNOSTICS.TYPE_MISSING_SUFFIX,
+            DIAGNOSTICS.TYPE_WRONG,
+          ]);
+          expect(errors.map((error) => error.range.start.line)).toEqual([1, 2]);
         });
       });
 
