@@ -399,12 +399,12 @@ export class KLS {
         // Tell the client that the server supports code completion
         completionProvider: {
           resolveProvider: true,
-          triggerCharacters: [':', '(', ', '],
+          triggerCharacters: [':', '(', ','],
         },
 
         // Tell the client that the server support signature help
         signatureHelpProvider: {
-          triggerCharacters: ['(', ',', ', '],
+          triggerCharacters: ['(', ','],
         },
 
         // indicate other capabilities
