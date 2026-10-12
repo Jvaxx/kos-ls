@@ -276,8 +276,8 @@ export class DocumentService extends EventEmitter<DocumentEvents> {
       return this.onOpenFile(document);
     }
 
-    // emit change config if a ksconfig.json file was opened
-    if (document.uri.endsWith('ksconfig.json')) {
+    // emit change config if the workspace ksconfig.json was opened
+    if (this.isWorkspaceConfig(document.uri)) {
       return this.onOpenConfig(document);
     }
 
@@ -377,7 +377,7 @@ export class DocumentService extends EventEmitter<DocumentEvents> {
       return this.clientDocs.get(uri);
     }
 
-    if (uri.endsWith('ksconfig.json')) {
+    if (this.isWorkspaceConfig(uri)) {
       return this.clientConfigDoc || this.serverConfigDoc;
     }
 
@@ -404,7 +404,7 @@ export class DocumentService extends EventEmitter<DocumentEvents> {
       return this.emit('change', document);
     }
 
-    if (uri.endsWith('ksconfig.json')) {
+    if (this.isWorkspaceConfig(uri)) {
       // update cache
       this.clientConfigDoc = document;
 
@@ -445,14 +445,22 @@ export class DocumentService extends EventEmitter<DocumentEvents> {
       if (uri.endsWith('.ks') && !this.clientDocs.has(uri)) {
         this.serverDocs.delete(uri);
         this.emit('diskChange', uri);
-      } else if (
-        uri.endsWith(configFileName) &&
-        !empty(this.workspaceUri) &&
-        URI.parse(uri).fsPath ===
-          join(this.workspaceUri.fsPath, configFileName)
-      ) {
+      } else if (this.isWorkspaceConfig(uri)) {
         this.emit('configLoad', this.loadWorkspaceConfig());
       }
     }
+  }
+
+  /**
+   * Is this the ksconfig.json at the workspace root. A ksconfig.json in a
+   * subfolder is not the workspace configuration.
+   * @param uri file uri
+   */
+  private isWorkspaceConfig(uri: string): boolean {
+    return (
+      uri.endsWith(configFileName) &&
+      !empty(this.workspaceUri) &&
+      URI.parse(uri).fsPath === join(this.workspaceUri.fsPath, configFileName)
+    );
   }
 }

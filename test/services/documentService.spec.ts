@@ -562,6 +562,58 @@ describe('document service', () => {
         }),
       );
     });
+
+    test('when a config in a subfolder is opened', async () => {
+      const { client, server } = createMockConnection();
+      const files = new Map<string, string>();
+      const mockIoService = createMockIoService(files);
+
+      const baseUri = URI.file('/example/folder');
+
+      const docService = new DocumentService(
+        server,
+        mockIoService,
+        mockLogger,
+        mockTracer,
+        baseUri,
+      );
+      docService.listen();
+
+      const subConfigUri = URI.file('/example/folder/sub/ksconfig.json');
+      const configUri = URI.file('/example/folder/ksconfig.json');
+
+      const changed = new Promise<TextDocument>(resolve =>
+        docService.once('configChange', resolve),
+      );
+
+      // only the root config is the workspace config: the first event
+      // must come from it, not from the subfolder's
+      void client.sendNotification(
+        DidOpenTextDocumentNotification.type,
+        mockOpenDocNotification({
+          uri: subConfigUri.toString(),
+          text: '{ "sub": true }',
+        }),
+      );
+      void client.sendNotification(
+        DidChangeTextDocumentNotification.type,
+        mockChangeDocNotification({
+          uri: subConfigUri.toString(),
+          contentChanges: [{ text: '{ "sub": false }' }],
+        }),
+      );
+      void client.sendNotification(
+        DidOpenTextDocumentNotification.type,
+        mockOpenDocNotification({
+          uri: configUri.toString(),
+          text: '{ "root": true }',
+        }),
+      );
+
+      const document = await changed;
+      expect(document.uri).toBe(configUri.toString());
+      expect(document.getText()).toBe('{ "root": true }');
+    });
   });
 
   test('cacheDocument works', async () => {
