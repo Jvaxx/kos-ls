@@ -566,49 +566,55 @@ export class KLS {
     positionParams: TextDocumentPositionParams,
     cancellation: CancellationToken,
   ): Promise<Maybe<SignatureHelp>> {
-    const { position } = positionParams;
-    const { uri } = positionParams.textDocument;
+    try {
+      const { position } = positionParams;
+      const { uri } = positionParams.textDocument;
 
-    // exit if cancel requested
-    if (cancellation.isCancellationRequested) {
+      // exit if cancel requested
+      if (cancellation.isCancellationRequested) {
+        return undefined;
+      }
+
+      const result = await this.getFunctionAtPosition(position, uri);
+      if (empty(result)) {
+        return undefined;
+      }
+
+      const { tracker, index } = result;
+
+      const type = tracker.getType({
+        uri,
+        range: { start: position, end: position },
+      });
+
+      if (
+        empty(type) ||
+        (type.kind !== TypeKind.function && type.kind !== TypeKind.suffix) ||
+        empty(type.callSignature())
+      ) {
+        return undefined;
+      }
+
+      const { symbol, uri: declaredUri } = tracker.declared;
+      const { name, docs } = symbolDocs(symbol, declaredUri, type);
+      const signature = signatureInformation(name, type, docs);
+
+      // every argument past a variadic parameter is that parameter
+      const count = signature.parameters?.length ?? 0;
+      const params = type.callSignature()!.params();
+      const variadic =
+        params.length > 0 &&
+        params[params.length - 1].kind === TypeKind.variadic;
+
+      return {
+        signatures: [signature],
+        activeParameter: variadic ? Math.min(index, count - 1) : index,
+        activeSignature: 0,
+      };
+    } catch (err) {
+      logException(this.logger, this.tracer, err, LogLevel.error);
       return undefined;
     }
-
-    const result = await this.getFunctionAtPosition(position, uri);
-    if (empty(result)) {
-      return undefined;
-    }
-
-    const { tracker, index } = result;
-
-    const type = tracker.getType({
-      uri,
-      range: { start: position, end: position },
-    });
-
-    if (
-      empty(type) ||
-      (type.kind !== TypeKind.function && type.kind !== TypeKind.suffix) ||
-      empty(type.callSignature())
-    ) {
-      return undefined;
-    }
-
-    const { symbol, uri: declaredUri } = tracker.declared;
-    const { name, docs } = symbolDocs(symbol, declaredUri, type);
-    const signature = signatureInformation(name, type, docs);
-
-    // every argument past a variadic parameter is that parameter
-    const count = signature.parameters?.length ?? 0;
-    const params = type.callSignature()!.params();
-    const variadic =
-      params.length > 0 && params[params.length - 1].kind === TypeKind.variadic;
-
-    return {
-      signatures: [signature],
-      activeParameter: variadic ? Math.min(index, count - 1) : index,
-      activeSignature: 0,
-    };
   }
 
   /**
@@ -621,19 +627,27 @@ export class KLS {
     params: InlayHintParams,
     cancellation: CancellationToken,
   ): Promise<Maybe<InlayHint[]>> {
-    // exit if cancel requested
-    if (cancellation.isCancellationRequested) {
+    try {
+      // exit if cancel requested
+      if (cancellation.isCancellationRequested) {
+        return undefined;
+      }
+
+      const documentInfo = await this.analysisService.loadInfo(
+        params.textDocument.uri,
+      );
+      if (empty(documentInfo)) {
+        return undefined;
+      }
+
+      return typeInlayHints(
+        documentInfo.lexicalInfo.script.stmts,
+        params.range,
+      );
+    } catch (err) {
+      logException(this.logger, this.tracer, err, LogLevel.error);
       return undefined;
     }
-
-    const documentInfo = await this.analysisService.loadInfo(
-      params.textDocument.uri,
-    );
-    if (empty(documentInfo)) {
-      return undefined;
-    }
-
-    return typeInlayHints(documentInfo.lexicalInfo.script.stmts, params.range);
   }
 
   /**
@@ -869,25 +883,30 @@ export class KLS {
     foldingParams: FoldingRangeParams,
     cancellation: CancellationToken,
   ): Promise<Maybe<FoldingRange[]>> {
-    const { uri } = foldingParams.textDocument;
+    try {
+      const { uri } = foldingParams.textDocument;
 
-    // exit if cancel requested
-    if (cancellation.isCancellationRequested) {
+      // exit if cancel requested
+      if (cancellation.isCancellationRequested) {
+        return undefined;
+      }
+
+      const documentInfo = await this.analysisService.loadInfo(uri);
+
+      // exit if cancel requested or no document found
+      if (cancellation.isCancellationRequested || empty(documentInfo)) {
+        return undefined;
+      }
+
+      const { script, directives } = documentInfo.lexicalInfo;
+      return this.foldableService.findRegions(script, [
+        ...directives.region,
+        ...directives.endRegion,
+      ]);
+    } catch (err) {
+      logException(this.logger, this.tracer, err, LogLevel.error);
       return undefined;
     }
-
-    const documentInfo = await this.analysisService.loadInfo(uri);
-
-    // exit if cancel requested or no document found
-    if (cancellation.isCancellationRequested || empty(documentInfo)) {
-      return undefined;
-    }
-
-    const { script, directives } = documentInfo.lexicalInfo;
-    return this.foldableService.findRegions(script, [
-      ...directives.region,
-      ...directives.endRegion,
-    ]);
   }
 
   /**
