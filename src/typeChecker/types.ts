@@ -430,6 +430,12 @@ export interface IParametricCallSignature
  */
 export interface ICallSignature extends IParametricCallSignature {
   /**
+   * Whether this is the signature of a function declared in a script,
+   * whose parameters are known for certain
+   */
+  userDefined: boolean;
+
+  /**
    * The types of the parameters
    */
   params(): IType[];

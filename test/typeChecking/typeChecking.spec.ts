@@ -462,6 +462,14 @@ const tooFewOptionalArgsSource = 'heading(10).';
 
 const wrongTypeArgsSource = 'ceiling("10").';
 
+const userArityArgsSource = `
+function two { parameter a, b is 1. print a + b. }
+two().
+two(1, 2, 3).
+local d is two@.
+d().
+`;
+
 const structureCallSource = `
 function example {
   parameter a.
@@ -948,6 +956,25 @@ describe('typeChecker', () => {
             expect(error.range.end).toEqual({ line: 0, character: 11 });
             expect(error.code).toBe(DIAGNOSTICS.TYPE_WRONG_ARITY);
           });
+        });
+      });
+
+      describe('when a function of the script', () => {
+        test('it produces TYPE_WRONG_ARITY_USER diagnostics', () => {
+          const results = checkSource(userArityArgsSource, true);
+          noResolverErrors(results);
+
+          const errors = results.typeCheckDiagnostics.sort(
+            (a, b) => a.range.start.line - b.range.start.line,
+          );
+          expect(errors.map(e => [e.range.start.line, e.message])).toEqual([
+            [2, 'Call expected 1 required parameters but was called with 0 arguments'],
+            [3, 'Call expected 2 parameters but was called with 3 arguments'],
+            [5, 'Call expected 1 required parameters but was called with 0 arguments'],
+          ]);
+          for (const error of errors) {
+            expect(error.code).toBe(DIAGNOSTICS.TYPE_WRONG_ARITY_USER);
+          }
         });
       });
 

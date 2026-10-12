@@ -200,7 +200,8 @@ The `type-checking` grouping are rules related to types in kerboscript. This inc
 |--|--|--|
 |type-wrong|This applies to situations where the type checker determines the wrong type|hint|
 |type-no-call|This applies to situations where the type checker determined the given type does not have a call signature|hint|
-|type-wrong-arity|This applies to situations where a function or delegate is called with the wrong number of arguments|hint|
+|type-wrong-arity|This applies to situations where a kOS function, suffix or delegate is called with the wrong number of arguments|hint|
+|type-wrong-arity-user|This applies to situations where a function declared in a script, or a delegate of one, is called with the wrong number of arguments|warning|
 |type-list-invalid|This applies to the list command when an invalid list string is given|hint|
 |type-no-indexer|This applies to situations where the type checker determined the given type does not have an indexer|warning|
 |type-missing|This applies to situations where the type checker cannot determine the type of a symbol where it is used|hint|

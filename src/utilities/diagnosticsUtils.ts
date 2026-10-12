@@ -112,6 +112,7 @@ export const DIAGNOSTICS = {
   TYPE_WRONG: 'type-wrong',
   TYPE_NO_CALL: 'type-no-call',
   TYPE_WRONG_ARITY: 'type-wrong-arity',
+  TYPE_WRONG_ARITY_USER: 'type-wrong-arity-user',
   TYPE_LIST_INVALID: 'type-list-invalid',
   TYPE_NO_INDEXER: 'type-no-indexer',
   TYPE_NOT_FUNCTION: 'type-not-function',

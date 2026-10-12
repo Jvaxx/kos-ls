@@ -327,6 +327,10 @@ export class TypeChecker
           ...paramsTypes,
         );
         funcType.docs = symbol.docs;
+        const signature = funcType.callSignature();
+        if (!empty(signature)) {
+          signature.userDefined = true;
+        }
 
         tracker.declareType(funcType);
       }
@@ -1367,6 +1371,9 @@ export class TypeChecker
     const errors: Diagnostics = [];
     const params = callSignature.params();
     const requiredCount = callSignature.requiredParams();
+    const arityCode = callSignature.userDefined
+      ? DIAGNOSTICS.TYPE_WRONG_ARITY_USER
+      : DIAGNOSTICS.TYPE_WRONG_ARITY;
 
     // check if we have provided too many arguments
     if (call.args.length > params.length) {
@@ -1378,7 +1385,7 @@ export class TypeChecker
           },
           `Call expected ${params.length} parameters but was called with ${call.args.length} arguments`,
           DiagnosticSeverity.Hint,
-          DIAGNOSTICS.TYPE_WRONG_ARITY,
+          arityCode,
         ),
       );
     }
@@ -1388,9 +1395,9 @@ export class TypeChecker
       errors.push(
         createDiagnostic(
           call.close,
-          `Call expected ${params.length} required parameters but was called with ${call.args.length} arguments`,
+          `Call expected ${requiredCount} required parameters but was called with ${call.args.length} arguments`,
           DiagnosticSeverity.Hint,
-          DIAGNOSTICS.TYPE_WRONG_ARITY,
+          arityCode,
         ),
       );
     }

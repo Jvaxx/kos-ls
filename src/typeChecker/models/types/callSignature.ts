@@ -21,6 +21,11 @@ export class CallSignature implements ICallSignature {
   private readonly returnType: IType;
 
   /**
+   * Whether this is the signature of a function declared in a script
+   */
+  public userDefined = false;
+
+  /**
    * Construct a new call signature
    * @param paramTypes call parameter types
    * @param returnType call return type

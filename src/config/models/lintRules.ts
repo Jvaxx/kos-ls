@@ -283,6 +283,12 @@ const lintTemplates: LintRule = {
           owned: [],
         },
         {
+          rule: 'type-wrong-arity-user',
+          level: 'warning',
+          diagnostics: [DIAGNOSTICS.TYPE_WRONG_ARITY_USER],
+          owned: [],
+        },
+        {
           rule: 'type-list-invalid',
           level: 'hint',
           diagnostics: [DIAGNOSTICS.TYPE_LIST_INVALID],

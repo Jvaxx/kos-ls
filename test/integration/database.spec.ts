@@ -1,6 +1,6 @@
 import { TestClient, workspaces } from './harness';
 import { join } from 'path';
-import { MarkupContent } from 'vscode-languageserver';
+import { DiagnosticSeverity, MarkupContent } from 'vscode-languageserver';
 
 const root = join(workspaces, 'archive');
 const file = 'src/scratch.ks';
@@ -126,14 +126,23 @@ describe('kOS database', () => {
       file,
       [
         'function two { parameter a, b. print a + b. }',
+        'function opt { parameter a, b is 1. print a + b. }',
         'two(1).',
         'two(1, 2, 3).',
+        'opt().',
       ].join('\n'),
     );
 
     expect(await client.messages(file)).toEqual([
-      '2:6 Call expected 2 required parameters but was called with 1 arguments',
-      '3:11 Call expected 2 parameters but was called with 3 arguments',
+      '3:6 Call expected 2 required parameters but was called with 1 arguments',
+      '4:11 Call expected 2 parameters but was called with 3 arguments',
+      '5:5 Call expected 1 required parameters but was called with 0 arguments',
+    ]);
+    const severities = (await client.diagnosticsFor(file)).map(d => d.severity);
+    expect(severities).toEqual([
+      DiagnosticSeverity.Warning,
+      DiagnosticSeverity.Warning,
+      DiagnosticSeverity.Warning,
     ]);
   });
 
