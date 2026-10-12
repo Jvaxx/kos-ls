@@ -200,7 +200,8 @@ exclude, lint rules), each file analysed with the scripts it runs.
 ```sh
 kos-ls check                    # the workspace of the current directory
 kos-ls check src/lib            # report only these files or directories
-kos-ls check --fail-on warning  # fail on warnings too (default: error)
+kos-ls check --fail-on warning  # fail on warnings too (default: error;
+                                # also info or hint)
 kos-ls check --root ~/Ships/Script
 ```
 
@@ -221,7 +222,9 @@ indentation, alone and with every file it runs (the preloaded files of
 685 B on disk (1323 B source) · 1353 B with the 2 files it runs
 ```
 
-Running the lens shows the size of each of those files. In Neovim 0.12:
+Running the lens (the `kos-ls.diskUsage` command, with the script's uri
+as argument) shows the size of each of those files, in a
+`window/showMessage` notification. In Neovim 0.12:
 
 ```lua
 vim.lsp.codelens.enable()                              -- show the lenses
@@ -232,12 +235,13 @@ The lens follows edits and the files a script runs (the server asks for
 a refresh, `workspace/codeLens/refresh`).
 
 `kos-ls size` prints the same for the whole workspace, or for files and
-directories:
+directories. The root is found as for `kos-ls check`:
 
 ```sh
 kos-ls size                     # every script of the workspace
 kos-ls size --files src/mission # with the files counted in each total
 kos-ls size --max 5000          # exit 1 when a total is larger
+kos-ls size --root ~/Ships/Script
 ```
 
 ```

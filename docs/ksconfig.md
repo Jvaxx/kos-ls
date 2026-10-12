@@ -114,13 +114,13 @@ This section is used to control the level linting rules are reported. Some rules
 {
   "linting": {
     "symbols-strict": "hint",
-    "invalid-break": "error",
+    "control-flow-break": "error",
     "parsing": "off",
   }
 }
 ```
 
-This will set all symbol lints to the hint level and and invalid break to error, and parsing errors off.
+This will set all symbol lints to the hint level and break outside a loop to error, and parsing errors off.
 
 ## Available Levels
 1. `"error"`
@@ -141,8 +141,8 @@ These rules are not part of a grouping other than `all` and represent an assortm
 
 |Name|Description|Default Level|
 |--|--|--|
-|scanner|This provides an error when an invalid token is encountered such as `variable$$$`|error|
-|parser|This provides an error when invalid syntax is encountered such as `set x to .`|error|
+|scanning|This provides an error when an invalid token is encountered such as `variable$$$`|error|
+|parsing|This provides an error when invalid syntax is encountered such as `set x to .`|error|
 |file-loading|This provides an error when the file cannot in a run statement|warning|
 |unreachable-code|This provides an error when code is unreachable. This typically occurs when a statement occurs after a break or return statement|error|
 |no-global-parameters|This provides an error when `global parameter example.` is used as globals. This will throw in kOS|error|
@@ -193,12 +193,22 @@ The `type-checking` grouping are rules related to types in kerboscript. This inc
 |type-wrong|This applies to situations where the type checker determines the wrong type|hint|
 |type-no-call|This applies to situations where the type checker determined the given type does not have a call signature|hint|
 |type-wrong-arity|This applies to situations where a function or delegate is called with the wrong number of arguments|hint|
-|type-list-invalid|This applies to the list command when an invalid list string is given|warning|
-|type-no-indexer|This applies to situations where the type checker determined the given type does not have an indexer|hint|
+|type-list-invalid|This applies to the list command when an invalid list string is given|hint|
+|type-no-indexer|This applies to situations where the type checker determined the given type does not have an indexer|warning|
+|type-missing|This applies to situations where the type checker cannot determine the type of a symbol where it is used|hint|
 |type-not-function|This applies to situations where a delegate is created from something other than a function|hint|
 |type-missing-suffix|This applies to situation where the type checker determines a given type does not have a given suffix|hint|
 |type-missing-operator|This applies to situations where the type checker determines a given type does not have the request binary or unary operator|hint|
 |type-no-setter|This applies to situation where the type checker determines a given type cannot be set|hint|
+|type-no-getter|This applies to situation where the type checker determines a given type cannot be read|hint|
 |type-unknown-in-doc|This applies to a type in a doc comment tag (`@param name {Type}`, `@return {Type}`) that names no kOS structure, or is malformed|warning|
+
+### **Directives**
+
+The `directives` grouping contains rules related to directive comments. Below are all child rules of `directives`.
+
+|Name|Description|Default Level|
+|--|--|--|
+|directive-invalid-include|This applies to a `// #include` directive that is not followed by a string or a bare path|info|
 
 
