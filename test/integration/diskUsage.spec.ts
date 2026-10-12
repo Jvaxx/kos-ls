@@ -118,4 +118,16 @@ describe('disk usage', () => {
     await client.executeCommand(diskUsageCommand);
     expect(client.shown).toEqual([]);
   });
+
+  test('an unknown document does nothing, with preloaded files', async () => {
+    write(
+      'ksconfig.json',
+      '{ "volumes": { "1": "src" }, "preload": ["src/lib.ks"] }\n',
+    );
+    client = await TestClient.start(root);
+    await client.settle();
+
+    await client.executeCommand(diskUsageCommand, client.uri('src/none.ks'));
+    expect(client.shown).toEqual([]);
+  });
 });

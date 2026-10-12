@@ -754,10 +754,13 @@ export class AnalysisService extends EventEmitter<AnalysisEvents> {
 
         // the preloaded files run first, but the script is the subject
         await visit(uri);
+        if (files.length === 0) {
+          return undefined;
+        }
         for (const preload of await this.preloadTargets(uri)) {
           await visit(preload);
         }
-        return files.length === 0 ? undefined : { files, unresolved };
+        return { files, unresolved };
       } catch (err) {
         logException(this.logger, this.tracer, err, LogLevel.error);
         return undefined;
