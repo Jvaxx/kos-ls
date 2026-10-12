@@ -882,8 +882,8 @@ export class TypeChecker
     errors.push(...volumeResult.errors);
     return errors;
   }
-  public visitRun(_: Stmt.Run): Diagnostics {
-    return [];
+  public visitRun(stmt: Stmt.Run): Diagnostics {
+    return this.checkValues([...(stmt.args ?? []), stmt.expr]);
   }
   public visitRunPath(stmt: Stmt.RunPath): Diagnostics {
     const pathResult = this.checkExpr(stmt.path);
@@ -895,6 +895,7 @@ export class TypeChecker
       pathResult.type,
       createUnion(false, stringType, kosType('Path')),
     );
+    errors.push(...this.checkValues(stmt.args ?? []));
 
     return errors;
   }
@@ -908,6 +909,7 @@ export class TypeChecker
       pathResult.type,
       createUnion(false, stringType, kosType('Path')),
     );
+    errors.push(...this.checkValues(stmt.args ?? []));
 
     return errors;
   }
@@ -989,6 +991,24 @@ export class TypeChecker
         const coordinateResult = this.checkExpr(coordinate);
         errors.push(...coordinateResult.errors);
         this.checkGetter(coordinate, errors, coordinateResult.type, scalarType);
+      }
+    }
+
+    return errors;
+  }
+
+  /**
+   * Check expressions read as values of any type, such as the arguments
+   * of a script
+   * @param exprs the expressions, missing ones skipped
+   */
+  private checkValues(exprs: Maybe<IExpr>[]): Diagnostics {
+    const errors: Diagnostics = [];
+    for (const expr of exprs) {
+      if (!empty(expr)) {
+        const result = this.checkExpr(expr);
+        errors.push(...result.errors);
+        this.checkGetter(expr, errors, result.type, structureType);
       }
     }
 

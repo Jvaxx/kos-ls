@@ -420,6 +420,12 @@ print "x" at (0, terminal:heigth).
 print "x" at ("a", terminal:height).
 `;
 
+const runArgumentsSource = `
+runpath("a", terminal:heigth).
+runoncepath("a", 1, terminal:heigth).
+run a(terminal:heigth).
+`;
+
 const noSetterSource = `
 set ship:up to v(1, 1, 1).
 
@@ -809,6 +815,22 @@ describe('typeChecker', () => {
             DIAGNOSTICS.TYPE_WRONG,
           ]);
           expect(errors.map((error) => error.range.start.line)).toEqual([1, 2]);
+        });
+      });
+
+      describe('run arguments', () => {
+        test('checks the arguments of a script', () => {
+          const results = checkSource(runArgumentsSource, true);
+
+          const errors = results.typeCheckDiagnostics;
+          expect(errors.map((error) => error.code)).toEqual([
+            DIAGNOSTICS.TYPE_MISSING_SUFFIX,
+            DIAGNOSTICS.TYPE_MISSING_SUFFIX,
+            DIAGNOSTICS.TYPE_MISSING_SUFFIX,
+          ]);
+          expect(errors.map((error) => error.range.start.line)).toEqual([
+            1, 2, 3,
+          ]);
         });
       });
 

@@ -65,11 +65,20 @@ describe('documentation', () => {
     expect(chained.value).toContain('(suffix) radius: Scalar');
   });
 
-  test('hover in the coordinates of print at', async () => {
-    client.open(file, 'print "x" at (0, terminal:height).\n');
+  test('hover in print at and in the arguments of a script', async () => {
+    const lines = [
+      'print "x" at (0, terminal:height).',
+      'runpath("a", terminal:height).',
+      'runoncepath("a", terminal:height).',
+    ];
+    client.open(file, lines.join('\n') + '\n');
 
-    const suffix = (await client.hover(file, 0, 26))!.contents as MarkupContent;
-    expect(suffix.value).toContain('(suffix) height: Scalar');
+    for (const [line, text] of lines.entries()) {
+      const hover = await client.hover(file, line, text.indexOf('height'));
+      expect((hover!.contents as MarkupContent).value).toContain(
+        '(suffix) height: Scalar',
+      );
+    }
   });
 
   test('signature help while a call is typed', async () => {
