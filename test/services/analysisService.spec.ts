@@ -438,6 +438,41 @@ describe('analysis service', () => {
     }
   });
 
+  test('clears the diagnostics of a deleted document', async () => {
+    const uri1 = URI.file('/example/folder/example1.ks').toString();
+    const uri2 = URI.file('/example/folder/example2.ks').toString();
+    const baseUri = URI.file('/example/folder').toString();
+
+    const documents = new Map([
+      [uri1, TextDocument.create(uri1, 'kos', 1.0, 'runOncePath("example2.ks").')],
+      [uri2, TextDocument.create(uri2, 'kos', 1.0, 'local unused is 1.')],
+    ]);
+    const docService = createMockDocumentService(documents);
+    const analysisService = new AnalysisService(
+      CaseKind.camelCase,
+      mockLogger,
+      mockTracer,
+      docService,
+      new ResolverService(baseUri),
+    );
+
+    await analysisService.analyzeDocument(uri1, documents.get(uri1)!.getText());
+    await analysisService.whenIdle();
+
+    const propagated: Map<string, DiagnosticUri[]>[] = [];
+    analysisService.on('propagate', diagnostics => propagated.push(diagnostics));
+
+    // example2.ks is deleted on disk
+    documents.delete(uri2);
+    analysisService.invalidateDocument(uri2);
+    await analysisService.whenIdle();
+
+    expect(propagated).toHaveLength(1);
+    expect(propagated[0].get(uri2)).toStrictEqual([]);
+    expect(propagated[0].get(uri1)).toHaveLength(1);
+    expect(analysisService.getInfo(uri2)).toBeUndefined();
+  });
+
   test('load directory', async () => {
     const { server } = createMockConnection();
     const ioService = new IoService();

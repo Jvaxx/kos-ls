@@ -470,10 +470,15 @@ export class AnalysisService extends EventEmitter<AnalysisEvents> {
 
     const pending = [...this.dirty, ...this.stale];
     const seen = new Set(pending);
+    const removed: string[] = [];
     while (pending.length > 0) {
       const uri = pending.pop()!;
       const info = await this.lexical(uri);
       if (empty(info)) {
+        // a document analysed before, then deleted: clear its diagnostics
+        if (this.semanticCache.has(uri) || this.dependencyCache.has(uri)) {
+          removed.push(uri);
+        }
         this.forget(uri);
         continue;
       }
@@ -519,7 +524,9 @@ export class AnalysisService extends EventEmitter<AnalysisEvents> {
     );
     const passes = linked ? [...order, ...order] : order;
 
-    const results: DiagnosticsByUri = new Map();
+    const results: DiagnosticsByUri = new Map(
+      removed.map((uri) => [uri, []]),
+    );
     for (const uri of passes) {
       const info = await this.analyzeLexical(uri, lexical.get(uri)!);
       results.set(uri, this.documentInfoDiagnostics(info));

@@ -222,7 +222,10 @@ export class DocumentService extends EventEmitter<DocumentEvents> {
       this.serverDocs.set(normalized, textDocument);
       return textDocument;
     } catch (err) {
-      logException(this.logger, this.tracer, err, LogLevel.error);
+      // a missing file is not an error: callers report it, or forget it
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+        logException(this.logger, this.tracer, err, LogLevel.error);
+      }
 
       return undefined;
     }
