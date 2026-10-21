@@ -8,11 +8,29 @@
     "kls": "./bin/kos-ls"
   },
   "files": [
-    "dist/**/*",
-    "bin"
+    "dist/*.js",
+    "dist/*.js.map",
+    "dist/*.LICENSE.txt",
+    "bin/kos-ls",
+    "THIRD_PARTY_NOTICES.md",
+    "LICENSES/",
+    "src/",
+    "tools/",
+    "data/",
+    "test/",
+    "benchmark/",
+    "docs/",
+    "third_party/",
+    "npm-shrinkwrap.json",
+    "tsconfig.json",
+    "webpack.config.js",
+    "jest.config.js",
+    "eslint.config.mjs",
+    "zakzak.config.json",
+    ".prettierrc"
   ],
   "author": "Jvaxx",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "engines": {
     "node": ">=22"
   },
@@ -35,6 +53,7 @@
     "neovim"
   ],
   "scripts": {
+    "clean": "node tools/clean.js",
     "build": "tsc -p ./tsconfig.json",
     "bundle": "webpack --config ./webpack.config.js --mode production",
     "lint": "eslint .",
@@ -42,10 +61,12 @@
     "prettier:check": "prettier --check \"{src,test,benchmark,tools}/**/*.{ts,js,mjs}\"",
     "pretest": "tsc -p ./tsconfig.json",
     "test": "jest --config jest.config.js",
+    "prebench": "npm run build",
     "bench": "zakzak -c ./zakzak.config.json",
     "probe": "node tools/lsp-probe.js",
     "kos-db": "node out/tools/kos-db/generate.js",
-    "prepack": "npm run build && npm run bundle && npm test"
+    "prepare:package": "node tools/prepare-package.js",
+    "prepack": "npm run build && npm run bundle && npm test && npm run prepare:package"
   },
   "devDependencies": {
     "@dynatrace/zakzak": "^0.6.6",

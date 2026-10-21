@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Headless LSP client: starts a kls server over stdio, opens files under a
+// Headless LSP client: starts a language server over stdio, opens files under a
 // workspace root and prints the diagnostics it publishes.
 //
 //   node tools/lsp-probe.js [--server <cmd...> --]
@@ -92,8 +92,8 @@ conn.listen();
       },
     });
   }
-  // kls debounces workspace loading and propagation (4 s): wait for it to
-  // settle, then until no diagnostics were published for PROBE_QUIET ms
+  // Allow startup/propagation to settle (including slower upstream servers
+  // used for comparisons), then wait for PROBE_QUIET ms without diagnostics
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   await sleep(7000);
   const quiet = +(process.env.PROBE_QUIET ?? 6000);

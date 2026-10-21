@@ -6,7 +6,7 @@ import { SymbolTable } from '../src/analysis/models/symbolTable';
 import { typeInitializer } from '../src/typeChecker/initialize';
 import { TypeChecker } from '../src/typeChecker/typeChecker';
 
-const testDir = join(__dirname, '../../../kerboscripts/parser_valid/');
+const testDir = join(__dirname, '../../test/fixtures/parser_valid/');
 const fakeUri = 'file:///fake/base';
 
 suite('type checker', () => {

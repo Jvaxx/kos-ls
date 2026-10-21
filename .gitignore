@@ -1,7 +1,19 @@
-node_modules
-out
-dist
-coverage
-junit.xml
-TEST.xml
+# Installed dependencies and reproducible build outputs (repository root).
+/node_modules/
+/out/
+/dist/
+/coverage/
+/npm-shrinkwrap.json
+
+# Test and benchmark reports; not portable performance baselines.
+/junit.xml
+/TEST.xml
+/benchmark.data.*
+/*.profile.json
+/*.profile.html
+/*.cpuprofile
+
+# Local package archives, logs and editor metadata.
+/*.tgz
+*.log
 .idea/

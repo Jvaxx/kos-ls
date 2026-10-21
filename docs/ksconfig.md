@@ -1,34 +1,32 @@
 # Workspace configuration: `ksconfig.json`
 
-A `ksconfig.json` at the root of the workspace (the folder the client
-opens) configures how kos-ls reads the scripts. It is read at startup and
-again whenever it changes, on disk or in the editor. All properties are
-optional.
+A `ksconfig.json` at the workspace root (the folder opened by the LSP
+client) configures analysis. It is read at startup and whenever it changes
+on disk or in the editor. All properties are optional. The CLI locates its
+root as described in [the README](../README.md#checking).
 
-|Name|Description|
-|--|--|
-|archive|The directory of the archive, volume `0:`, relative to this file. Default: this file's directory|
-|volumes|Directories of other kOS volumes, relative to this file|
-|preload|Files run before every script at runtime: their globals are visible in every file|
-|exclude|Files and directories that are not analysed unless opened or run by another file|
-|clobberBuiltins|`true` lets names hide kOS builtins in every file, as kOS's `Config:CLOBBERBUILTINS` setting does. Default: `false`; a file can still set `@clobberbuiltins on.` or `off.`|
-|bodies|A list of custom bodies for the language server to consider valid. By default the stock KSP bodies are assumed|
-|linting|A collection of rules and levels indicating what level lints should be reported|
-|format|Formatter options, as in a `.kos-format` file; see the README|
+| Property | Description | Default |
+| --- | --- | --- |
+| `archive` | Directory corresponding to archive volume `0:` | Configuration directory |
+| `volumes` | Map of other volume numbers/names to directories | None |
+| `preload` | Scripts whose globals are visible to every script | None |
+| `exclude` | Files/directories skipped during workspace loading and CLI reporting | None |
+| `clobberBuiltins` | Allow names to hide kOS builtins, like kOS's `Config:CLOBBERBUILTINS` | `false` |
+| `bodies` | Custom body names replacing the stock KSP body list | Stock KSP bodies |
+| `linting` | Diagnostic rule/group severity overrides | See below |
+| `format` | Formatter options, as in `.kos-format` | See [formatting](../README.md#formatting) |
 
-Paths in these properties are relative to `ksconfig.json`.
-
-Only the `ksconfig.json` at the root configures the analysis. The
-formatter is different: it takes its options from the nearest
-`.kos-format` or `ksconfig.json` `format` section from each file's
-directory up, so a `ksconfig.json` in a subdirectory can set the format
-of the files below it, and nothing else.
+Filesystem paths are relative to this configuration file. Only the root
+`ksconfig.json` configures analysis. Formatting is different: options come
+from the nearest `.kos-format` or `ksconfig.json` `format` section,
+searched from each file's directory upwards. Nested configurations can
+therefore affect formatting without changing workspace analysis.
 
 ## Example
 
-A layout where `src/` is edited and its files are copied to the ship's
-disk (`1:`) by a build, which also writes generated copies to `bin/` and
-`boot/`; the boot file loads `1:/lib/std.ks` before every mission:
+Here `src/` represents the ship's disk (`1:`). A separate build copies the
+scripts there and writes generated copies under `bin/` and `boot/`. A boot
+script loads `1:/lib/std.ks` before every mission:
 
 ```json
 {
@@ -38,186 +36,161 @@ disk (`1:`) by a build, which also writes generated copies to `bin/` and
 }
 ```
 
-# Archive
+## Archive and volumes
 
-The directory that corresponds to the archive, `0:/`. Paths like
-`runpath("0:/lib/orbit")` are resolved from it.
+`archive` maps `0:/`: with `"archive": "scripts"`, a run of
+`0:/lib/orbit` is resolved under `scripts/`.
 
-```json
-{
-  "archive": "scripts"
-}
-```
-
-# Volumes
-
-kOS paths can name a volume by number or name: `1:/lib/std.ks`,
-`probe:/data.json`. `volumes` maps volumes other than the archive to
-directories, by number or name (case-insensitive, with or without the
-colon). A path on a volume with no directory is reported.
+`volumes` maps other volumes by number or name (case-insensitive, with or
+without a colon). A path on an unmapped volume is reported:
 
 ```json
 {
+  "archive": "scripts",
   "volumes": { "1": "src", "probe": "../probe-disk" }
 }
 ```
 
-Paths without a volume (`runpath("lib/orbit")`) are relative to the
-current directory at runtime, which is not known statically. kos-ls takes
-the first existing file among: the calling file's directory, the root of
-the volume the calling file is on, and the archive.
+Paths without a volume, such as `runPath("lib/orbit")`, depend on the
+runtime current directory, which is not statically known. kos-ls uses the
+first existing file in the calling file's directory, its mapped volume
+root, then the archive. These mappings do not copy files or change the
+actual game filesystem.
 
-# Preload
+## Preload
 
-Some files are run at runtime in a way that cannot be followed, e.g. a
-boot file that loads a library only if it exists on the ship's disk:
-
-```
-if exists("1:/lib/std.ks") { runoncepath("1:/lib/std.ks"). }
-```
-
-The globals of the files listed in `preload`, and of the files they run,
-are visible in every other file of the workspace, without "symbol may not
-exist" warnings.
+Use `preload` for libraries loaded in a way static analysis cannot follow,
+for example a boot file with a computed path or guarded run. Globals in
+each listed file, and the files it runs, become visible throughout the
+workspace. Entries are filesystem paths relative to `ksconfig.json`:
 
 ```json
-{
-  "preload": ["src/lib/std.ks"]
-}
+{ "preload": ["src/lib/std.ks"] }
 ```
 
-# Exclude
+This models a runtime guarantee; it does not actually execute the library.
 
-Files and directories, e.g. generated copies of the scripts, that are not
-analysed when the workspace is loaded and whose diagnostics are not
-reported. They are still analysed when opened in the editor, and when
-another file runs them.
+## Exclude
+
+Excluded paths are skipped during workspace loading, and CLI diagnostics
+are not reported for them. They are still analysed if another file runs
+them or if they are opened in the editor. Closing an excluded document
+clears its editor diagnostics.
 
 ```json
-{
-  "exclude": ["bin", "boot"]
-}
+{ "exclude": ["bin", "boot"] }
 ```
 
-# Bodies
+## Builtin clobbering
 
-A list of custom bodies to consider valid
+`"clobberBuiltins": true` permits names to hide kOS builtins throughout
+the workspace. An individual file can override it with
+`@clobberbuiltins on.` or `@clobberbuiltins off.` at the top of the file.
+Configure this to match the actual kOS setting; it does not change the game.
 
-## Example
-This `ksconfig.json` will set "Earth", "Moon" and "Mars" as the only valid bodies
+## Bodies
+
+`bodies` replaces the list of valid body names, for example for a modded
+solar system:
 
 ```json
-{
-  "bodies": ["Earth", "Moon", "Mars"]
-}
+{ "bodies": ["Earth", "Moon", "Mars"] }
 ```
 
-# Linting
-This section is used to control the level linting rules are reported. Some rules correspond to a collection of child rules. All rules can be set to the max level `"error"` or the lowest level `"off"`.
+## Linting
 
-## Example
+Severity levels are `"error"`, `"warning"`, `"info"`, `"hint"` and
+`"off"`. A group applies a level to all its child rules. Group settings
+currently take precedence over individual children, so avoid overlapping
+group/child overrides if you want different levels within a group.
+The `all` group covers every diagnostic. For example:
 
 ```json
 {
   "linting": {
     "symbols-strict": "hint",
     "control-flow-break": "error",
-    "parsing": "off",
+    "parsing": "off"
   }
 }
 ```
 
-This will set all symbol lints to the hint level and break outside a loop to error, and parsing errors off.
+Rule names below are configuration keys, which may differ from the codes
+printed with individual diagnostics. Defaults come from
+[`src/config/models/lintRules.ts`](../src/config/models/lintRules.ts).
+Disabling scanning/parsing diagnostics does not make invalid source valid.
 
-## Available Levels
-1. `"error"`
-1. `"warning"`
-1. `"info"`
-1. `"hint"`
-1. `"off"`
+### General rules
 
-## Available Rules
+| Rule | Meaning | Default |
+| --- | --- | --- |
+| `scanning` | Invalid token, such as `variable$$$` | error |
+| `parsing` | Invalid syntax, such as `set x to .` | error |
+| `file-loading` | A run target cannot be loaded | warning |
+| `file-loading-runtime` | A runtime-computed run path cannot be followed statically | hint |
+| `unreachable-code` | Code after an unconditional break/return, or otherwise unreachable | error |
+| `no-global-parameters` | Invalid global parameter declaration | error |
+| `uninitialized-set` | Setting an undeclared variable with `@lazyglobal off` | warning |
 
-### **All**:
+### Control flow — group `control-flow`
 
-This rule is the global sets all other rules. Typically the use case would be to turn off all rules.
+| Rule | Meaning | Default |
+| --- | --- | --- |
+| `control-flow-break` | Break outside a loop | error |
+| `control-flow-return` | Return outside a function or trigger | error |
+| `control-flow-preserve` | Preserve outside a trigger | error |
+| `control-flow-lazy-global` | `@lazyglobal` or `@clobberbuiltins` directive not at the top of the script | error |
 
-### **Misc**
+### Deprecated commands — group `deprecated`
 
-These rules are not part of a grouping other than `all` and represent an assortment of lints.
+| Rule | Meaning | Default |
+| --- | --- | --- |
+| `deprecated-delete` | Deprecated `delete` statement | info |
+| `deprecated-copy` | Deprecated `copy` statement | info |
+| `deprecated-rename` | Deprecated `rename` statement | info |
 
-|Name|Description|Default Level|
-|--|--|--|
-|scanning|This provides an error when an invalid token is encountered such as `variable$$$`|error|
-|parsing|This provides an error when invalid syntax is encountered such as `set x to .`|error|
-|file-loading|This provides an error when the file cannot in a run statement|warning|
-|file-loading-runtime|This applies to a run statement whose path is built at runtime, such as `runPath(name).`: the script it runs is not analysed|hint|
-|unreachable-code|This provides an error when code is unreachable. This typically occurs when a statement occurs after a break or return statement|error|
-|no-global-parameters|This provides an error when `global parameter example.` is used as globals. This will throw in kOS|error|
-|uninitialized-set|This is a warning when an undeclared variable is set with `@lazyglobal off`|warning|
+### Symbols — group `symbols-strict`
 
-### **Control Flow**
-The `control-flow` grouping contains rules related to control flow in your script. Below are the fules related to `control-flow`
+| Rule | Meaning | Default |
+| --- | --- | --- |
+| `symbol-may-not-exist` | A symbol cannot be found, possibly because a runtime-loaded library is unknown | warning |
+| `symbol-may-not-exist-closure` | A symbol may be undefined when a function/trigger first runs | warning |
+| `symbol-wrong-kind` | A symbol has the wrong kind, such as a variable where a lock is expected | warning |
+| `symbol-unused` | Local symbol is unused | warning |
+| `symbol-unused-locally` | Global variable/lock is unused in its own file; other runtime uses may exist | warning |
+| `symbol-shadowing` | A symbol hides one in an outer scope | warning |
+| `symbol-conflict` | A symbol is redeclared in the same scope | warning |
+| `symbol-clobber-builtin` | A declaration hides a builtin in a way kOS refuses without clobbering enabled | error |
 
-|Name|Description|Default Level|
-|--|--|--|
-|control-flow-break|This provides an error when a break appears outside of a loop body|error|
-|control-flow-return|This provides an error when a return appears outside of a function body or trigger|error|
-|control-flow-preserve|This provides an error when preserve appears outside of a trigger body|error|
-|control-flow-lazy-global|This provides an error when a directive (`@lazyglobal`, `@clobberbuiltins`) does not appear at the top of a script|error|
+Builtin-clobber checks follow the kind of declaration. Variable-like
+operations (`set`, `local`, `global`, `parameter`, `toggle`, `x on.`,
+`list ... in x`) may not hide builtin functions, read-only variables or
+system locks (`throttle`, `steering`, `wheelThrottle`, `wheelSteering`).
+A `lock` may not hide a builtin function or variable, and a `function`
+may not hide any builtin. Enable clobbering only if that matches runtime.
 
-### **Deprecated**
+### Types — group `type-checking`
 
-The `deprecated` grouping contains rules related to deprecated functionality. This include deprecated statements listed below
+Most type checks are hints because runtime information can be incomplete.
 
-|Name|Description|Default Level|
-|--|--|--|
-|deprecated-delete|This provides a warning that the `delete` statement is deprecated|info|
-|deprecated-copy|This provides a warning that the `copy` statement is deprecated|info|
-|deprecated-rename|This provides a warning that the `rename` statement is deprecated|info|
+| Rule | Meaning | Default |
+| --- | --- | --- |
+| `type-wrong` | Type is incompatible with the expected type | hint |
+| `type-no-call` | Value has no call signature | hint |
+| `type-wrong-arity` | Wrong argument count for a kOS function, suffix or delegate | hint |
+| `type-wrong-arity-user` | Wrong argument count for a script function or its delegate | warning |
+| `type-list-invalid` | Invalid category in the `list` command | hint |
+| `type-no-indexer` | Value cannot be indexed | warning |
+| `type-missing` | A symbol's type cannot be determined at its use | hint |
+| `type-not-function` | Creating a delegate from a non-function | hint |
+| `type-missing-suffix` | Type has no such suffix | hint |
+| `type-missing-operator` | Type does not support the unary/binary operator | hint |
+| `type-no-setter` | Value is not settable | hint |
+| `type-no-getter` | Value is not readable | hint |
+| `type-unknown-in-doc` | Unknown/malformed type in a doc comment tag | warning |
 
-### **Symbols-Strict**
+### Comment directives — group `directives`
 
-The `symbols-strict` grouping contains rules related to symbols. This includes unused, undeclared, or shadowed symbols. Below are all child rules of `symbols-strict`.
-
-|Name|Description|Default Level|
-|--|--|--|
-|symbol-may-not-exist|This applies to symbols that cannot be found. The language server is imperfect cannot determine symbols from dynamic run statements such as `runOnce(someExpression).`|warning|
-|symbol-may-not-exist-closure|This applies to symbols that the server cannot determine are defined before a function body or trigger is executed the first time.|warning|
-|symbol-wrong-kind|This is applied to situations where a lock is expected but a variable or function is provided|warning|
-|symbol-unused|This applies to situations where a local variable is declared but not used|warning|
-|symbol-unused-locally|This applies to global variables that are not used locally. This is for locks and variables that are declared global but not used in there file. There are cases where the this may occur such as global constants, but the server cannot track global usage|warning|
-|symbol-shadowing|This applies to cases were a symbol is redeclared in an inner scope. This is not an error but can lead to logic bugs where the outer symbol is expected|warning|
-|symbol-conflict|This applies to cases were a symbol is redeclared in the same scope. This is an error in kOS|warning|
-|symbol-clobber-builtin|A declaration hides a builtin that kOS does not let it hide: `set`, `local`, `global`, `parameter`, `toggle`, `x on.` and `list ... in x` may not hide a builtin function, read-only variable or system lock (`throttle`, `steering`, `wheelThrottle`, `wheelSteering`); `lock` a builtin function or variable; `function` any builtin. kOS refuses to compile it unless `@clobberbuiltins on.` (or `clobberBuiltins` in `ksconfig.json`)|error|
-
-### **Type-Checking**
-
-The `type-checking` grouping are rules related to types in kerboscript. This includes unused, undeclared, or shadowed symbols. Below are all child rules of `type-checking`. Note. most of the rules for the type checker are at the hint level as the overall confidence in it's accuracy is somewhat low.
-
-
-|Name|Description|Default Level|
-|--|--|--|
-|type-wrong|This applies to situations where the type checker determines the wrong type|hint|
-|type-no-call|This applies to situations where the type checker determined the given type does not have a call signature|hint|
-|type-wrong-arity|This applies to situations where a kOS function, suffix or delegate is called with the wrong number of arguments|hint|
-|type-wrong-arity-user|This applies to situations where a function declared in a script, or a delegate of one, is called with the wrong number of arguments|warning|
-|type-list-invalid|This applies to the list command when an invalid list string is given|hint|
-|type-no-indexer|This applies to situations where the type checker determined the given type does not have an indexer|warning|
-|type-missing|This applies to situations where the type checker cannot determine the type of a symbol where it is used|hint|
-|type-not-function|This applies to situations where a delegate is created from something other than a function|hint|
-|type-missing-suffix|This applies to situation where the type checker determines a given type does not have a given suffix|hint|
-|type-missing-operator|This applies to situations where the type checker determines a given type does not have the request binary or unary operator|hint|
-|type-no-setter|This applies to situation where the type checker determines a given type cannot be set|hint|
-|type-no-getter|This applies to situation where the type checker determines a given type cannot be read|hint|
-|type-unknown-in-doc|This applies to a type in a doc comment tag (`@param name {Type}`, `@return {Type}`) that names no kOS structure, or is malformed|warning|
-
-### **Directives**
-
-The `directives` grouping contains rules related to directive comments. Below are all child rules of `directives`.
-
-|Name|Description|Default Level|
-|--|--|--|
-|directive-invalid-include|This applies to a `// #include` directive that is not followed by a string or a bare path|info|
-
-
+| Rule | Meaning | Default |
+| --- | --- | --- |
+| `directive-invalid-include` | `// #include` lacks a string or bare path | info |

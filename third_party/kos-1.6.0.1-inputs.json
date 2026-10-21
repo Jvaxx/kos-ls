@@ -1,0 +1,20 @@
+{
+  "project": "kOS",
+  "version": "1.6.0.1",
+  "repository": "https://github.com/KSP-KOS/KOS",
+  "revision": "d4388439c712994e47258ed7514e863f79da632b",
+  "license": "GPL-3.0-only",
+  "copyright": "2013-2021, Developed and maintained by kOS Team, Originally By Nivekk (doc/source/conf.py); individual source notices retained",
+  "archive": "kos-1.6.0.1-inputs.tar.gz",
+  "sha256": "5ad9102daf415ae707c1105caca86078d7ad59bb49b41ad42acb1e17ad7a2149",
+  "prefix": "kos-1.6.0.1/",
+  "fileCount": 643,
+  "selection": [
+    "src/**/*.cs",
+    "doc/source/**/*.rst",
+    "LICENSE.md",
+    "doc/LICENSE.md",
+    "doc/source/conf.py"
+  ],
+  "modifications": "None to archived input files; JSON database is extracted, converted to Markdown and locally overridden."
+}

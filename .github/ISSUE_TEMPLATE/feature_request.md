@@ -1,20 +1,27 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
-title: "[Feature] <Your Feature Here>"
-labels: enhancement
-assignees: jonnyboyC
-
+about: Suggest an improvement to the kos-ls server or CLI
+title: ''
+labels: ''
+assignees: ''
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+## Problem or workflow
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+What are you trying to do? Include an example and the editor/LSP client or
+CLI workflow involved.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+## Proposed behavior
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+Describe the expected result, ideally with a short script or output example.
+
+## Alternatives
+
+Can existing settings, doc comments, workspace preloads or client features
+address the need? What have you tried?
+
+## Scope and compatibility
+
+Mention relevant kOS versions and whether this should work for all LSP
+clients. This fork does not include the original project's VS Code extension;
+see `docs/ROADMAP.md` for current scope and limitations.

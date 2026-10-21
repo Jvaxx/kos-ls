@@ -3,7 +3,7 @@ import { Scanner } from '../src/scanner/scanner';
 import { join } from 'path';
 import { readFileSync } from 'fs';
 
-const testDir = join(__dirname, '../../../kerboscripts/parser_valid/');
+const testDir = join(__dirname, '../../test/fixtures/parser_valid/');
 const fakeUri = 'file:///fake/base';
 
 suite('scanner', () => {

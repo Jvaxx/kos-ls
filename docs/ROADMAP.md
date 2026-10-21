@@ -1,244 +1,78 @@
-# Roadmap
+# Status and roadmap
 
-The order follows one rule: correctness first, because every later feature
-(documentation, formatting) is only as good as the analysis under it.
+kos-ls is an unreleased, server-only fork targeting **kOS 1.6.0.1**
+(KSP 1.12), primarily tested with Neovim. This is a current status summary,
+not a release commitment. See [fork history and migration](FORK.md) and
+[the changelog](../CHANGELOG.md) for completed changes.
 
-Target: kOS 1.6.0.1 (KSP 1.12). Clients: any LSP client, tested on Neovim.
+## Implemented
 
-## Findings that shaped this plan (October 2026)
+- Standalone server/CLI, Node.js 22+, renamed package and executable.
+- Root configuration loaded at startup and on change; archive and volume
+  resolution, runtime preloads, exclusions, queued dependency propagation
+  and deterministic cross-file analysis.
+- Generated, versioned kOS database and overrides, with a regeneration
+  report and tests; improved flow and builtin typing.
+- Builtin documentation in hover, completion and signature help; typed
+  user doc comments and inferred-type inlay hints.
+- Token-preserving document/range formatter and `kos-ls format`, with
+  file-based options, layout search and comment reflow.
+- Semantic tokens, diagnostic quick fixes, disk-size code lenses and
+  `kos-ls check` / `kos-ls size` for command-line workflows.
+- Parser and resolver fixes, system-lock support, builtin-clobber checks,
+  reference-tracking fixes and clean process shutdown.
+- Unit, integration and process tests, fixture-based formatter checks,
+  linting, pinned formatting tool and Node.js CI matrix.
 
-Measured on a real script tree with `tools/lsp-probe.js`, comparing the last
-npm release (1.1.5) with the upstream source (1.1.7):
+## Known limitations
 
-- **Startup race.** The archive root (`0:`) is set only after a 4 s
-  debounce. A file opened before that, i.e. the file nvim was started
-  with, is analysed without it: every `runpath("0:/...")` fails to load and
-  every symbol from it "may not exist". The file is not reanalysed once
-  the root is known.
-- **Out-of-date types.** 1.1.7 fixed `ship:stagedeltav` and `stage:ready`
-  (wrong in 1.1.5), but the hand-written type definitions (~3000 lines)
-  target roughly kOS 1.2: `Stage:DELTAV`, addon suffixes (`addons:rt`,
-  `addons:tr`), engine `ignition`/`flameout` on list elements and others
-  are missing or typed as `structure`.
-- **Runtime-loaded files are invisible.** A library loaded by a boot file
-  through a computed or guarded path (`if exists(p) runoncepath(p).`) can
-  never be followed statically; its globals are reported as missing in
-  every file.
-- **Comments are discarded by the scanner.** Nothing can show
-  documentation written in comments, and a formatter would delete them.
-- **Hover shows only `(kind) name: type`.** No builtin has a description.
-- Known upstream bugs: `ksconfig.json` is ignored until opened (#167);
-  `completionCase` is ignored (#220); the process spins at 100 % CPU after
-  the client exits (EPIPE, then `console.log` of the error on the same
-  closed stdout).
+### Static analysis and kOS coverage
 
-## Phase 0: fork foundation (done)
+- Computed run paths and runtime-loaded libraries are not fully
+  discoverable. `preload` and `// #include` make known dependencies
+  explicit; a runtime-path hint identifies runs that cannot be followed.
+- Typing is deliberately lenient when information is unknown. Addon
+  availability and dynamic suffixes depend on the actual game setup;
+  diagnostics do not replace executing scripts in kOS.
+- The database is pinned to 1.6.0.1, not automatically updated to the
+  installed game. Some entries lack documentation or need overrides;
+  see [the generation report](kos-db-report.md).
+- The list category in `list engines in x` is not specially classified
+  by semantic highlighting. Semantic tokens support full and range
+  requests, not deltas.
 
-- Server-only repository: the VS Code client, grammar submodule and
-  extension manifests are removed; `server/` is the root.
-- Package `kos-ls`, binaries `kos-ls` and `kls` (alias, for existing
-  configs). Node >= 22, TypeScript target ES2022.
-- `tools/lsp-probe.js`: headless client to reproduce diagnostics.
+### Formatting
 
-## Phase 1: correct project model (done)
+- Layout penalties approximate clang-format; this is not clang-format
+  or a guarantee of identical output. The defaults are LLVM-inspired
+  with four-space indentation.
+- Tabs (`UseTab`) are not implemented. Trailing comments are reflowed
+  separately rather than counted in the code line's layout cost.
+- Files with syntax errors are not formatted. User doc comments attach
+  to functions and parameter statements, not arbitrary declarations.
 
-- Startup race fixed: `initialize` reads `ksconfig.json` before
-  answering, `initialized` analyses the workspace.
-- `ksconfig.json` read from disk at startup and on change (file
-  watching), not only when open in the editor (#167).
-- `volumes`, `preload` and `exclude` in `ksconfig.json`; kOS paths
-  resolved per volume.
-- Analysis in one queue; changes mark connected files dirty, requests
-  reanalyse them first, diagnostics republished 200 ms after a change.
-- The server exits when the client goes away (EPIPE loop fixed).
-- `completionCase` applies to suffixes (#220); settings are read from the
-  `kos-ls` section (`kos-vscode` as fallback; `kos-language-server` was
-  never read) and normalized.
-- `test/integration`: a harness driving a real server in-process.
+### Quick fixes and size estimates
 
-## Phase 2: a generated kOS database (done)
+- No automatic rewrite of deprecated `copy`, `rename` and `delete`:
+  their file/volume semantics differ from the replacement functions.
+- Disk usage estimates stripped UTF-8 source, not compiled `.ksm` files,
+  filesystem overhead or external build-time path rewrites. Unknown
+  dependencies are reported as not followed, not counted as zero-sized
+  known files. Boot files count only when explicitly run or preloaded.
 
-Replace the hand-written type definitions with data extracted from kOS
-itself, pinned to a kOS version and regenerated by a script (see
-[kos-db.md](kos-db.md)):
+## Next priorities
 
-- **Structure model from the C# source**: every `AddSuffix(...)` call gives
-  the suffix names (aliases included), argument and return types, and
-  whether it is settable (`SetSuffix`, `ClampSetSuffix`); class
-  inheritance and `[KOSNomenclature]` give the kOS type names. Builtin
-  functions and bound variables come from the function and binding
-  classes.
-- **Documentation from the Sphinx sources** (`doc/source/**/*.rst`):
-  descriptions, units, parameter names, examples, for structures,
-  suffixes, functions, bound variables, commands; addons included
-  (RemoteTech, Trajectories, KAC, ...).
-- **An override file** for what neither source states: element types of
-  collections (`ship:parts` is a list of `Part`), values that depend on
-  arguments.
-- Output: a checked-in JSON database (`data/kos-<version>.json`) and a
-  loader that builds the type checker's types from it. A coverage report
-  compares it with the current definitions before they are removed.
+1. **Before public distribution:** complete the remaining fixture-rights,
+   final-tip and release-source checks in [the publication checklist](PUBLISHING.md).
+   The [GPLv3 distribution decision](LICENSING.md) and
+   [fork-history privacy cleanup](HISTORY_REVIEW.md) are complete.
+2. Keep dependencies, supported Node.js versions and LSP compatibility
+   tested; add regression cases with each analysis or parser fix.
+3. Improve database coverage by reviewing generation warnings against
+   the pinned kOS source and documentation. New kOS versions require an
+   explicit regeneration and compatibility review.
+4. Measure formatter and analysis performance on the retained fixtures
+   before changing algorithms or optimizing for large workspaces.
 
-Done: `data/kos-1.6.0.1.json` (115 structures, 1051 suffixes, 112
-functions, 108 variables, with documentation), generated by
-`npm run kos-db`; the hand-written definitions are gone except primitives
-and collections. Checked on real scripts, the type checker gained:
-functions usable before their declaration, flow types of variables
-(lenient unions of the types a variable is given), function and variable
-namesakes (`stage` and `stage()`), structures derived at runtime (a
-`Part` may be an `Engine`), and leniency wherever a type is unknown. On
-`test/fixtures/parser_valid` the diagnostics went from 5454 to 2687; the
-rest are true errors, lints, and globals of libraries loaded at runtime
-by another script.
-
-## Phase 3: documentation everywhere (done)
-
-The most visible feature, built on phases 1-2:
-
-- Comments kept as trivia attached to tokens (also needed by phase 4).
-- Hover in Markdown: signature, type, access (get/set), description, and a
-  link to the kOS documentation page, for every builtin and suffix.
-- Doc comments for user code: the `//` comment block directly above a
-  `function` or `parameter` is its documentation, shown in hover,
-  completion and signature help. Tags:
-  `// @param name {Vector} description` and `// @return {Scalar} ...`.
-  Types given in tags feed the type checker, so a parameter documented
-  as `{Vessel}` gets suffix completion and checking instead of
-  `Structure`.
-- Completion items with documentation (`completionItem/resolve`), signature
-  help with parameter names and per-parameter docs, inlay hints for
-  inferred types (optional).
-
-Done: comments are trivia on the next token (`leadingComments`, with
-`trailing` set when code precedes them on their line). Hover, completion
-(`completionItem/resolve`) and signature help share one formatter
-(`src/utilities/documentation.ts`). Signature help now finds the call on
-the tokens before the cursor, so it also works in a call that does not
-parse yet. Doc comments (`src/analysis/docComment.ts`) document user
-functions and parameters, and their tag types type the parameters, the
-calls and the arguments; unknown tag types are reported
-(`type-unknown-in-doc`). Inlay hints show inferred types of variables,
-locks and loop elements. Diagnostics on `parser_valid` are unchanged
-(2687).
-
-## Phase 4: formatter
-
-- clang-format-like behaviour, LLVM style with 4-space indentation by
-  default: attached braces, 80 columns, one space around binary operators,
-  no space before call parentheses.
-- Options in a `.kos-format` file (or a `format` section of
-  `ksconfig.json`): `IndentWidth`, `ColumnLimit`, brace style, keyword case
-  (kOS is case-insensitive: `PRINT` to `print`), blank-line limits.
-- Works from the token stream with comment trivia, so comments are never
-  lost; long expressions are broken with a line-fitting algorithm.
-- `textDocument/formatting` and `rangeFormatting`, plus a CLI
-  (`kos-ls format [--check] files...`) for scripts and git hooks.
-- Tests: idempotence (`format(format(x)) == format(x)`) and AST
-  equivalence (formatting never changes meaning) on every fixture.
-
-Done: `src/formatter` writes every token and comment once, in order; the
-AST only labels tokens (unary operators, call parentheses, keywords used
-as names, block kinds, operand groups). Statements become logical lines;
-a long one is broken by a best-first search for the cheapest layout
-(columns past the limit cost most; a break costs more inside brackets
-and nested operand groups, and by kind: comma, operator by priority,
-keyword, after a bracket), and broken lines align with their operand
-group (clang-format's fake parentheses) or bracket. Anonymous function
-bodies indent from the line of their `{`; `from` headers stay inline.
-The output is rescanned and refused if a token or comment differs; files
-with syntax errors are not formatted. Options (clang-format names, plus
-`BreakBeforeBinaryOperators`) come from the nearest `.kos-format` or
-`ksconfig.json` `format` section. `textDocument/formatting`,
-`rangeFormatting` (whole lines; edits are per gap between tokens) and
-`kos-ls format [--check]`. Every fixture is tested in two styles:
-idempotence, same tokens and tree, comments kept, edits. Diagnostics on
-`parser_valid` are unchanged (2687).
-Later (phase 5): `BinPackArguments`, short anonymous functions on one
-line (`AllowShortLambdasOnASingleLine`) and comment reflow
-(`ReflowComments`), LLVM defaults.
-
-## Phase 5: more
-
-- Semantic tokens (done; replaces client-side syntax files): full and
-  range requests (no deltas: a 1000-line file takes about 4 ms).
-  Keywords, literals, comments and operators come from the scanner's
-  tokens, now kept in `LexicalInfo`; names from their trackers (symbol
-  kind, builtin, declaration, read-only from the database's access;
-  bodies read-only); doc comment tags split into keyword, parameter and
-  type. Standard LSP types and modifiers only, so clients' default
-  highlight groups apply. Known: `list engines in x` leaves `engines` a
-  plain variable.
-- Code actions (done): quick fixes for a missing period, a name hiding
-  a builtin (rename to a free `name_`, or `@clobberbuiltins on.`),
-  misspelled symbols, suffixes and doc tag types (closest names by
-  Levenshtein distance, at most a third of the letters), `set` of an
-  undeclared variable under `@lazyglobal off` (`global`/`local`), a
-  misplaced directive (move to the top, or remove) and `declare global
-  parameter`. Not done: the deprecated `copy`/`rename`/`delete` (their
-  file and volume rules differ from `copyPath`/`movePath`/`deletePath`
-  in ways a rewrite could get wrong).
-- Disk size (done): a code lens with the stripped size of a script and
-  of everything it runs (preloaded files included, each once); running
-  it shows each file (`kos-ls.diskUsage`, a `window/showMessage`
-  notification: the request form makes Neovim prompt for a choice);
-  `workspace/codeLens/refresh` after each propagation; `kos-ls size`
-  with `--max` for a build or CI. Stripping is the one of the user's
-  `tools/kbuild.py` in the Ships/Script repository (comments and surrounding whitespace removed, lines
-  kept), checked byte for byte on their library files; kbuild also
-  rewrites `"0:/src/` to `"1:/`, 4 bytes less per path, which the server
-  does not know about. Not done: `.ksm` sizes.
-- Parser gaps (done): multiple declarations (#214) and declare/set
-  chains (#205) are one rule, `Stmt.Chain` of full `Decl.Var`/`Stmt.Set`
-  clauses; `log x to var` (#189): file arguments of log, copy, rename,
-  delete and compile use their variables, and a lone identifier naming
-  no symbol is a bare file name as in kOS (`barewordOkay`);
-  `@clobberbuiltins` (#215): `Stmt.Directive`, directives valid in the
-  run at the top of the file; kOS's check of names hiding builtins as
-  an error, off with the directive or `clobberBuiltins` in
-  `ksconfig.json`. Diagnostics on `parser_valid`: 2687 to 2680 (7
-  false warnings on bare file names gone), then 2745 (70 true clobber
-  errors on scripts older than kOS 1.4, 5 shadow warnings gone).
-- `kos-ls check` (done): diagnostics from the command line, for CI.
-  It runs the server in-process on the workspace load, without opening
-  documents (`src/cli/check.ts`). Comparing it with the probe found that
-  cross-file results depend on the order of events, see below.
-- Order-dependent analysis (done; found with `kos-ls check`): in a
-  cycle of scripts sharing globals (`parser_valid`: `q.ks`, `quad.ks`,
-  `quad_loop.ks`, `turret.ks`, `lib_quad.ks`), opening an unchanged
-  file after the workspace load changed the diagnostics: which file
-  declares a global set in several of them depended on which tables
-  existed when each was analysed, and the "may not exist at script
-  runtime" check compared lines of two files. Now each propagation
-  rebuilds the dirty documents and everything connected to them from
-  scratch, in uri order, and that check only applies within a file.
-  On `parser_valid`, check and the probe agree: 2564 (283 such
-  cross-file warnings gone, nothing added).
-- System locks (done): `lock steering to ...` and `lock throttle to
-  ...` (and the wheel locks) name kOS's builtin lock, as kOS compiles
-  them whatever else has the name: hover shows its documentation, the
-  highlighting marks it `defaultLibrary`, the value is checked against
-  its type (a hint, none on `parser_valid`'s 213 such locks) and it gets
-  no inlay hint. They used to declare a user lock (`lock throttle`) or
-  bind nothing (`lock steering`: no hover, a plain variable). Locking
-  an existing user lock again is a set of it, so its name has a hover.
-- One report per refused set (done): a set kOS refuses because the name
-  hides a builtin (`set r to 1.`, `list engines in r.`, `toggle ship.`)
-  had the clobber error plus a "wrong kind" warning or a "no getter"
-  hint; now only the error. A refused set of a system lock (`set
-  throttle to 1.`) is meant for kOS's lock, so its name is the builtin;
-  any other is analysed as the new variable it was meant to be, so the
-  rest of the script is checked as before. With `@clobberbuiltins on`
-  such a set declares a variable without the "wrong kind" warning.
-  `parser_valid`: 2564 to 2548 (15 duplicate warnings and a phantom
-  unused `throttle` variable gone, nothing added).
-- Builtin usages (done; found while doing system locks): a file's
-  usages and sets of builtins were pushed on the shared builtin
-  trackers at every analysis and never removed, so highlights and
-  references on `steering` or `ship` listed each use twice and kept
-  stale positions after edits (and memory grew). Each table now takes
-  back what it recorded on other tables when it is replaced. A lock of
-  a system lock is a write of it in highlights; rename refuses kOS's
-  names (it used to edit the uses and a pseudo-file `builtIn`), and
-  references no longer include that pseudo-file.
-- Maintenance: ~~ESLint~~ (done: `npm run lint`, in CI), dependency
-  updates, remove pre-Node-10 shims.
+Editor extensions, game launch/telnet integration, compiled-script size
+prediction and a full kOS interpreter are outside the current scope.

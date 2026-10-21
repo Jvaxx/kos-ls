@@ -1,0 +1,7 @@
+# Keep third-party notices byte-for-byte, including upstream line endings.
+LICENSES/** -text -whitespace
+
+# This is an intentionally preserved historical document, not new prose.
+docs/UPSTREAM_CHANGELOG.md -whitespace
+
+third_party/**/*.tar.gz binary

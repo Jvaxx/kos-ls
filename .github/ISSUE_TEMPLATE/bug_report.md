@@ -1,32 +1,37 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: "[BUG] <Your Bug Here>"
+about: Report a reproducible problem in the kos-ls fork
+title: ''
 labels: ''
-assignees: jonnyboyC
-
+assignees: ''
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Environment
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+- kos-ls version (`kos-ls --version`) and commit, if built from source:
+- Node.js version (`node --version`):
+- OS:
+- Editor and LSP client/plugin versions (or CLI command):
+- kOS version, if relevant:
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Reproduction
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+Include a minimal script, relevant `ksconfig.json` / `.kos-format` settings,
+and the steps or exact command that reproduce the problem. For editor-only
+issues, include the server command and whether the CLI/probe reproduces it.
 
-**Editor (please complete the following information):**
- - OS: [e.g. Window, Linux, Mac]
- - Editor [e.g. Neovim 0.12]
- - Extension Version [e.g. 22]
+```kerboscript
+// Minimal example
+```
 
-**Additional context**
-Add any other context about the problem here.
+## Expected behavior
+
+## Actual behavior
+
+Include diagnostic codes, command output or a short relevant log excerpt.
+Redact credentials, private paths and unrelated script content.
+
+## Additional context
+
+Confirm the client launches this fork, not an old upstream `kls` or the
+original VS Code extension. Please report fork issues here, not upstream.

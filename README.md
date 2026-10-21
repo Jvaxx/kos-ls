@@ -3,29 +3,64 @@
 A language server for Kerboscript, the language of the
 [kOS](https://github.com/KSP-KOS/KOS) mod for Kerbal Space Program.
 
-kos-ls is a maintained fork of John Chabot's
+**kos-ls is an independent, server-only fork** of John Chabot's
 [kos-language-server](https://github.com/jonnyboyC/kos-language-server),
-which is no longer maintained. It is a standalone server for any LSP client
-(Neovim first); the VS Code extension of the original project is not part of
-this fork.
+maintained here by Jvaxx. The original author and contributors built the
+scanner, parser, analysis and LSP foundation; this fork extends that work.
+It is not an official kOS project or the upstream VS Code extension.
 
-Status: under active rework, see [docs/ROADMAP.md](docs/ROADMAP.md).
+**Status:** `2.0.0-dev`, unreleased. Targets kOS **1.6.0.1** (KSP 1.12).
+Uses standard LSP, with Neovim as the primary tested client. Other editors
+need an LSP client configured to launch this server.
 
-## Building
+## What is different from upstream?
 
-Requires Node.js 22 or later.
+- **Standalone tooling:** no bundled VS Code extension, editor commands,
+  TextMate grammar or snippets. Run `kos-ls --stdio` from your LSP client.
+- **Project analysis:** startup configuration, volume mappings, runtime
+  preloads and exclusions; consistent cross-file analysis and clean exit
+  when the client disconnects.
+- **kOS 1.6.0.1 knowledge:** a versioned database generated from kOS source
+  and documentation, replacing most hand-written builtin definitions.
+- **Richer editor features:** documented hover/completion/signatures, typed
+  doc comments, semantic tokens, inlay hints, quick fixes and disk-size
+  code lenses, alongside definition, references, rename, symbols and folding.
+- **Formatting and CLI:** document/range formatting and `kos-ls format`,
+  `kos-ls check`, and `kos-ls size` for scripts, hooks and CI.
+
+See [fork history and migration](docs/FORK.md) for the exact upstream base,
+compatibility changes and scope; [CHANGELOG.md](CHANGELOG.md) for fork
+changes; and [the roadmap](docs/ROADMAP.md) for limitations and future work.
+Please report fork issues in **this repository**, not upstream.
+
+## Build and run from source
+
+Requires **Node.js 22 or later** and npm. From a checkout of this fork:
 
 ```sh
-npm install
-npm run build     # TypeScript to out/
+npm ci            # install the locked development dependencies
+npm run build     # TypeScript, tests and tools to out/
 npm test
-npm run bundle    # single-file server in dist/, used by bin/kos-ls
-npm link          # puts kos-ls (and the kls alias) on the PATH
+npm run bundle    # server and CLI bundles to dist/, used by bin/kos-ls
+./bin/kos-ls --version
+npm link          # optional: puts kos-ls (and the kls alias) on PATH
 ```
+
+Then configure your LSP client to run `kos-ls --stdio`, or use the absolute
+path to this checkout's `bin/kos-ls`. Re-run `npm run bundle` after changes:
+`npm run build` alone does not update the launcher. An old `kls` executable
+may belong to upstream; prefer the unambiguous `kos-ls` command.
+
+These instructions install the checkout, not the upstream npm package or
+Marketplace extension. See [development](docs/DEVELOPMENT.md) for the full
+workflow, tests, benchmarks, packaging and cleanup.
 
 ## Neovim
 
+For Neovim 0.11 or later:
+
 ```lua
+vim.filetype.add({ extension = { ks = "kerboscript" } })
 vim.lsp.config("kos_ls", {
     cmd = { "kos-ls", "--stdio" },
     filetypes = { "kerboscript" },
@@ -261,20 +296,26 @@ path built at runtime, a missing file) is not counted, and reported as
 not followed. Compiled `.ksm` sizes are not computed, and a boot file
 is counted only when a script runs it.
 
-## Developer tools
+## Development and contributing
 
-`npm run probe -- <root> [files...]` starts the server headlessly, opens the
-files (all `.ks` under `<root>` by default) and prints the diagnostics it
-publishes (after 7 s, and once none came for 6 s: `PROBE_QUIET`, in ms).
-`--server <cmd...> --` runs another server instead, for
-comparisons. `--ask <method> <file>:<line>:<col>` sends a position request
-(`textDocument/hover`, `textDocument/completion`,
-`textDocument/signatureHelp`) and prints its result instead.
+See [the development guide](docs/DEVELOPMENT.md) for the repository layout,
+checks, headless LSP probe, benchmarks and generated-file policy, and
+[contributing guidelines](.github/CONTRIBUTING.md) for reports and patches.
+The [database guide](docs/kos-db.md) explains how to regenerate the kOS data;
+[the generation report](docs/kos-db-report.md) records its coverage and gaps.
 
-`npm run kos-db -- --kos <kOS repository> ...` regenerates the kOS
-database (`data/kos-<version>.json`) from the kOS C# and documentation.
-See [docs/kos-db.md](docs/kos-db.md).
+## License and acknowledgements
 
-## License
+The combined kos-ls server and kOS-derived database are distributed under
+**GPL-3.0-only**, see [LICENSE](LICENSE). The upstream MIT terms and earlier
+fork MIT notice are preserved in
+[LICENSES/kos-language-server-MIT.txt](LICENSES/kos-language-server-MIT.txt);
+existing MIT grants are not withdrawn. kOS documentation is credited to
+the kOS Team, Nivekk and contributors.
 
-MIT, see [LICENSE](LICENSE).
+See [the licensing decision and source-delivery policy](docs/LICENSING.md),
+[third-party notices](THIRD_PARTY_NOTICES.md),
+[the historical privacy review](docs/HISTORY_REVIEW.md) and
+[the publication checklist](docs/PUBLISHING.md). npm packages include the
+project source, build inputs and pinned kOS extraction sources alongside
+the runtime bundles.

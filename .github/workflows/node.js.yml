@@ -5,6 +5,9 @@ on:
     branches: ['main']
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -20,5 +23,8 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run lint
+      - run: npm run prettier:check
       - run: npm test
       - run: npm run bundle
+      - run: npm run prepare:package
+      - run: npm pack --dry-run --ignore-scripts

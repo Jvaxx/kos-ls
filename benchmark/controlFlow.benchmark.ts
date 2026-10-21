@@ -5,7 +5,7 @@ import { Parser } from '../src/parser/parser';
 import { parseSource } from '../test/utilities/setup';
 import { ControlFlow } from '../src/controlFlow/controlFlow';
 
-const testDir = join(__dirname, '../../../kerboscripts/parser_valid/');
+const testDir = join(__dirname, '../../test/fixtures/parser_valid/');
 
 suite('control flow', () => {
   let ap: ReturnType<typeof parseSource>;

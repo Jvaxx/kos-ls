@@ -2,8 +2,16 @@
 
 kos-ls knows the kOS structures, suffixes, builtin functions and bound
 variables from a database generated from kOS itself:
-`data/kos-<version>.json`, today `data/kos-1.6.0.1.json`. The type checker,
-hover, completion and signature help all read it.
+`data/kos-<version>.json`, currently `data/kos-1.6.0.1.json`. The type
+checker, hover, completion and signature help all read it. This is a
+required runtime input, not disposable build output; keep it and the
+generation report in version control.
+
+The database and derived documentation are distributed under GPL-3.0-only
+with the combined project. See [provenance](../THIRD_PARTY_NOTICES.md) and
+[the licensing/source-delivery policy](LICENSING.md). The unmodified pinned
+C#/RST extraction inputs are retained in `third_party/`, not downloaded as
+part of ordinary builds.
 
 ## Files
 
@@ -13,6 +21,8 @@ hover, completion and signature help all read it.
 |`data/overrides.json`|Hand corrections, applied last|
 |`docs/kos-db-report.md`|The report of the last generation|
 |`tools/kos-db/`|The generator|
+|`third_party/kos-1.6.0.1-inputs.tar.gz`|Pinned editable C#/RST inputs, licenses and attribution|
+|`third_party/kos-1.6.0.1-inputs.json`|Exact upstream revision, selection and SHA-256|
 |`src/typeChecker/database/loader.ts`|Builds the type checker's types from the database|
 
 The database holds, for every structure, its base structure and suffixes
@@ -53,14 +63,22 @@ checked against the C# and the documentation is the one out of date
 
 ## Regenerating
 
-With a kOS repository checked out at the tag of the version:
+Ordinary builds/tests use the checked-in database and need no kOS checkout.
+To regenerate without fetching upstream, verify the SHA-256 as described in
+[the input snapshot guide](../third_party/README.md), then extract to a
+fresh scratch directory:
 
 ```sh
-git -C /path/to/KOS checkout 1.6.0.1
+mkdir -p /tmp/kos-db-inputs
+tar -xzf third_party/kos-1.6.0.1-inputs.tar.gz -C /tmp/kos-db-inputs
 npm run build
-npm run kos-db -- --kos /path/to/KOS --version 1.6.0.1 \
+npm run kos-db -- --kos /tmp/kos-db-inputs/kos-1.6.0.1 --version 1.6.0.1 \
   --previous data/kos-1.6.0.1.json --out data/kos-1.6.0.1.json
 ```
+
+Alternatively, use a separate official [kOS checkout](https://github.com/KSP-KOS/KOS)
+at commit `d4388439c712994e47258ed7514e863f79da632b` (tag `1.6.0.1`) as
+`--kos`. The generator reads the source tree; it does not build or run kOS.
 
 Regenerating from itself is a fixed point: the command above changes
 nothing unless the generator or the overrides changed. Review the diff of
@@ -77,5 +95,8 @@ Options: `--report` (default `docs/kos-db-report.md`), `--overrides`
    and `--out` at `data/kos-<new version>.json`.
 3. Read the report, fix the overrides if needed, and point the import in
    `src/typeChecker/database/loader.ts` at the new file.
-4. Run the tests and the probe (`npm run probe -- test/fixtures/parser_valid`)
+4. Refresh the pinned input snapshot/manifest, attribution and license
+   evidence as described in [third_party/README.md](../third_party/README.md).
+   Verify regeneration against those archived inputs, not just a local checkout.
+5. Run the tests and the probe (`npm run probe -- test/fixtures/parser_valid`)
    and compare the diagnostics with the previous version.

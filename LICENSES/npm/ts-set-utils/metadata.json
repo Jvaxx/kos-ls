@@ -1,0 +1,10 @@
+{
+  "name": "ts-set-utils",
+  "version": "0.2.0",
+  "license": "MIT",
+  "author": "John Chabot",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jonnyboyC/ts-set-utils"
+  }
+}

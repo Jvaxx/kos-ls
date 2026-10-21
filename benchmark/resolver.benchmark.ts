@@ -14,7 +14,7 @@ import {
 } from '../src/analysis/standardLibrary';
 import { CaseKind } from '../src/utilities/enums';
 
-const testDir = join(__dirname, '../../../kerboscripts/parser_valid/');
+const testDir = join(__dirname, '../../test/fixtures/parser_valid/');
 const fakeUri = 'file:///fake/base';
 
 suite('resolver', () => {

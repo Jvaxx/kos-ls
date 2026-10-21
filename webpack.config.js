@@ -9,7 +9,7 @@ const outDir = process.env.NODE_ENV && process.env.NODE_ENV === 'dev' ?
 
 /**@type {import('webpack').Configuration}*/
 const config = {
-    target: 'node', // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
+    target: 'node', // standalone language server and CLI, not a VS Code extension
     entry: {
         // the language server, and the `kos-ls format`, `check` and `size`
         // commands

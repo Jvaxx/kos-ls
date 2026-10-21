@@ -5,10 +5,10 @@ import { Parser } from '../src/parser/parser';
 import { Tokenized } from '../src/scanner/types';
 import { scanSource } from '../test/utilities/setup';
 
-const testDir = join(__dirname, '../../../kerboscripts/parser_valid/');
+const testDir = join(__dirname, '../../test/fixtures/parser_valid/');
 const fakeUri = 'file:///fake/base';
 
-suite('praser', () => {
+suite('parser', () => {
   let ap: Tokenized;
   let boostback: Tokenized;
   let allLanguage: Tokenized;
