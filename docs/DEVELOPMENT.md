@@ -2,13 +2,16 @@
 
 ## Setup and checks
 
-Requires Node.js 22 or later and npm. CI tests Node.js 22 and 24.
+Requires Node.js 22.13 or later and npm.
+[CI](https://github.com/Jvaxx/kos-ls/actions/workflows/node.js.yml) tests
+Node.js 22 and 24. Release instructions are in [RELEASING.md](RELEASING.md).
 No KSP installation or kOS checkout is required for ordinary builds or
 tests: the builtin database and test fixtures are checked in.
 
 ```sh
 npm ci
 npm run clean
+npm run verify:sources
 npm run build
 npm run lint
 npm run prettier:check
@@ -42,7 +45,7 @@ git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 The package's `files` allowlist includes runtime bundles/maps and launcher,
 **matching project source** (including tests, tools and build configuration),
-the pinned kOS extraction inputs and licensing notices. This is deliberate
+the pinned kOS/runtime dependency inputs and licensing notices. This is deliberate
 GPL source delivery, not accidental publication of build clutter. Local
 reports, private Git history and dependencies are excluded. npm also
 includes the root README, package metadata and license. To inspect contents
@@ -59,9 +62,8 @@ npm pack --dry-run --ignore-scripts
 `npm-shrinkwrap.json`: npm excludes the former from tarballs, but includes
 the latter, so extracted sources still support `npm ci`. Do not maintain
 the two independently; regenerate it after lockfile changes. A real
-`npm pack` runs `prepack` (build, bundle, tests and package preparation).
-The licensing
-choice is recorded in [LICENSING.md](LICENSING.md): GPL-3.0-only for the
+`npm pack` runs `prepack` (source verification, build, bundle, tests and
+package preparation). The licensing choice is recorded in [LICENSING.md](LICENSING.md): GPL-3.0-only for the
 combined distribution, with retained upstream notices. Extract a candidate
 package and verify its included source builds; review the remaining
 [publication/release checks](PUBLISHING.md) before distributing it.
@@ -87,7 +89,7 @@ package and verify its included source builds; review the remaining
 Keep sources, tests (including fixture `bin/` directories), the lockfile,
 benchmark suites, grammar specification, database generator/overrides,
 versioned builtin database and its generation report, plus the pinned kOS
-source snapshot and license notices. The database is required at runtime;
+source snapshots, fixture inventory and license notices. The database is required at runtime;
 its report helps review extraction gaps, and the source snapshot preserves
 editable inputs for regeneration/source delivery. None is disposable build
 output.
@@ -107,8 +109,7 @@ This removes only known root build/report outputs (`out/`, `dist/`,
 `coverage/`, generated shrinkwrap, JUnit XML, benchmark exports and
 profiles). In an unpacked package, where shrinkwrap is the only lockfile,
 it is preserved. Cleanup leaves `node_modules/`, the canonical lockfile,
-all source data and nested test fixtures
-alone. It also removes the bundles used by linked commands: rebuild and
+all source data and nested test fixtures alone. It also removes the bundles used by linked commands: rebuild and
 rebundle before using them again. npm package archives and logs are
 ignored but not deleted automatically.
 

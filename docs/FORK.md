@@ -2,7 +2,8 @@
 
 ## Provenance
 
-kos-ls is maintained by Jvaxx as an independent fork of
+[kos-ls](https://github.com/Jvaxx/kos-ls) is maintained by Jvaxx as an
+independent fork of
 [John Chabot's kos-language-server](https://github.com/jonnyboyC/kos-language-server).
 The fork starts from upstream commit
 [`aff3a4743f5492a878cbfb5d2938e2e90f83cb45`](https://github.com/jonnyboyC/kos-language-server/commit/aff3a4743f5492a878cbfb5d2938e2e90f83cb45)
@@ -18,7 +19,9 @@ this fork, not features attributed to the original author. This project
 does not claim upstream or kOS endorsement, and makes no promise about
 upstream's current maintenance status.
 
-The fork's package version is `2.0.0-dev`; it has not had a stable release.
+The first stable fork release is [2.0.0](https://github.com/Jvaxx/kos-ls/releases/tag/v2.0.0).
+The repository/release currently remain private; this is not an npm
+registry release or a change to the original project's release line.
 Upstream's recorded releases are preserved separately in
 [the upstream changelog](UPSTREAM_CHANGELOG.md). Their VS Code instructions
 and version numbers describe that project, not this fork.
@@ -28,7 +31,7 @@ and version numbers describe that project, not this fork.
 | Area | Fork changes relative to the upstream base |
 | --- | --- |
 | Repository | Only the server; upstream's `server/` is now the repository root. The VS Code client, extension manifests, grammar submodule, snippets and editor-specific launch/telnet/documentation commands are not included. |
-| Runtime and commands | Node.js 22+, package/executable `kos-ls`, with `kls` as a compatibility alias. Server and CLI are bundled from this checkout. |
+| Runtime and commands | Node.js 22.13+, package/executable `kos-ls`, with `kls` as a compatibility alias. Server and CLI are bundled from this checkout. |
 | Workspace model | Root `ksconfig.json` read before initialization completes, reloaded on changes; volume mappings, preloaded libraries and excluded paths; queued dependency propagation and order-independent cross-file analysis. |
 | Builtins | Checked-in kOS 1.6.0.1 database generated from C# and Sphinx documentation, with explicit overrides; most handwritten builtin definitions replaced. Primitive and generic collection models remain in TypeScript. |
 | Analysis | Flow unions, forward references to functions, runtime-derived structures and unknown-type leniency; declaration/set chains, bare file names and `@clobberbuiltins`; system-lock handling and corrected builtin reference tracking. |
@@ -77,5 +80,6 @@ notice are preserved in [LICENSES/kos-language-server-MIT.txt](../LICENSES/kos-l
 those grants are not withdrawn. See [the licensing decision](LICENSING.md)
 and [third-party notices](../THIRD_PARTY_NOTICES.md) for the kOS material
 and inherited fixtures.
-Please file fork bugs and feature requests in this repository; upstream
+Please file fork bugs and feature requests in
+[Jvaxx/kos-ls issues](https://github.com/Jvaxx/kos-ls/issues); upstream
 issue numbers mentioned in Git history refer to the original repository.

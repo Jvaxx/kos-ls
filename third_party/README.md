@@ -1,4 +1,10 @@
-# Pinned kOS database source inputs
+# Pinned third-party source inputs
+
+The kOS database inputs below and the [runtime dependency sources](npm/README.md)
+are versioned editable source snapshots shipped with releases. Run
+`npm run verify:sources` to verify them offline.
+
+## kOS database source inputs
 
 `kos-1.6.0.1-inputs.tar.gz` contains **643 unmodified source/license files**
 from kOS commit `d4388439c712994e47258ed7514e863f79da632b` (tag `1.6.0.1`).
@@ -21,7 +27,7 @@ No game binary is included. Ordinary kos-ls builds do not use this archive;
 it preserves preferred editable inputs for the derived database and makes
 regeneration possible without another download.
 
-## Verify and extract
+### Verify and extract
 
 From the repository/package root:
 
@@ -35,7 +41,7 @@ Use `/tmp/kos-db-inputs/kos-1.6.0.1` as `--kos` for regeneration;
 see [the database guide](../docs/kos-db.md#regenerating). Choose a fresh
 scratch directory; the archive paths are rooted under `kos-1.6.0.1/`.
 
-## Refreshing the snapshot
+### Refreshing the snapshot
 
 Use an unmodified official kOS checkout at the intended revision. Select
 exactly the paths above, archive them with `git archive --format=tar

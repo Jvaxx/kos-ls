@@ -59,6 +59,10 @@ when distributing non-source forms. Our package policy therefore includes:
 - The unmodified kOS C#/RST inputs used by extraction, with original
   notices/licenses, exact revision and checksum, in
   `third_party/kos-1.6.0.1-inputs.tar.gz`.
+- Complete editable source trees for all ten runtime packages (runtime
+  code unchanged; one test-only URL redaction explicitly recorded),
+  with exact version/revision/integrity/checksum manifests in
+  `third_party/npm/`, rather than only compiled npm JavaScript.
 - Root GPL, retained upstream MIT, kOS attribution and runtime dependency
   notices in `LICENSES/`.
 
@@ -90,11 +94,11 @@ Before each distribution of bundles or an npm package:
    matching source and clear instructions, and maintain availability for
    as long as required. A generic link to another project's latest source
    or a private repository is not a substitute for matching source.
-4. Review the exact bundled dependency source and notices too; the
-   lockfile and license copies identify dependencies but are not by
-   themselves a complete source-delivery solution for compiled libraries.
-   Supply any additional required non-system dependency sources with the
-   release or through a compliant source-access arrangement.
+4. Review the exact bundled dependency source and notices too. The pinned
+   archives in [third_party/npm/](../third_party/npm/README.md) supply the
+   ten runtime packages' editable source for this release. Refresh that
+   inventory and rerun `npm run verify:sources` when the lockfile changes;
+   a lockfile or license copy alone is not a substitute for source.
 5. Update input snapshots, manifests and notices when changing the target
    kOS revision. Respect GPL obligations for further modifications and
    redistribution; consult the license for the full conditions.
@@ -107,6 +111,9 @@ editors become GPL merely by using the language server.
 ## Separate publication checks
 
 The kOS database licensing choice does not establish redistribution rights
-for every inherited third-party script fixture, nor complete a security
-review of hosting settings, logs or attachments. Those remain separate
-items in [the publication checklist](PUBLISHING.md).
+for every inherited third-party script fixture. The
+[fixture inventory/review](FIXTURES.md) documents the upstream license
+chain without claiming independently verified rights from every original
+script author. The repository/release remain private by choice; public
+visibility, hosting settings and future artifacts require the checks in
+[the publication checklist](PUBLISHING.md).

@@ -1,84 +1,69 @@
-# Before making the repository public
+# Publication and release checks
 
-This checklist separates completed local preparation from the remaining
-publication/release checks. Nothing here publishes a repository or package.
+Repository: [Jvaxx/kos-ls](https://github.com/Jvaxx/kos-ls).
+The maintainer chose to keep it **private** and make **2.0.0 a stable
+GitHub release**. Publishing a private release does not change repository
+visibility or publish to npm. See [RELEASING.md](RELEASING.md) for the
+repeatable release procedure and [2.0.0 notes](releases/v2.0.0.md).
 
-## Rights and provenance
+## Completed preparation
 
-- [x] Resolve the kOS-derived database licensing choice: the maintainer
-  selected **GPL-3.0-only for the combined distribution**, retaining
-  upstream MIT terms, original kOS notices and pinned editable extraction
-  inputs. See [the decision](LICENSING.md) and
-  [third-party notices](../THIRD_PARTY_NOTICES.md).
-- [x] Update root license, package/lockfile metadata, source-package
-  allowlist and documentation to match that choice. Packages include
-  project source and the kOS input snapshot rather than only bundles.
-- [ ] Audit inherited fixture author/license notices and redistribution
-  rights. Do not assume every script author was the upstream server author;
-  GPL licensing of the combined project does not cure missing permissions.
-- [ ] For each binary/package release, review actual bundled dependency
-  notices and corresponding-source requirements. Retained notices and a
-  lockfile identify dependencies but do not replace required source.
-- [x] Preserve upstream attribution and the exact unchanged upstream base
-  in [FORK.md](FORK.md), with historical release notes clearly labeled.
+- [x] Choose GPL-3.0-only for the combined server/database; retain upstream
+  MIT grants, kOS notices, editable extraction inputs and source delivery.
+  See [licensing](LICENSING.md) and [third-party notices](../THIRD_PARTY_NOTICES.md).
+- [x] Align root license, package/lock metadata, documentation and the
+  source-inclusive package allowlist. Supply an exact generated shrinkwrap.
+- [x] Archive complete editable source for all ten runtime dependencies,
+  recording exact revisions, versions, npm integrity values and source
+  checksums; retain dependency notices and add offline verification.
+- [x] Inventory every fixture: 278 unchanged upstream files, six
+  fork-created files. Record source blobs and hashes without claiming the
+  upstream server author wrote every script; see [fixture review](FIXTURES.md).
+- [x] Preserve upstream attribution, the exact base and historical releases.
+- [x] Review/sanitize local fork history and private notes, preserve upstream
+  history, scan for secrets, and keep private recovery backups outside the
+  repository. Retain the commit email as explicitly requested; see
+  [privacy review](HISTORY_REVIEW.md).
+- [x] Create `Jvaxx/kos-ls` as private and configure repository/homepage/issue
+  links. Keep `origin` separate from `upstream`, enable issues/security
+  alerts, disable the unused wiki and use read-only Actions permissions.
 
-## Privacy and repository configuration
+## For every release
 
-- [x] Review local history, handoff content, fork commit messages, author
-  identities and machine paths; run a dedicated secret scanner. No
-  credentials were reported. See [scope and limitations](HISTORY_REVIEW.md).
-- [x] Back up and sanitize fork history with approval: remove private notes
-  and fork benchmark results from all fork revisions; neutralize local
-  project paths. Keep upstream history intact. The maintainer explicitly
-  chose to retain the existing commit email address.
-- [ ] Commit the final reviewed source changes, then repeat history and
-  working-tree/archive scans against the exact tip/artifacts to be published.
-  Do not publish private backups, audit reports, reflogs or old fork refs.
-- [ ] Review GitHub Actions logs/artifacts, releases, attachments and
-  hosting settings for private material, if such hosted material exists.
-- [ ] Choose the fork's public URL. Add `repository`, `homepage` and `bugs`
-  package metadata then; do not redirect fork reports upstream or guess
-  an owner/URL. Keep `upstream` separate from the fork's `origin`.
-- [ ] Configure issue/discussion channels, branch protection and security
-  alerts as desired. Templates must not assign upstream authors or assume
-  the original VS Code extension is installed.
+- [ ] Commit all reviewed changes, then scan the exact candidate history,
+  clean source tree and extracted artifacts, including nested source inputs.
+  Do not publish backup refs, reflogs, raw audit reports or local paths.
+- [ ] Run source verification, build, lint, formatting, full tests and
+  bundle; confirm [CI](https://github.com/Jvaxx/kos-ls/actions/workflows/node.js.yml)
+  passes on Node.js 22 and 24 for the exact candidate and tag.
+- [ ] Regenerate the database/report from archived kOS inputs and compare
+  byte-for-byte. Verify source manifests and current dependency notices.
+- [ ] Extract the package, install using its shrinkwrap, and build/test its
+  included source. Test a clean temporary-prefix installation of the `.tgz`,
+  CLI commands and stdio LSP startup. Inspect source maps as public material.
+- [ ] Include source, licenses, notices, source-input snapshots and SPDX
+  runtime inventory. Generate and verify SHA-256 checksums for all assets.
+- [ ] Verify the annotated tag target and draft release, download assets
+  and recheck checksums, then publish with the intended stable/prerelease
+  flag. Confirm the resulting URL and asset set.
+- [ ] Keep tracked build artifacts/reports out of Git and leave a clean
+  working tree. Source snapshots and inventories remain versioned inputs.
 
-## Verification
+## Before making the repository public
 
-From a clean checkout using a CI-supported Node.js version:
+- [ ] Revisit the independent fixture-author permission question in
+  [FIXTURES.md](FIXTURES.md). Upstream repository provenance is established;
+  changing the combined license does not itself establish each original
+  author's permissions.
+- [ ] Review all hosted Actions logs/artifacts, releases, attachments and
+  repository settings. A clean local tree does not audit hosted material.
+- [ ] Repeat history/source/artifact scanning against all refs to publish
+  and explicitly approve any retained personal metadata. The previously
+  accepted commit email will become publicly visible too.
+- [ ] Review branch protection, contribution channels and security settings
+  for public operation. Do not assume a private stable release authorizes
+  a later visibility change.
 
-```sh
-npm ci
-npm run clean
-npm run build
-npm run lint
-npm run prettier:check
-npm test -- --maxWorkers=2
-npm run bundle
-./bin/kos-ls --version
-./bin/kos-ls format --help
-./bin/kos-ls check --help
-./bin/kos-ls size --help
-npm run prepare:package
-npm pack --dry-run --ignore-scripts
-```
-
-- [ ] Confirm CI passes on every supported Node.js version. Test the
-  documented editor setup and CLI on a small example workspace.
-- [ ] Inspect/extract the package: bundles/maps, launcher, matching project
-  source/build files, generated shrinkwrap lockfile, kOS input snapshot and
-  required licenses/notices.
-  No private history, local reports, benchmark results or secrets. Source
-  maps contain source text and must be reviewed as public material.
-- [ ] Build and test the **included source**, and regenerate the database
-  from the archived inputs; compare with the distributed database/report.
-- [ ] Review `git status --short --ignored`: outputs should be ignored,
-  while sources, lockfile, fixtures, database and third-party source inputs
-  remain tracked after committing.
-- [ ] Review [known limitations](ROADMAP.md), [licensing/source delivery](LICENSING.md)
-  and the unreleased changelog. Choose a stable version/tag only when
-  actually releasing; changing visibility does not release `2.0.0-dev`.
-
-Making source public does not require publishing to npm. There is no
-automatic publish workflow; npm ownership, credentials and release contents
-must be reviewed separately if a package release is later desired.
+There is no automatic npm publish workflow. Review npm ownership, naming,
+credentials, registry visibility and source-delivery requirements separately
+before any registry publication.

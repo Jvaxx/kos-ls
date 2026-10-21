@@ -20,8 +20,10 @@ See [fork history](docs/FORK.md) for changes and attribution.
 
 The historical changelog and inherited parser fixtures come from that
 repository too. Preserve author/license notices in individual fixtures.
-The separate fixture-provenance audit in the publication checklist is not
-resolved merely by changing the combined project's license.
+The [fixture inventory and review](docs/FIXTURES.md) trace all 278 inherited
+files byte-for-byte to upstream and distinguish six fork-created files.
+Independent original-author permissions remain a separate consideration
+before changing this currently private repository's visibility.
 
 ## kOS-derived database
 
@@ -80,7 +82,14 @@ compatible with GPLv3. Their notices are retained separately in
 that dependencies were authored by kos-ls contributors.
 
 `package-lock.json` pins the exact dependency tree and integrity hashes.
-Review dependency source availability and notices whenever preparing a
-release or updating the lockfile; development tools have their own terms.
-GPL source delivery for a bundled release must also cover any required
-non-system dependency source not already included or validly excluded.
+The [six archives and manifest in third_party/npm/](third_party/npm/README.md)
+contain complete editable source trees for all ten locked runtime
+packages, including the original TypeScript and build files where
+applicable. One skipped `vscode-uri` regression-test URL was neutralized
+on 21 October 2026 to avoid redistributing an embedded image-download
+bearer token; runtime source and all original notices are unchanged, and
+the source manifest records the modification. Archive package versions were checked against npm versions;
+`npm run verify:sources` checks hashes and full version/integrity coverage
+offline. These sources accompany release packages, not merely links to
+upstream default branches. Refresh them and their notices when dependencies
+change; development tools have their own terms.

@@ -1,6 +1,6 @@
 # Status and roadmap
 
-kos-ls is an unreleased, server-only fork targeting **kOS 1.6.0.1**
+kos-ls 2.0.0 is a stable, server-only fork targeting **kOS 1.6.0.1**
 (KSP 1.12), primarily tested with Neovim. This is a current status summary,
 not a release commitment. See [fork history and migration](FORK.md) and
 [the changelog](../CHANGELOG.md) for completed changes.
@@ -62,8 +62,10 @@ not a release commitment. See [fork history and migration](FORK.md) and
 
 ## Next priorities
 
-1. **Before public distribution:** complete the remaining fixture-rights,
-   final-tip and release-source checks in [the publication checklist](PUBLISHING.md).
+1. **Before making the currently private repository public:** complete the
+   remaining independent fixture-rights and visibility checks in
+   [the publication checklist](PUBLISHING.md). Repeat source/security checks
+   for every release; see [releasing](RELEASING.md).
    The [GPLv3 distribution decision](LICENSING.md) and
    [fork-history privacy cleanup](HISTORY_REVIEW.md) are complete.
 2. Keep dependencies, supported Node.js versions and LSP compatibility

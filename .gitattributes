@@ -4,4 +4,7 @@ LICENSES/** -text -whitespace
 # This is an intentionally preserved historical document, not new prose.
 docs/UPSTREAM_CHANGELOG.md -whitespace
 
+# Fixture hashes record original bytes, even on CRLF-default checkouts.
+test/fixtures/** -text
+
 third_party/**/*.tar.gz binary

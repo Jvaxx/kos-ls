@@ -23,6 +23,8 @@ John Chabot as author, but ships no standalone license/notice file;
 its metadata is preserved rather than inventing an upstream copyright notice.
 Pinned release source: https://github.com/jonnyboyC/ts-set-utils/tree/9ca6a8b4056a67a381168cd9981df4909382ff70
 
-Refresh these notices and review the source-delivery requirements when
-updating runtime dependencies. These files preserve notices; they are not
-a replacement for corresponding dependency source where that is required.
+Matching editable dependency source accompanies the release in
+[third_party/npm/](../../third_party/npm/README.md), with immutable revisions,
+versions, archive checksums and npm integrity hashes. Refresh both source
+snapshots and notices when updating runtime dependencies; license copies
+alone are not a replacement for required corresponding source.

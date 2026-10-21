@@ -9,7 +9,8 @@ maintained here by Jvaxx. The original author and contributors built the
 scanner, parser, analysis and LSP foundation; this fork extends that work.
 It is not an official kOS project or the upstream VS Code extension.
 
-**Status:** `2.0.0-dev`, unreleased. Targets kOS **1.6.0.1** (KSP 1.12).
+**Current release:** [2.0.0](https://github.com/Jvaxx/kos-ls/releases/tag/v2.0.0)
+(stable). Targets kOS **1.6.0.1** (KSP 1.12).
 Uses standard LSP, with Neovim as the primary tested client. Other editors
 need an LSP client configured to launch this server.
 
@@ -31,16 +32,40 @@ need an LSP client configured to launch this server.
 See [fork history and migration](docs/FORK.md) for the exact upstream base,
 compatibility changes and scope; [CHANGELOG.md](CHANGELOG.md) for fork
 changes; and [the roadmap](docs/ROADMAP.md) for limitations and future work.
-Please report fork issues in **this repository**, not upstream.
+Please report fork issues in [Jvaxx/kos-ls](https://github.com/Jvaxx/kos-ls/issues),
+not upstream. [CI](https://github.com/Jvaxx/kos-ls/actions/workflows/node.js.yml)
+tests Node.js 22 and 24. The repository currently remains private;
+repository, issue and release links require access.
+
+## Install the release
+
+Requires **Node.js 22.13 or later** and npm. With authenticated
+[GitHub CLI](https://cli.github.com/) access to this private repository:
+
+```sh
+gh release download v2.0.0 --repo Jvaxx/kos-ls \
+  --pattern kos-ls-2.0.0.tgz --pattern SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS
+npm install --global ./kos-ls-2.0.0.tgz
+kos-ls --version
+```
+
+The release asset includes ready-to-run bundles and matching editable
+source. No npm registry release has been made; `npm install -g kos-ls`
+is not the installation method for this fork. See [release notes](docs/releases/v2.0.0.md)
+for assets, migration and limitations.
 
 ## Build and run from source
 
-Requires **Node.js 22 or later** and npm. From a checkout of this fork:
+Requires **Node.js 22.13 or later** and npm. Clone this fork, then:
 
 ```sh
+gh repo clone Jvaxx/kos-ls
+cd kos-ls
 npm ci            # install the locked development dependencies
 npm run build     # TypeScript, tests and tools to out/
 npm test
+npm run verify:sources # verify pinned sources and fixture inventory offline
 npm run bundle    # server and CLI bundles to dist/, used by bin/kos-ls
 ./bin/kos-ls --version
 npm link          # optional: puts kos-ls (and the kls alias) on PATH
@@ -316,6 +341,6 @@ the kOS Team, Nivekk and contributors.
 See [the licensing decision and source-delivery policy](docs/LICENSING.md),
 [third-party notices](THIRD_PARTY_NOTICES.md),
 [the historical privacy review](docs/HISTORY_REVIEW.md) and
-[the publication checklist](docs/PUBLISHING.md). npm packages include the
-project source, build inputs and pinned kOS extraction sources alongside
-the runtime bundles.
+[the publication checklist](docs/PUBLISHING.md). release packages include the
+project source, build inputs and pinned kOS/runtime dependency sources
+alongside the runtime bundles.

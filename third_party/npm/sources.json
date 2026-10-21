@@ -1,0 +1,142 @@
+{
+  "format": 1,
+  "archives": [
+    {
+      "archive": "commander-ba6d13ddb424.tar.gz",
+      "sha256": "90eead3cb0fe076fe96ab17926e7e61f1d8092ad3a0ec751282ff951d1da318d",
+      "repository": "https://github.com/tj/commander.js",
+      "revision": "ba6d13ddb4243e5913367734f8c159089ffe7834",
+      "url": "https://codeload.github.com/tj/commander.js/tar.gz/ba6d13ddb4243e5913367734f8c159089ffe7834",
+      "prefix": "commander.js-ba6d13ddb4243e5913367734f8c159089ffe7834/",
+      "packages": [
+        {
+          "name": "commander",
+          "version": "15.0.0",
+          "license": "MIT",
+          "directory": ".",
+          "npmIntegrity": "sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg=="
+        }
+      ]
+    },
+    {
+      "archive": "denque-539105bb5785.tar.gz",
+      "sha256": "6f176ea7bb1f01c0f66a14807fc4f9d671ccf0cb421b3ff156bf00a1e6ae7c72",
+      "repository": "https://github.com/invertase/denque",
+      "revision": "539105bb57854e997dd469221cdc52a0ad80e0a2",
+      "url": "https://codeload.github.com/invertase/denque/tar.gz/539105bb57854e997dd469221cdc52a0ad80e0a2",
+      "prefix": "denque-539105bb57854e997dd469221cdc52a0ad80e0a2/",
+      "packages": [
+        {
+          "name": "denque",
+          "version": "2.1.0",
+          "license": "Apache-2.0",
+          "directory": ".",
+          "npmIntegrity": "sha512-HVQE3AAb/pxF8fQAoiqpvg9i3evqug3hoiwakOyZAwJm+6vZehbkYXZ0l4JxS+I3QxM97v5aaRNhj8v5oBhekw=="
+        }
+      ]
+    },
+    {
+      "archive": "jsonc-parser-3c9b4203d663.tar.gz",
+      "sha256": "8ed704933b34417f2b3e7baa554cb9d9db3a2a60a46b43fe32714bb0f2f16dff",
+      "repository": "https://github.com/microsoft/node-jsonc-parser",
+      "revision": "3c9b4203d663061d87d4d34dd0004690aef94db5",
+      "url": "https://codeload.github.com/microsoft/node-jsonc-parser/tar.gz/3c9b4203d663061d87d4d34dd0004690aef94db5",
+      "prefix": "node-jsonc-parser-3c9b4203d663061d87d4d34dd0004690aef94db5/",
+      "packages": [
+        {
+          "name": "jsonc-parser",
+          "version": "3.3.1",
+          "license": "MIT",
+          "directory": ".",
+          "npmIntegrity": "sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ=="
+        }
+      ]
+    },
+    {
+      "archive": "ts-set-utils-9ca6a8b4056a.tar.gz",
+      "sha256": "29f550164afe3cfca2c8db083254915637742f9246623cc1cabe9b82826764ff",
+      "repository": "https://github.com/jonnyboyC/ts-set-utils",
+      "revision": "9ca6a8b4056a67a381168cd9981df4909382ff70",
+      "url": "https://codeload.github.com/jonnyboyC/ts-set-utils/tar.gz/9ca6a8b4056a67a381168cd9981df4909382ff70",
+      "prefix": "ts-set-utils-9ca6a8b4056a67a381168cd9981df4909382ff70/",
+      "packages": [
+        {
+          "name": "ts-set-utils",
+          "version": "0.2.0",
+          "license": "MIT",
+          "directory": ".",
+          "npmIntegrity": "sha512-+4X9p1qqaSmENkuWrqgTet199mqwnAZKdGVNUQejldZGZUDzmtjMaQ+EvA9l1EHl2j/31RYRONc8yJbbWF1QTg=="
+        }
+      ]
+    },
+    {
+      "archive": "vscode-uri-c22523764aa0-sanitized.tar.gz",
+      "sha256": "685b0991c214df1a9b59dc6f67d0bc1b28c5f3eb26289b5f5261a09a0d7b93fd",
+      "repository": "https://github.com/microsoft/vscode-uri",
+      "revision": "c22523764aa041c34841c42b815d280a694593b8",
+      "url": "https://codeload.github.com/microsoft/vscode-uri/tar.gz/c22523764aa041c34841c42b815d280a694593b8",
+      "prefix": "vscode-uri-c22523764aa041c34841c42b815d280a694593b8/",
+      "packages": [
+        {
+          "name": "vscode-uri",
+          "version": "3.2.0",
+          "license": "MIT",
+          "directory": ".",
+          "npmIntegrity": "sha512-m2gXo3bn0G1kT9InzMf07fTbqMbGtyckj3bH5ktLO+1Ssv+yiATZ4dhwaQv9UZWxJh6E9IFGnQyjgWVDWVBDrg=="
+        }
+      ],
+      "modifications": [
+        {
+          "file": "src/test/uri.test.ts",
+          "reason": "Replace a bearer-style image-download URL in a skipped upstream regression test with an inert example.invalid URL; runtime source is unchanged.",
+          "date": "2026-10-21"
+        }
+      ]
+    },
+    {
+      "archive": "vscode-languageserver-node-4cd3a5a87585.tar.gz",
+      "sha256": "83267e5eff5b9cade31ab0d8459dac6d724cc8fe5d867ba638dce59b0c4749b6",
+      "repository": "https://github.com/microsoft/vscode-languageserver-node",
+      "revision": "4cd3a5a875858ad09810ef7d558561f68103fd0d",
+      "url": "https://codeload.github.com/microsoft/vscode-languageserver-node/tar.gz/4cd3a5a875858ad09810ef7d558561f68103fd0d",
+      "prefix": "vscode-languageserver-node-4cd3a5a875858ad09810ef7d558561f68103fd0d/",
+      "packages": [
+        {
+          "name": "vscode-jsonrpc",
+          "version": "9.0.3",
+          "license": "MIT",
+          "directory": "jsonrpc/",
+          "npmIntegrity": "sha512-qETYf9PCl1lVfwR+oBmMfc4vP2nqLNA35ABxorw3j06+xlKRgDVxbLgKm4Y/xPL0YWdeDjLoI4ImICIT3nB0zQ=="
+        },
+        {
+          "name": "vscode-languageserver",
+          "version": "10.1.2",
+          "license": "MIT",
+          "directory": "server/",
+          "npmIntegrity": "sha512-pXPWde3RytdeBVEs6PulOOT5OpeXC5GkWRpcT11f5rNn41jviQsAYPyAqJ/0oVGETQLKPJtYbHNiMPlfLb0NTQ=="
+        },
+        {
+          "name": "vscode-languageserver-protocol",
+          "version": "3.18.4",
+          "license": "MIT",
+          "directory": "protocol/",
+          "npmIntegrity": "sha512-CCXbyr99dafRJzJH/0Ryk7ly5T8XPmSR0//OuF2w4m+9JiOin7zcAT5iET8GRE7Z9taFBejb3GbM0a0mbjdbrg=="
+        },
+        {
+          "name": "vscode-languageserver-types",
+          "version": "3.18.4",
+          "license": "MIT",
+          "directory": "types/",
+          "npmIntegrity": "sha512-nQsacoiijvl0fRf2q28uFDrAVwRhdCa3QveiF7/CX0r18mLR5FU/1WskSsCKOjmEbtteKUnY8x8Yzxop+k0zwg=="
+        },
+        {
+          "name": "vscode-languageserver-textdocument",
+          "version": "1.0.15",
+          "license": "MIT",
+          "directory": "textDocument/",
+          "npmIntegrity": "sha512-Gsfr9S8LU3S6885cS+NaleasJ0n3V5y/SOTqHCifQiXWFw3G9w9/YItDfwHrlCz+dSZWWZ8ilYVMcJe7Sz7Sxw=="
+        }
+      ]
+    }
+  ]
+}

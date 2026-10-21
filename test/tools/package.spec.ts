@@ -55,6 +55,15 @@ describe('source-package preparation', () => {
 });
 
 describe('distribution provenance', () => {
+  test('editable dependency inputs and every fixture match their inventory', () => {
+    const output = execFileSync(
+      process.execPath,
+      [join(project, 'tools/check-sources.js')],
+      { cwd: tmpdir(), encoding: 'utf8' },
+    );
+    expect(output).toContain('10 runtime dependency sources and 284 fixtures');
+  });
+
   test('package and lock agree on GPLv3 and preserve editable source inputs', () => {
     const pkg = JSON.parse(
       readFileSync(join(project, 'package.json'), 'utf8'),

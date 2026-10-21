@@ -3,7 +3,9 @@ name: CI
 on:
   push:
     branches: ['main']
+    tags: ['v*']
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -21,10 +23,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - run: npm ci
+      - run: npm run verify:sources
       - run: npm run build
       - run: npm run lint
       - run: npm run prettier:check
-      - run: npm test
+      - run: npm test -- --maxWorkers=2
       - run: npm run bundle
       - run: npm run prepare:package
       - run: npm pack --dry-run --ignore-scripts

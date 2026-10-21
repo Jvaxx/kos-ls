@@ -1,0 +1,1982 @@
+{
+  "upstreamRepository": "https://github.com/jonnyboyC/kos-language-server",
+  "upstreamRevision": "aff3a4743f5492a878cbfb5d2938e2e90f83cb45",
+  "files": [
+    {
+      "path": "test/fixtures/parser_invalid/parameters/paramtest6_error.ks",
+      "sha256": "5678d857278548426e4833dc8334f684530978b01dab130da599118b79e269b6",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_invalid/parameters/paramtest6_error.ks",
+      "upstreamBlob": "d5d81bd6192dcb1415f9378874d7c3361306c5f9"
+    },
+    {
+      "path": "test/fixtures/parser_invalid/parameters/paramtest7_error.ks",
+      "sha256": "d5d005c25be4b5ac3cf453c087c60f294a7eb0fb3423efdbfdd4f8546a449dbe",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_invalid/parameters/paramtest7_error.ks",
+      "upstreamBlob": "a7d6668b01b9bb1794e15871f82fc9799f2ba869"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/WIP/alarm.ks",
+      "sha256": "b1ca05965008d3c83b22ef2db3dfcda936b8d27fcd4120f34e934805ab8b5ae7",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/WIP/alarm.ks",
+      "upstreamBlob": "3923de197bc1c4b28d342bd5622e6fde49222286"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/WIP/launch.ks",
+      "sha256": "83cf81e90bf86d2919f251b1b4538e53497fb29d256abb62fd25e28606f3b0b8",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/WIP/launch.ks",
+      "upstreamBlob": "11e74a06882c96c47723dcaf46aa4ee22300cc17"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/WIP/readout.ks",
+      "sha256": "559363ae0e59d5f09b786f51c3b0fc909906900b8c8ed8e001fb2af4ec739957",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/WIP/readout.ks",
+      "upstreamBlob": "fad547fb8e8f4af0718ae9f1665b452f1b4c64ff"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/error0_100.ks",
+      "sha256": "b98fd00a3d4b0c69625ee7d09ead2c97d334cac4392ce18c972ddb7716058162",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/error0_100.ks",
+      "upstreamBlob": "295a0a8eaee87cd5251f557ce50e1e90791e647c"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/errorlist/error0_100.ks",
+      "sha256": "b98fd00a3d4b0c69625ee7d09ead2c97d334cac4392ce18c972ddb7716058162",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/errorlist/error0_100.ks",
+      "upstreamBlob": "295a0a8eaee87cd5251f557ce50e1e90791e647c"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/errorlist/errorlistexe.ks",
+      "sha256": "30d9b6fc35a42ecc5517b73b9b8cc0e788e7b2c77165e41eff875d3d68b42668",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/errorlist/errorlistexe.ks",
+      "upstreamBlob": "3235abb25c71a82c397c380ba7bad97ee1d9af46"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/errorlist/lib_menu.ks",
+      "sha256": "5736c93d4047d75a0241f0e148da651b3149bebb70ed7ae8c121fcfd9cf3b396",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/errorlist/lib_menu.ks",
+      "upstreamBlob": "8c1ca811e217602ab306ef93223a029399c27ddc"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/errorlist/lib_menulist1.ks",
+      "sha256": "6c199429b267d1492ab48d3f2c7b76fb3a89c6674e93103b9eda902e03b2e73f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/errorlist/lib_menulist1.ks",
+      "upstreamBlob": "cf95c37c7aa5c9e26f1190f01e02afd546280cd6"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/errorlist/lib_menutest.ks",
+      "sha256": "1c8822cfbea0bf2ba15adddc50ec77b8c76856487cf890d3051bfbafe59ff593",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/errorlist/lib_menutest.ks",
+      "upstreamBlob": "b4686c79b7a50007efadaac33626bae7ab266919"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/errorlist/lib_ui.ks",
+      "sha256": "187991e89795b7863184105631786a52a747c318ba19f525a7857c1ec1b7e0df",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/errorlist/lib_ui.ks",
+      "upstreamBlob": "a11a0c64fa70e587f869b8fb0cf0765ebcb4e8a5"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/errorlist/test.ks",
+      "sha256": "f6bc0c4c761c694e3ce0cc1f4fa8bdf713d3441350de0a894f9ba560da56ce67",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/errorlist/test.ks",
+      "upstreamBlob": "3490cc5026c8374cdf1413a428594f3b7cb22de9"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/errorlistexe.ks",
+      "sha256": "30d9b6fc35a42ecc5517b73b9b8cc0e788e7b2c77165e41eff875d3d68b42668",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/errorlistexe.ks",
+      "upstreamBlob": "3235abb25c71a82c397c380ba7bad97ee1d9af46"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/lib_menu.ks",
+      "sha256": "5736c93d4047d75a0241f0e148da651b3149bebb70ed7ae8c121fcfd9cf3b396",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/lib_menu.ks",
+      "upstreamBlob": "8c1ca811e217602ab306ef93223a029399c27ddc"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/lib_menulist1.ks",
+      "sha256": "6c199429b267d1492ab48d3f2c7b76fb3a89c6674e93103b9eda902e03b2e73f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/lib_menulist1.ks",
+      "upstreamBlob": "cf95c37c7aa5c9e26f1190f01e02afd546280cd6"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/lib_menutest.ks",
+      "sha256": "1c8822cfbea0bf2ba15adddc50ec77b8c76856487cf890d3051bfbafe59ff593",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/lib_menutest.ks",
+      "upstreamBlob": "b4686c79b7a50007efadaac33626bae7ab266919"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Errors and UI/lib_ui.ks",
+      "sha256": "187991e89795b7863184105631786a52a747c318ba19f525a7857c1ec1b7e0df",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Errors and UI/lib_ui.ks",
+      "upstreamBlob": "a11a0c64fa70e587f869b8fb0cf0765ebcb4e8a5"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Impact/b.ks",
+      "sha256": "610929e09361dfd66733177ad91dfcf58354c6b41314517daa413e623e1e334d",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Impact/b.ks",
+      "upstreamBlob": "5176ea4eed83891d19a5daa2c59664e25c5eb80b"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Impact/bodylanding.ks",
+      "sha256": "2926f24a9733f2a420950401e09669d68866d708ca3d64678670e82b998d1eb5",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Impact/bodylanding.ks",
+      "upstreamBlob": "574ca04f4b4069b33ac21add58915f5eb94b0c79"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Impact/fancytti.ks",
+      "sha256": "f52dfd3251afb1836431575fb145ddcb54f8ce2fd39c5552f977291993614c94",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Impact/fancytti.ks",
+      "upstreamBlob": "73295a40237fce6b4634096794d0580d9fcb1ade"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Impact/newtti.ks",
+      "sha256": "b290bc9a4ff9525e3624748594ef6952171f7d5f1f0b8b46a957c94ddcbd00f3",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Impact/newtti.ks",
+      "upstreamBlob": "731975d3ae8e859c56637992a9e186f6db100559"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Impact/tti.KS",
+      "sha256": "3ffb8c79babd832c81e08e7b0acb4c07968e1f6493e30b8d4b5d8d41c1ff21c4",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Impact/tti.KS",
+      "upstreamBlob": "cb98abbef87e4a0b673035bb5b0321f01336a9ce"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_dvcalc.ks",
+      "sha256": "35889ebbac0a3c5f69572a2d0b7800af5d1762f747b821bb161007ca9718c1a3",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_dvcalc.ks",
+      "upstreamBlob": "bca29d112fc1a09cb5f24927009c3e14eff4718d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_filecopy.ks",
+      "sha256": "b906464fd17bf434203e5f3ac041f0597c5edb16cdc72a6e8b444bccd36a23d4",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_filecopy.ks",
+      "upstreamBlob": "83a195813f7b1a5d9c947e9336a9c27e57cd5bc3"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_inclination.ks",
+      "sha256": "8f2a93fce489c0ec448daef0e7a2f3c1ffead3830c0770314d7f55c52918240c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_inclination.ks",
+      "upstreamBlob": "f08b93af61243a94ace7379b8cf85e61e73cb249"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_mancalc.ks",
+      "sha256": "99bb251427c7f8b6607a63d82db6da4e0df2760791a9017a52705f3d0d51ddfd",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_mancalc.ks",
+      "upstreamBlob": "35f9993235f9ef7dcfb8f253d91f430173ff3272"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/completerendezvous.ks",
+      "sha256": "6f77b1ab4474fede4fa14197b7c3facb68ba6dc0c3073dabf37048af543c2e72",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/completerendezvous.ks",
+      "upstreamBlob": "73847c97e9607d5a7a638cc9e112f777cd05e852"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/finmain.ks",
+      "sha256": "2ea580fe39b9427311be68286e7f5512f86e7e62b8e135e0b1f975a1af48800b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/finmain.ks",
+      "upstreamBlob": "48d3b9af52e706b30a3c88521329fc36e330b27d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/finsub.ks",
+      "sha256": "537705edd9474ed07173233fb71a99bfc304739d1eacffe68fb11e1c65866971",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/finsub.ks",
+      "upstreamBlob": "57c9b44fc16b4f5c233ec92020ee0d24f1ae94ee"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/inclmain.ks",
+      "sha256": "000e4ae688b8509a5b0ecd93002cd59a6a286bc5281a27a8608080bda50f6643",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/inclmain.ks",
+      "upstreamBlob": "d093c0e225cd5875632a247ca011e3efafb9e891"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/inclstart.ks",
+      "sha256": "ab049210ff94bb5a12697e879f4a9e1691611da69b3ec83630b86a26057ba701",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/inclstart.ks",
+      "upstreamBlob": "d9de2a6566a4a581ef29aa47a1b9210e3b182cca"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/inclsub.ks",
+      "sha256": "009315c11169993ee8c938bb364655ea0bb91c19f3e64854a49df21ac6eb449b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/inclsub.ks",
+      "upstreamBlob": "a7c813b59a23dddcb20ab538a7c494cda4316ebd"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/protodock.ks",
+      "sha256": "feba5561a0da04c8847417f4702a17c43f126e9bd132ed0d864739b61b9e81d7",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/protodock.ks",
+      "upstreamBlob": "7cdea4483e7dac03af484e3f303724096ffbc62e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/protodock1.ks",
+      "sha256": "b6859c76b864e776203da42b98f407e5f9b886dcf3ddd08521108b6a0ce2cf7c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/protodock1.ks",
+      "upstreamBlob": "1d1d7a3d6f7d1db25122a4349a50972d3bcc36ef"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/rendmain.ks",
+      "sha256": "9ef1acbfd451f80460f8279f00cf415319ac3007979bb9255542653edb4666ea",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/rendmain.ks",
+      "upstreamBlob": "9abb76652785b6d31e7cea63d2971c1468ae8411"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/rendprec.ks",
+      "sha256": "aae6d60b90dfcdfac64cc5f08395ef39146bd5a6d699652dae774415f6047d89",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/rendprec.ks",
+      "upstreamBlob": "266bf9042225e3613b4b03a78494732eb6235de7"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/replay.ks",
+      "sha256": "ae13115e1679a1c8b6e9b4150e0b374d459b509f95e7be0063dd83d4a233b19a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/old working stuff/replay.ks",
+      "upstreamBlob": "f227f8b1ee1ba8714e9399831f887138641a4b4a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_rendezvous/rend_functions.ks",
+      "sha256": "9da24511319ddafe2cdf5fdedb17d43c1c2a10629366ec0bcc391acf5aa8551f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_rendezvous/rend_functions.ks",
+      "upstreamBlob": "3a4c24799a6edc2229bb761e6bcad7f60bfe7150"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_science.ks",
+      "sha256": "7221b2466880347060f8f31cf3b06a48da908e52953f219b6ad8728e6be4854c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_science.ks",
+      "upstreamBlob": "7551603505050e57b6584b089565d3382f912b09"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_stage.ks",
+      "sha256": "1126f736f9fd69e041bd722283636f29c9ce1c0933c55be6a99f19132f32b39f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_stage.ks",
+      "upstreamBlob": "c06582c1278d8f9644554e1a10bcc05a69347710"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_steering.ks",
+      "sha256": "1e645f57ae04226cb13e5af887f47bcc6c8ed43e1f77e0dbf725e1791817dc21",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_steering.ks",
+      "upstreamBlob": "954cf39a8e3000c56a7fe5d2437b4e21e7bfe75e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Libs/lib_true_anomaly.ks",
+      "sha256": "c42f47e8530cf89d0fcfd9ffd0bfee4ccb3684b6ae2d1f352432cc57b33ac966",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Libs/lib_true_anomaly.ks",
+      "upstreamBlob": "540d37217029b317f37f011b4c2a2b61daa4d882"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Other/function.ks",
+      "sha256": "88fd840a2d77e6924d36597fd1dc2629acda6a679d9a8fd79db63748d3318af0",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Other/function.ks",
+      "upstreamBlob": "5aeb0bd83e403fcdb26b6a3864e94fc22b406134"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Other/orbitpopper.ks",
+      "sha256": "da24c04a72363000de27c7d75e73030d300adfcdea232ebfce7abb870aae2a21",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Other/orbitpopper.ks",
+      "upstreamBlob": "099c717748ee50441c2f314b6a30b8cd9ff17b6e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/Other/orbitstopper.ks",
+      "sha256": "87f3a0aa66683167a431245ad985e4bdbee4ec7c09610b809b03a4c8613886b5",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/Other/orbitstopper.ks",
+      "upstreamBlob": "04c8c1192986e6ceae158eb12f4833d1a54141f6"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/PID/pid1.ks",
+      "sha256": "afda6ab9599df8df16bbb67b2e1b5f5f68941414f5d1f1623f151516d1d177e8",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/PID/pid1.ks",
+      "upstreamBlob": "61a0d2e023d63e78b9e36629e7adb23bc3e5b890"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/PID/pid2.ks",
+      "sha256": "281df01624776e0458252fbf9ff95739b0d9fc3776153b93453cc5fe7247892e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/PID/pid2.ks",
+      "upstreamBlob": "ee9a5bc779e5fe5fd42a3b1b567ed31c201220db"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/PID/pidplus.ks",
+      "sha256": "e89c02a946ed0ef3be6bcbe408d916f0e45fe1b1222f3f960356d87d2b382e3a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/PID/pidplus.ks",
+      "upstreamBlob": "55588cea05ff7fd01e375faf95e107e96de759fc"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/lib_docking.ks",
+      "sha256": "b823ffd68b6f3ee0bf59965177b4d6671b138295b5fbc71a5c356524ee8a439e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/lib_docking.ks",
+      "upstreamBlob": "23fdcee15c45289aa4e129a00e2253479cce7be1"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Good Files/lib_runmodes.ks",
+      "sha256": "3c6876f01d8718610d98b38fde2f8d4918fb0430a4f93ded5e4b3fe8c1fab3af",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Good Files/lib_runmodes.ks",
+      "upstreamBlob": "c0fcb4e8a9522ca66c2a495c93797b27ce007739"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/boostback.ks",
+      "sha256": "680bfeb077eb75846fd6963941eedce1fe48ca4042c6dcdeb8fc32f99e3989aa",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/boostback.ks",
+      "upstreamBlob": "64bdfe83fbd973f5a5abbe435575d95acab65a2a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/boot/boostback_boot.ks",
+      "sha256": "06b09cd4df4fc7c7ba3b802aff144f591469dffe40161b514cd1756a969d42b5",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/boot/boostback_boot.ks",
+      "upstreamBlob": "634f756b74ff0ced8889ceb18a4615ecdde910fc"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/boot/boot_constructor.ks",
+      "sha256": "2c3db634b44881384580615cfe7b561a4942ccc4fd17837d8a3885ef285dddba",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/boot/boot_constructor.ks",
+      "upstreamBlob": "76b0443d3d3670fd77c4a487959f8c7fc1dfe9fc"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/boot/payload.ks",
+      "sha256": "5cc485f4e5c4833c12b6b65b36a3f57f764eb3bca270e8fc48eacb59421f1179",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/boot/payload.ks",
+      "upstreamBlob": "af449f51bfbd94646bc7fc4955779330c273a1d1"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/boot/refuel_truck.ks",
+      "sha256": "6f490695cec75880e5803af4c09012c8fd389bab6f41a511fd64f86d03a6980e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/boot/refuel_truck.ks",
+      "upstreamBlob": "36cd4982c5569c8941c20298bfae4d53d36af42c"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/cam.ks",
+      "sha256": "76e151d9bc713c01d91f667c9d64df60662308dd764079c9516a125ade8184e6",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/cam.ks",
+      "upstreamBlob": "9a5a3150bb871a42a602dcf0c3442fe2a365c92c"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/circ.ks",
+      "sha256": "9f487b777310ab100692af242e6f50e8e38eaf980fa56550714661f7ea7bcc29",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/circ.ks",
+      "upstreamBlob": "e1b768da221603e2df871c0cbc10afbc90887252"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/constructor/GUI_constructor.ks",
+      "sha256": "34f258d241aaa0f761aa84952f5d78c79383002aea5c74f5684c2c1ea50e8634",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/constructor/GUI_constructor.ks",
+      "upstreamBlob": "99124f5cde2b714defefbaba85718aa67afaf13a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/constructor/lib_constructor.ks",
+      "sha256": "91dfefa161360a1583821c60e7c559b460ef51201d8c652b677e32d27acedad5",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/constructor/lib_constructor.ks",
+      "upstreamBlob": "32dfe6587b427f15dc37dc12f9813cd8c670c8b0"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/constructor/loader_constructor.ks",
+      "sha256": "679185d1e606b4e8ff8773b8276536402ebfebe0b6920758f3ccfbc1d4d4b7fa",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/constructor/loader_constructor.ks",
+      "upstreamBlob": "b694f0b4fb5cca3632d188e286f451d98ffe7f23"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/constructor/loop_constructor.ks",
+      "sha256": "89213f228ed22a5ba7c7efe6a129b51093deaf63b952cc0c0596a293a080154b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/constructor/loop_constructor.ks",
+      "upstreamBlob": "144f5f71fee9935bf4d6da73ffd0bf3304242ada"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/constructor/main_constructor.ks",
+      "sha256": "213c1ef3ee3529179f8aaf143f9ad650292d0bb41bc700a6a374a37c7c1bba7e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/constructor/main_constructor.ks",
+      "upstreamBlob": "133387b07a964271373af722aab23e3afb98ab13"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/cpu_light.ks",
+      "sha256": "e948bc8b9d057a7e3685ec864b6a6fcfe0e82aff22e69d0ee825d34d0e35fd5c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/cpu_light.ks",
+      "upstreamBlob": "b33388c8f50ab36b45ce0bc1ec9c017473dfd7df"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/exec.ks",
+      "sha256": "68624312c8a0b5a3cb0029c564aa23844becc094cb388335693f183573f7c810",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/exec.ks",
+      "upstreamBlob": "14cd219a1bd81aebf7b89ed8014b438566d98c0e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/launch.ks",
+      "sha256": "ca17bf4dcc29a656dd907963c41c638f18d5eb8b5c268d78ce2494d1859eb08f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/launch.ks",
+      "upstreamBlob": "28a7a1c004b748bcfcbfa3b06debbfaa2a3dd9c9"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/lib_UI.ks",
+      "sha256": "21c513e812e6f22402ae16e98eaf2c10b61d5e9cfdd68f81a1ec71ab8e2c9ede",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/lib_UI.ks",
+      "upstreamBlob": "d160b44f65f783033f58fd40cfcb8b11deff435e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/lib_list.ks",
+      "sha256": "d814495bfc9cbea385a0ead652111c2d2653886554ac61f5639a945aa5c8d44d",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/lib_list.ks",
+      "upstreamBlob": "e47d591b2ef31827f3b7d5e5669a7575004d3e15"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/lib_menu.ks",
+      "sha256": "f6e2df286460260525f4af22cadb5cbd09c6f627fe66d0c3c58d2d8a5a79d8a6",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/lib_menu.ks",
+      "upstreamBlob": "815fdef71e110b4299d552d7ebd4aa66e5aff7c4"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/lib_rocket_utility.ks",
+      "sha256": "da3a0cbdf606d7886d484a4f6624f8daf23c522d26cb64a85bc2a1b618706a26",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/lib_rocket_utility.ks",
+      "upstreamBlob": "8621f0bd07950949141d437526509c7831a117b5"
+    },
+    {
+      "path": "test/fixtures/parser_valid/Reusable Booster/refuel_truck.ks",
+      "sha256": "e162ecf827728872cc23197da257e861caa752e5bd2a51217627e549d4596ffa",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/Reusable Booster/refuel_truck.ks",
+      "upstreamBlob": "12ff5b26d90c44d601b4303c52cdd613c667c02c"
+    },
+    {
+      "path": "test/fixtures/parser_valid/addons/trajectories/traj1.ks",
+      "sha256": "279559acfb004c0e3012c1ac9bd78ccc4c396fb13498282a791c625a69aef723",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/addons/trajectories/traj1.ks",
+      "upstreamBlob": "f97f3abd55857ee7b50212c14d878c29e8988518"
+    },
+    {
+      "path": "test/fixtures/parser_valid/addons/trajectories/traj2.ks",
+      "sha256": "f2ba3dbe786482d7689e46b1aa9c746281f42e77e35cee9d4285a558e2c1b150",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/addons/trajectories/traj2.ks",
+      "upstreamBlob": "a55d7ce085ed7b752833d4dae2ff3a8512bdd45d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/ap.ks",
+      "sha256": "934592b46babe1ea050f480b0876f0353a505f1b2bfe29d7bd12438069ffbadb",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/ap.ks",
+      "upstreamBlob": "7b32e2685012c1a11c9550eed7c83130b4e71293"
+    },
+    {
+      "path": "test/fixtures/parser_valid/autopilot.ks",
+      "sha256": "d4c2ac207d84a7f87576f9e9b88e3f807c3e3d85aa2818ab1e65a36d5311610d",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/autopilot.ks",
+      "upstreamBlob": "89b7c6f6d24f54994dd65738a9f6b0516aef1c45"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boostback.ks",
+      "sha256": "e7e3781ce46153af73e9c8837d047b99945fd919b5c8a59562c4e5f30748f23e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boostback.ks",
+      "upstreamBlob": "011958184310d422849042b033521f0fe4585869"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot/boostback_boot.ks",
+      "sha256": "ca13d57d6a8d7099d9e5b445944618b7375442e7c98b0a45ed882f9e5fa7663d",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot/boostback_boot.ks",
+      "upstreamBlob": "2aac844349b3828c3d956c19b59c39e57bfcd0aa"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot/boot_drone.ks",
+      "sha256": "46e9410f5e481f61ef85a999463a69f60cf2429a7a8335a98d7ac7bfbc8f6061",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot/boot_drone.ks",
+      "upstreamBlob": "c01d55cf5cff54e49979f3abfcadddc2341ece4e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot/boot_plane.ks",
+      "sha256": "9e5d394fe5a703c9dfd16857a45a39a13dce4ae2c33ad797dec4ced9f34bdc20",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot/boot_plane.ks",
+      "upstreamBlob": "da8d95aa115a80f278e0f0abb807338b1b76df4d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot/boot_propeller.ks",
+      "sha256": "9ea56fb33338dd1e1f569a169bdbf12c5c0efba96b6fc1193b35bec2f61d1b94",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot/boot_propeller.ks",
+      "upstreamBlob": "6b92d95325875b3b793138d88bf43ec79f314be3"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot/boot_qShip.ks",
+      "sha256": "7fc5d8f3b03f5259304018b61fbc06f50dea9cc59320662eb959021f6667af9f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot/boot_qShip.ks",
+      "upstreamBlob": "46b38a86c57aa24a3fa94d35c9e6969765c1763a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot/boot_updater.ks",
+      "sha256": "3255840e52687b8c6dc130549e930c812472e34293703a53cb95dbaf4f3d3a17",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot/boot_updater.ks",
+      "upstreamBlob": "e61c396b3335ec55a08186d55785a7d764d4cfb0"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot/bootup_toukie.ks",
+      "sha256": "328aca6f9c5a4211e6b0b85270e75dace0aed7cb4f45bba7860ccb636906b195",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot/bootup_toukie.ks",
+      "upstreamBlob": "92b9d885048fad4a451dc9d45cc95c2f1e674f3c"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot/junkboot.ks",
+      "sha256": "3ae93560a596bc8efe9b9f2a6fb0bb7a54865460e6586b119317f075332b8403",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot/junkboot.ks",
+      "upstreamBlob": "b5a79da7ef82a49a7d897185dba2789ff2934717"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot/station.ks",
+      "sha256": "8eb1869c83693a73b7a1b7297d0d94fe78e5558026fed11c9c8bf41217f7789b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot/station.ks",
+      "upstreamBlob": "e4a0702d95d94a5f398929f65b3c76c2e059acd3"
+    },
+    {
+      "path": "test/fixtures/parser_valid/boot_drone.ks",
+      "sha256": "bc001a0861c2dccfa4fb91d13a28f3f5da522b37131c39094782830ac366d35a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/boot_drone.ks",
+      "upstreamBlob": "22ca389125281d08408dbd0f5d40f6a99122b6d4"
+    },
+    {
+      "path": "test/fixtures/parser_valid/cam.ks",
+      "sha256": "df01c91efc5612a61ec3ea9c2e64b82e2e35789467ba3c52f8abf06ecb4cdc8e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/cam.ks",
+      "upstreamBlob": "4cce7ff474dfe73029690ad9efcbe51104c45348"
+    },
+    {
+      "path": "test/fixtures/parser_valid/circ.ks",
+      "sha256": "c038a779e0d1d8a13476a49f3aa4ac971ab662ea7e15f227d80e3c67f7733abb",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/circ.ks",
+      "upstreamBlob": "f92fab3a6587e0a8eebd63d05b9493c05730f52e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/comms.ks",
+      "sha256": "4b77526d77ac1ce29ae04735ada008fe90ef2ad8cde4b4f5d5341354dd56dba7",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/comms.ks",
+      "upstreamBlob": "6efff5af6dc5e95ac93eb3b08d984e01e8a9cb34"
+    },
+    {
+      "path": "test/fixtures/parser_valid/compile/compiletest1.ks",
+      "sha256": "2a97f42a46151607808cb1b9b4f074f283a7861d8bb34489b010e0ab3392b3f0",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/compile/compiletest1.ks",
+      "upstreamBlob": "34de6ef63011fbd7dc93eeba533a231f65a51a83"
+    },
+    {
+      "path": "test/fixtures/parser_valid/compile/compiletest2.ks",
+      "sha256": "c9d9606f4ce5522e5295706e3cf0edb3469d8853bc916a482e421fef8eecc7b9",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/compile/compiletest2.ks",
+      "upstreamBlob": "24740d39e81a89c63f0837186f127a0949a4fcc5"
+    },
+    {
+      "path": "test/fixtures/parser_valid/compile/compiletest3.ks",
+      "sha256": "9f99a2598942fbf6e0e3f8ae89b2d41db591da18497e9d352a56460372382870",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/compile/compiletest3.ks",
+      "upstreamBlob": "5e06ebeb76cc10d7e89bc9df7f4c43362edb939e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/compile/testrunonce/testrunonce_lib1.ks",
+      "sha256": "b4b7de90dddaeec12512211f0151cec5f457b6cde5a4b4675d49659381115ea6",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/compile/testrunonce/testrunonce_lib1.ks",
+      "upstreamBlob": "a3c40ecfe47e92e7cc3e7088da2db3a1ddd340ca"
+    },
+    {
+      "path": "test/fixtures/parser_valid/compile/testrunonce/testrunonce_lib2.ks",
+      "sha256": "5026ef275378760de90acd54039d92172467ae47e5f92266ae7c947e8fb250ef",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/compile/testrunonce/testrunonce_lib2.ks",
+      "upstreamBlob": "590e296d996b7dc1eb2ddcc21538f0bb0638e45e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/compile/testrunonce/testrunonce_p1.ks",
+      "sha256": "f938d4ac1fcdca2667babb54db12109c05fdf4e9a5a82c0fd6c932511553cfde",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/compile/testrunonce/testrunonce_p1.ks",
+      "upstreamBlob": "0d8976d5d5d13806b7e672bf6e91ebbfb74c563e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/compile/testrunonce/testrunonce_p2.ks",
+      "sha256": "dde7d6d57a407aec373b2781f3d428998cc1f24927bcb244faf5299104945910",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/compile/testrunonce/testrunonce_p2.ks",
+      "upstreamBlob": "d216223c13f35036584febe6585b15d2396f5674"
+    },
+    {
+      "path": "test/fixtures/parser_valid/compile/testrunonce/testrunonce_p3.ks",
+      "sha256": "e7d03beca4313211b183438f39265abb159dc95664c02018d6aa92eac4f2fd5d",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/compile/testrunonce/testrunonce_p3.ks",
+      "upstreamBlob": "a6a87dbca391d2d79ac94b9953977af88cac3c68"
+    },
+    {
+      "path": "test/fixtures/parser_valid/cooked_steering/testwheelsteertypes1.ks",
+      "sha256": "cb629c85428d1d4f1aefd05ca896cb2d9273cf8400bd898e7973cb825dfab151",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/cooked_steering/testwheelsteertypes1.ks",
+      "upstreamBlob": "534cf14b1bc7584aaa8a0ccf264943ca65726354"
+    },
+    {
+      "path": "test/fixtures/parser_valid/cpu_light.ks",
+      "sha256": "ec685af4836aa327b2fd786955c5efbe4a5685cc3a2cbd623969f8963ada3ac7",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/cpu_light.ks",
+      "upstreamBlob": "750b1162d653fad025a7b373b27cbe20078b8c68"
+    },
+    {
+      "path": "test/fixtures/parser_valid/cq.ks",
+      "sha256": "c8bb91e44eb79e34244f1966d0e33f43eddfbb47ed11417e28a0626cd1485caa",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/cq.ks",
+      "upstreamBlob": "1c510b1069294db9a8f0b6fce861fc752666f472"
+    },
+    {
+      "path": "test/fixtures/parser_valid/debug.ks",
+      "sha256": "637106876b3f2b7bbac2ed41c36a780d5ceb8055dd27c3fedd59bad364cf2cc2",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/debug.ks",
+      "upstreamBlob": "e0972e92e1ecc4ff4d50f69104dcd503a76bc4cb"
+    },
+    {
+      "path": "test/fixtures/parser_valid/delegates/delegatetest1.ks",
+      "sha256": "ed64c8d2eb101a3658ab7866bd3ffc23757f74f463c8600dbc42448e1beeb767",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/delegates/delegatetest1.ks",
+      "upstreamBlob": "49ee95621a7e03564f5adfe5c99a402120b496c1"
+    },
+    {
+      "path": "test/fixtures/parser_valid/delegates/delegatetest2.ks",
+      "sha256": "d0a031de77cb6afd4d86ab1d9cfe27a98e0f0829bbfc347bcf43efa2d5cf3557",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/delegates/delegatetest2.ks",
+      "upstreamBlob": "affa9e3ebc5048470be437d1647a231d263f4209"
+    },
+    {
+      "path": "test/fixtures/parser_valid/delegates/delegatetest3.ks",
+      "sha256": "a18f17e95b6777f517ae921b89fc0b240ba6ef820a1bea99affeebd54facc67e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/delegates/delegatetest3.ks",
+      "upstreamBlob": "75d9c0aac62e0e6c29cb1d526736a8e2c409143a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/delegates/delegatetest3_lib.ks",
+      "sha256": "eb39bba46a266ff21fe59d9023fcb380911b0b47044067561a93783ad8400784",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/delegates/delegatetest3_lib.ks",
+      "upstreamBlob": "01cab1816b542aec96467c3c1390987685c780b2"
+    },
+    {
+      "path": "test/fixtures/parser_valid/delegates/delegatetest4.ks",
+      "sha256": "5bd758820174b64487f1131f2babad4454c4702dcae1c2acbd429b7d77c8320b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/delegates/delegatetest4.ks",
+      "upstreamBlob": "1e3db5a10d81bc9b8b5158bfab389e286093b73f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/delegates/delegatetest5.ks",
+      "sha256": "59c88fa2e0df0a71975cf3d68abf7858d3d66244e4fd3059a2fc946d3d54c0ad",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/delegates/delegatetest5.ks",
+      "upstreamBlob": "97f337f90b7a914ddf65849df88a17e985d9d3f3"
+    },
+    {
+      "path": "test/fixtures/parser_valid/delegates/delegatetest6.ks",
+      "sha256": "ef615d94ba4756c7962d296389c9f230cf0d3a759b0abdc3518e3068f8df3b00",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/delegates/delegatetest6.ks",
+      "upstreamBlob": "9096d426f7bb3067fe15041e70521049d4fe99ba"
+    },
+    {
+      "path": "test/fixtures/parser_valid/delegates/delegatetest7.ks",
+      "sha256": "ade04af359bd1f719ca22756c2a89d9800dde555f0d73300bb6a9d3839bf0a13",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/delegates/delegatetest7.ks",
+      "upstreamBlob": "e48d304e1e509ba007736eb7f67679570aeb38b0"
+    },
+    {
+      "path": "test/fixtures/parser_valid/demo/testrefvec.ks",
+      "sha256": "2bc42749a5900644ae32eff4e64f70865d1069a8cc69a0b7d8f0b7d75aca0404",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/demo/testrefvec.ks",
+      "upstreamBlob": "8cfe6cce931550850e839ba619506a6f38b6ce31"
+    },
+    {
+      "path": "test/fixtures/parser_valid/demo/testskid.ks",
+      "sha256": "826f5ba647396627374eb6f5abde6d953a8949c9927d5c4fab89d912cb68160b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/demo/testskid.ks",
+      "upstreamBlob": "e7a099e9a5c7f34aaf10a66cdce5a14c9ab2a25f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/dependencyTest/exec.ks",
+      "sha256": "5fa8d048dd143ef6ae7fb62ab6eaf35365361ee2da910d30e91a4278d2c4d0f1",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/dependencyTest/exec.ks",
+      "upstreamBlob": "a9f02ca041a44de573b417684da0c56b57685b44"
+    },
+    {
+      "path": "test/fixtures/parser_valid/dependencyTest/lib.ks",
+      "sha256": "b5effc25a3f9f50ae113ea01476e062a9fc84169afcb0ac37334fd0a61c06e91",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/dependencyTest/lib.ks",
+      "upstreamBlob": "b0cb0ab822fb661570654d2070b1d01f66ac0366"
+    },
+    {
+      "path": "test/fixtures/parser_valid/dock.ks",
+      "sha256": "1b35238e40b88b4ce8995ac6b45f9b7a45fb4ae6394f5ab9b14807ed996ec332",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/dock.ks",
+      "upstreamBlob": "688e1cdd3aef1fdbee0061dced669dca66545660"
+    },
+    {
+      "path": "test/fixtures/parser_valid/drone_ship.ks",
+      "sha256": "a1ae849e5e7e5f6dc9b5ddbbacb99203bcf4fc701e8477df61a855e4cebd7357",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/drone_ship.ks",
+      "upstreamBlob": "fe20fb421dd08b701b5727822fbc672173047781"
+    },
+    {
+      "path": "test/fixtures/parser_valid/exe_toukie/gapapov.ks",
+      "sha256": "f70173bb81a9f3f0012676a52ee0cd65662555e38b9d7bc90f7ed025f8377c04",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/exe_toukie/gapapov.ks",
+      "upstreamBlob": "44f8db958055d3ec20780865fd333f82cc8c27f7"
+    },
+    {
+      "path": "test/fixtures/parser_valid/exe_toukie/mission_getter.ks",
+      "sha256": "d1fa6f124cde7bd7a161e5ba299655d44dc0ceeca3de65b9361203f8947b8c9c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/exe_toukie/mission_getter.ks",
+      "upstreamBlob": "aea2e6c21b45612e21d5552aff05770a54d71a00"
+    },
+    {
+      "path": "test/fixtures/parser_valid/exe_toukie/missionscript.ks",
+      "sha256": "71a21c805e5f03c1332a1eb40cfb58934a66d51a3a45c2a8cbd295c5996a13a7",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/exe_toukie/missionscript.ks",
+      "upstreamBlob": "20c07fb351b315c33855a5e4266cdbb2d9f3151a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/exec.ks",
+      "sha256": "588faf892e6fd9c1672881cb1aa3679a8c2ee9b611471dec778988b0a293dfb2",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/exec.ks",
+      "upstreamBlob": "52a87dc5d89ccf526c14664da65ae32e948d571d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/funcParameterTest.ks",
+      "sha256": "9c5b0e6c21b3889f45f3a46b037aa756038bcc19a32a782de28ddd337ffbb11c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/funcParameterTest.ks",
+      "upstreamBlob": "33bccf9551555eb713e3525448b01884fb3662aa"
+    },
+    {
+      "path": "test/fixtures/parser_valid/functest28.ks",
+      "sha256": "6cd1d825aeca698441080eb13e25b227a40570ecf7116b8d2f53fbbab8f4ef79",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/functest28.ks",
+      "upstreamBlob": "86bb6a8454f800613596c4e76fb9a84ec7e1296c"
+    },
+    {
+      "path": "test/fixtures/parser_valid/functest29.ks",
+      "sha256": "b1f626ad600b523e9ea7117b5480a2f75bc85250f46c40352fa89c850a1cf434",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/functest29.ks",
+      "upstreamBlob": "fb34abe0af6fc5f9ac624f801386cb2c67760305"
+    },
+    {
+      "path": "test/fixtures/parser_valid/functest30.ks",
+      "sha256": "a98dd487b6b20607ab99b92e51795b5d562d9ebe0248596ddd0b5dfe8406ea6c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/functest30.ks",
+      "upstreamBlob": "a1d15ebe76510131d5c0d4afc7c15d975348612f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/functest30_inner.ks",
+      "sha256": "2a05ec226ad32a4cf06e8fcaf736efa9948b9fe788dd32c66c3acfe1c4a55bd7",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/functest30_inner.ks",
+      "upstreamBlob": "c7c14528182e51e705f30b6badb7f9f1bc2bfca9"
+    },
+    {
+      "path": "test/fixtures/parser_valid/functest31.ks",
+      "sha256": "64dd793dae1e4c36b9a25988d1e94120d92270461bc1d92e1cfad339d6720672",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/functest31.ks",
+      "upstreamBlob": "076b7d22f6a153a92554a9c35bf74e3ba7e2dfe5"
+    },
+    {
+      "path": "test/fixtures/parser_valid/gui/gui_callback_1.ks",
+      "sha256": "85fb9967b5b12c91b043188d2bee787b35b6ebc3d9daf1d591741955ecb6b7aa",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/gui/gui_callback_1.ks",
+      "upstreamBlob": "d25dabbc904fa0070e941231aacd5ddd1653b66c"
+    },
+    {
+      "path": "test/fixtures/parser_valid/gui/gui_callback_2.ks",
+      "sha256": "9af3d1ecfd972128c851535997ca78757a1913147ac65340783287859365159b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/gui/gui_callback_2.ks",
+      "upstreamBlob": "508f95a4289bd0d5b8046218ff9e54982855ac97"
+    },
+    {
+      "path": "test/fixtures/parser_valid/gui_template.ks",
+      "sha256": "26b89d1bebbca24f773472b06b318534838180c5281a238483f30635812e860c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/gui_template.ks",
+      "upstreamBlob": "6ef4486df91a0c107666143e13f373050f39a25a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/input/terminal1.ks",
+      "sha256": "4c073996f69e10f72bf3f40179eed9eec9c274cd834b04bc9ae440b67ed222ea",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/input/terminal1.ks",
+      "upstreamBlob": "3249cc4fc578007be568062d7f8e7a61125acfb1"
+    },
+    {
+      "path": "test/fixtures/parser_valid/integration/basic.ks",
+      "sha256": "e6e952b0c55fb03607703ea086a23e27d58f8800d609c231fdde15f5203ff66b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/integration/basic.ks",
+      "upstreamBlob": "7363009d6f7c8f1f51fdd2eca2d6293b4f148285"
+    },
+    {
+      "path": "test/fixtures/parser_valid/integration/func.ks",
+      "sha256": "3659af18ca4cf6e119bbcc7240e84d5b86767338ab9b1c3130516c1a577c3d7e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/integration/func.ks",
+      "upstreamBlob": "6c41b774e749db37073a63dee50d4cda15fed06e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/integration/func_args.ks",
+      "sha256": "40ec3e03411568fdaf0d5ea2bf67aef421acdab37df543a7b473b3a37c756cbe",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/integration/func_args.ks",
+      "upstreamBlob": "d898ba20a1c42d0d1349004a3589dc602a8dee8f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/integration/lock.ks",
+      "sha256": "832a72835e10929ccbd88461658be86ee140c9a73bc4eb57e41a539583be26e1",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/integration/lock.ks",
+      "upstreamBlob": "b82a5ab32161f04a11c02fe6f6fcb04f54405c91"
+    },
+    {
+      "path": "test/fixtures/parser_valid/integration/operators.ks",
+      "sha256": "eadd1733d7ab5efac489253c9e35863a740c86b4fee06d6170fa1976dce88438",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/integration/operators.ks",
+      "upstreamBlob": "c4aa36b7321d02c2ddf2184a24ca7be9d72334b5"
+    },
+    {
+      "path": "test/fixtures/parser_valid/integration/suffixes.ks",
+      "sha256": "315141cf3d5cbda6f7cc34ad51e91dbe539457db1ec889484c94bc8544c3b5aa",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/integration/suffixes.ks",
+      "upstreamBlob": "8f756b5d2215d6ea9d3628f9da47312b7790d04a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/integration/vars.ks",
+      "sha256": "1c5ec0e073439fd8e5d3507d0dbc1ea8d5ef3f6358707078a9b0f4576b372479",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/integration/vars.ks",
+      "upstreamBlob": "1423c7e7a46b7f31c62b5809170fd474ffce8734"
+    },
+    {
+      "path": "test/fixtures/parser_valid/ksconfig.json",
+      "sha256": "8f963f63e260e2fd4035742c3128342577ab9d548923597579ed5e309869596f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/ksconfig.json",
+      "upstreamBlob": "558bec1b4efd94c7e13fc03bc74b30f45299e690"
+    },
+    {
+      "path": "test/fixtures/parser_valid/launch.ks",
+      "sha256": "ce18e0c186675831c4aad5d1334725b2f5fddde3bec97b9bf4924ccd937203f0",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/launch.ks",
+      "upstreamBlob": "c7872c076d01584de0ace7b54d47cdd150b89c85"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib/lib_physics.ks",
+      "sha256": "9013d6532764a1cb2ec0f1d3215c1e180ef968cf61b9e5691442b2b7553151c3",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib/lib_physics.ks",
+      "upstreamBlob": "7f0ee3c84fae8bb3280d1a268e7d5d5eff4375b4"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib/lib_pid.ks",
+      "sha256": "b3f7bc480107422bb65fcaa0c2be299370176aa8fdb41533ea8db818543a4e95",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib/lib_pid.ks",
+      "upstreamBlob": "32fe10c2b6f26cb355842f34ed2d26536bc14d90"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib/testlibpid.ks",
+      "sha256": "9246fceeaa52ff3c5f8637ffba300e3aeb997d89ae8c997eb10f9e9f123f23ff",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib/testlibpid.ks",
+      "upstreamBlob": "1c4dcefacdb1d83c021d8093738136b499a7579f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_UI.ks",
+      "sha256": "21c513e812e6f22402ae16e98eaf2c10b61d5e9cfdd68f81a1ec71ab8e2c9ede",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_UI.ks",
+      "upstreamBlob": "d160b44f65f783033f58fd40cfcb8b11deff435e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_formation.ks",
+      "sha256": "ae6541508790213368a6bed1d0d5b206e6df4806637efa2e843965205ad24944",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_formation.ks",
+      "upstreamBlob": "22be513adeb9d592b9b38a2f0728560e1baf568f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_geo.ks",
+      "sha256": "15bb3c4d41a3564bb7eac6d98bef695bafe5dbad7297ebe9690bf0cea1fc89ea",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_geo.ks",
+      "upstreamBlob": "86b0b900c8b5e62787e38057656dd14cd760cf33"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_json.ks",
+      "sha256": "1a1dc6bb341a4503a8865f187a1ff9da11b07bb4ad07c3ebfa9e449aea105171",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_json.ks",
+      "upstreamBlob": "0da4b364d9805cc489e93e3dbb862b1a705a4d1b"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_list.ks",
+      "sha256": "d814495bfc9cbea385a0ead652111c2d2653886554ac61f5639a945aa5c8d44d",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_list.ks",
+      "upstreamBlob": "e47d591b2ef31827f3b7d5e5669a7575004d3e15"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_menu.ks",
+      "sha256": "f6e2df286460260525f4af22cadb5cbd09c6f627fe66d0c3c58d2d8a5a79d8a6",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_menu.ks",
+      "upstreamBlob": "815fdef71e110b4299d552d7ebd4aa66e5aff7c4"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_quad.ks",
+      "sha256": "000fa8601b74ad0e6dbdcefdd02da3b683cbdf586bd6c25a578f89f428bf9ac0",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_quad.ks",
+      "upstreamBlob": "8c62e00e3d86ad7531515f25eb04a6b420300a0a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_rocket_utility.ks",
+      "sha256": "da3a0cbdf606d7886d484a4f6624f8daf23c522d26cb64a85bc2a1b618706a26",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_rocket_utility.ks",
+      "upstreamBlob": "8621f0bd07950949141d437526509c7831a117b5"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/Commented Files/gapapov_remastered.ks",
+      "sha256": "a14c44e9a81f59511dae7ead0684925b12e038effedeec0c49a5c319170f780b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/Commented Files/gapapov_remastered.ks",
+      "upstreamBlob": "ba40b356c73cd093e07193a3a31c98bb7462f91b"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_atmos_launch.ks",
+      "sha256": "c8480c236a236001ea92de7070291def52bbdd5b821d22567f4e0058b51b6a6a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_atmos_launch.ks",
+      "upstreamBlob": "c8fb08a7c91f813b85fcf3766289ed5cf05d6725"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_closest_approach.ks",
+      "sha256": "7b68f627ba75ed7f5535b6fbeb8f29676dba0246e3a9fa61321dbebb446b341a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_closest_approach.ks",
+      "upstreamBlob": "e19507ee01fdb1536d92023a8d929a19f0e77e9f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_docking.ks",
+      "sha256": "ae23066f9c42e872b670cf0ddf4e4effd0c49162819d07c891336ce40bff61c4",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_docking.ks",
+      "upstreamBlob": "01a10eff1edbc727af0fffb7505ccaed38b69276"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_gapapov_main.ks",
+      "sha256": "c0480de40a2278fc6f72a2e5fb49689c16705c5d1456c215d71b6eb27f27d6ac",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_gapapov_main.ks",
+      "upstreamBlob": "2bf9621e0ceae9b42cbb80f573382bee659b1ea3"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_gui.ks",
+      "sha256": "5a977786b517e1e36b80e6ea3a7ef2e71aa39b95dfe0ff87eb269e8a91a8042a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_gui.ks",
+      "upstreamBlob": "905a1ab6a08dcdec0acc672deafe56f88237810d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_gui_file_picker.ks",
+      "sha256": "ce6e4693b6c4c8fc91000756eb19fa634361b5a0509d0f9b8099a21bb9f42d03",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_gui_file_picker.ks",
+      "upstreamBlob": "ffbb910150ea643bfbfe6b0ae657bf4f8e0493d8"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_hillclimb_man_exe.ks",
+      "sha256": "81f7db8f19e7656b9383968b75720b2b5cfa3b61231cd648aa1bc0257767ad98",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_hillclimb_man_exe.ks",
+      "upstreamBlob": "269abf9295a3d13f5a1f5d8bcf6015bd57b30b2a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_hillclimb_scoring.ks",
+      "sha256": "4c0571a79b7aa5774d8e34629ed1f736c1e893f44ef6ee8900f5999c2584292c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_hillclimb_scoring.ks",
+      "upstreamBlob": "5d11225a610e1a6aeb04a1e18e99e9563e0e7ac7"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_hillclimb_universal.ks",
+      "sha256": "c6c3801c927bf8892fae7fdee90b31a585a9d0facd4d5eccda6d906b345a9af9",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_hillclimb_universal.ks",
+      "upstreamBlob": "3cdd5589a51aace07a0a5ed7f7eb3ce88a9ff875"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_inclination.ks",
+      "sha256": "1bf269848a883fc1e487dfc0b457cf1513cdc3f21c076b4a200ae10d5e599e71",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_inclination.ks",
+      "upstreamBlob": "83abc31cb8bd45a2f1bac03e3a84004b7a9ce367"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_other.ks",
+      "sha256": "ccaf8fa20c70ab5f64f5fecb94cddb53c87b1c08076b4476831bdc4df0acdd03",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_other.ks",
+      "upstreamBlob": "28e08d5872e36a2beeed01db57039c48fc0eec40"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_phase_angle.ks",
+      "sha256": "8cefb99fa0f1f040fef0784fffd18e19de5618671ce12a3a5d6405df17e0996a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_phase_angle.ks",
+      "upstreamBlob": "5a2a331023587e29a2aff91de7b392b657dd0c90"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_readout.ks",
+      "sha256": "7825647dfc11fd9954a15dc386c5b51bdffad3a0c18f5e19a73909e9d888d9fa",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_readout.ks",
+      "upstreamBlob": "8cfdbe822fcdaecdee38adf9cbc076df3a912e7d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_rendezvous.ks",
+      "sha256": "1c05476cedcd4575621abfabc0ca52cd440d567d3f5bd12913f14e4c1c93e943",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_rendezvous.ks",
+      "upstreamBlob": "015da822c00beeb40ecf6db58456a9384b7890a9"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_space_check.ks",
+      "sha256": "e9e94c4f105ec44065fb6f46ba8d86ad135c0e1992eff7bd9c9b247b0f94b71d",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_space_check.ks",
+      "upstreamBlob": "29e613ab86f92404422debdc87e7358a736d0afb"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_stage.ks",
+      "sha256": "b400993559d880956da8db15b52058b9aaa128d23f883d964a3998abcd366f2b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_stage.ks",
+      "upstreamBlob": "46886730b9f95113bd0384f4e4ddc90e777edf29"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_steering.ks",
+      "sha256": "bf934b8529abdb597cde8798a146035ca0adcb275208fd00b9034dc9ae82592f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_steering.ks",
+      "upstreamBlob": "79f8678d38643fdb94bcd5fba9de0c17c7380e70"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_transfer.ks",
+      "sha256": "997b3d34d160d0f5e3462fc372ac3cec797a666c185fe90d6510c76bb7e5f3bb",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_transfer.ks",
+      "upstreamBlob": "f5b516bf8c4d6ccde05e24066e4812dbc216f9cc"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_transfer_burns.ks",
+      "sha256": "bc84ebfa6792efa804f32e5a0f987022fc8ef25193379e0e35000f36cc4fc6be",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_transfer_burns.ks",
+      "upstreamBlob": "c8b877858039e35b6086146c24aba5009023df9f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_true_anomaly.ks",
+      "sha256": "d0af7e3df0151f9e69ee959cf382a080859e0159f9548484fbf4365442eb60f7",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_true_anomaly.ks",
+      "upstreamBlob": "48a0f357b337d351cc2426b298298dac7a901a3e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/lib_toukie/lib_warp.ks",
+      "sha256": "4eea8a32a9d35aeb83335e7471054cea4932a4acd3ae2ac412a27779aa5d8eb5",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/lib_toukie/lib_warp.ks",
+      "upstreamBlob": "564684ac79dbcc2807e88ffda4cc0ef44d96388a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/linetest.ks",
+      "sha256": "3242723a2caf5ac70e98801e2da09f158ff31f9ecb609fed42373342f84b5ea0",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/linetest.ks",
+      "upstreamBlob": "9220a9c660e3fb632615321feb161972084e4d39"
+    },
+    {
+      "path": "test/fixtures/parser_valid/list/testlist.ks",
+      "sha256": "5ebff42fa3a411d7d01355c919df65b011d5464cd12814276205440b917e3e66",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/list/testlist.ks",
+      "upstreamBlob": "366acf76ab22a7b57a176c22b185e09b7f3a6e66"
+    },
+    {
+      "path": "test/fixtures/parser_valid/loop/fromthrottletest.ks",
+      "sha256": "76151e03f998ed1503949891c362852093dad48bbc74e47fd666094fab1579de",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/loop/fromthrottletest.ks",
+      "upstreamBlob": "651057c03c729c88a48c62ed1f7ed8df8e8dda23"
+    },
+    {
+      "path": "test/fixtures/parser_valid/loop/looptest1.ks",
+      "sha256": "182417760eef7e7c00e25862faad46ee8dd0ff191bc910afb473ad102f5970ae",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/loop/looptest1.ks",
+      "upstreamBlob": "094d431b9437c11b078c36d583056a9dac709296"
+    },
+    {
+      "path": "test/fixtures/parser_valid/loop/looptest2.ks",
+      "sha256": "544300be15906ac665c270827f9388112813c5025a22ae279f14842ce39b0bd8",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/loop/looptest2.ks",
+      "upstreamBlob": "5aa4418530da53e53ff747e208d76db7d6b3be60"
+    },
+    {
+      "path": "test/fixtures/parser_valid/loop/looptest3.ks",
+      "sha256": "3efd2072749de5309bb9978ff3761ff18a3f9c887735fc3681c752a60395da42",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/loop/looptest3.ks",
+      "upstreamBlob": "f0b5efd884cc871fe16d31b55ccc61c8f574ea21"
+    },
+    {
+      "path": "test/fixtures/parser_valid/menutest.ks",
+      "sha256": "690ff501672ebbfac4da6a048f00e00cb66a9a15ff8f7007e449029d7e16fdac",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/menutest.ks",
+      "upstreamBlob": "ac11afd0942cdcf219a6b4c8ae0852bf0e6a09c1"
+    },
+    {
+      "path": "test/fixtures/parser_valid/missions_toukie/Gaia 01.ks",
+      "sha256": "8a320f03b19270c3728a3458fdaf9f11637c1644eec22f9ebc7332145c3b8270",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/missions_toukie/Gaia 01.ks",
+      "upstreamBlob": "25284d3245c37aad173b158013ec4536dba92e1a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/parameters/paramtest1.ks",
+      "sha256": "d3447eb782b3045c9dc39854b5a37eb271483958e4af82cf0a24bbb9d67293ef",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/parameters/paramtest1.ks",
+      "upstreamBlob": "3c6dd9160ea60701360dafeea05e296e721144e8"
+    },
+    {
+      "path": "test/fixtures/parser_valid/parameters/paramtest2.ks",
+      "sha256": "117db50a55426ac4aaa9b1b94ecdb68378285414d77cfe33af1d9172df0285ac",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/parameters/paramtest2.ks",
+      "upstreamBlob": "d820549cd4db49ae3cdb740c464e49bcf692e3fc"
+    },
+    {
+      "path": "test/fixtures/parser_valid/parameters/paramtest3.ks",
+      "sha256": "3325d93b56ff5d45a01bc35386a670543ea18381239d5afefd252027118a4188",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/parameters/paramtest3.ks",
+      "upstreamBlob": "31ac002bed2334939c58900006eef5fa7402937a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/parameters/paramtest4.ks",
+      "sha256": "b68574e46a061aa2503a8fca59965fc41a1cb8b3fd4228260fb88094cb3e8265",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/parameters/paramtest4.ks",
+      "upstreamBlob": "442cceb0b5930f0d5ca2ff8f4588cf6af1fbb78d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/parameters/paramtest4_lib.ks",
+      "sha256": "4a115a313069646c1f1e98b624756a2fafb8c6cb7c3b5aebda1ebf3a5f3aa704",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/parameters/paramtest4_lib.ks",
+      "upstreamBlob": "bfd9769dfbfeaa2d0d2ff2c50a37ce876daa1112"
+    },
+    {
+      "path": "test/fixtures/parser_valid/parameters/paramtest5.ks",
+      "sha256": "373bd66af57acd1f08a6a842af8f1fc72a504df19bc605baa0d5b01e09ad0fe1",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/parameters/paramtest5.ks",
+      "upstreamBlob": "7966853a64a16d29a363bf57cdcf6d39f63111bf"
+    },
+    {
+      "path": "test/fixtures/parser_valid/parameters/paramtest6.ks",
+      "sha256": "c11a6635eb9a6b81331401fbe0b534a3dd4cae5fb60513c5138b25b00d11342b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/parameters/paramtest6.ks",
+      "upstreamBlob": "6e080cd7eca0c34d66d5dabbc9074013f94d4a97"
+    },
+    {
+      "path": "test/fixtures/parser_valid/parameters/paramtest7.ks",
+      "sha256": "21f5b3347758062da007f6fda486bef6a76b6065180e1e56cb052a6495a61cfe",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/parameters/paramtest7.ks",
+      "upstreamBlob": "06ca7c7ae4fdfe22e581864be4a0115df2a88e68"
+    },
+    {
+      "path": "test/fixtures/parser_valid/q.ks",
+      "sha256": "8b32509498d8006e0d42fcc2681eb15d537b8b2e950477101cde0b54db54ba6b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/q.ks",
+      "upstreamBlob": "c5b34a8036c37b9a10354a8c0e2baec1428c64ac"
+    },
+    {
+      "path": "test/fixtures/parser_valid/quad.ks",
+      "sha256": "85c5b1a287d61ee1fee9764619591245f0de60d2dcc7898e7630de60dc452883",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/quad.ks",
+      "upstreamBlob": "5b2135e7c66365660aace8f4f33705e027172700"
+    },
+    {
+      "path": "test/fixtures/parser_valid/quad_GUI.ks",
+      "sha256": "8ddf428d457b8c2df54b89249ee6ee3d6a3d5d0a3c8495f930e75f696efac9b1",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/quad_GUI.ks",
+      "upstreamBlob": "65bc6ab126594f8bd18d86d3083b4d193a8489a0"
+    },
+    {
+      "path": "test/fixtures/parser_valid/quad_loop.ks",
+      "sha256": "42837312a6e23eb92de45928d147aa1b76b38f04084cef4399b0751093c7787d",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/quad_loop.ks",
+      "upstreamBlob": "a9d56ffb6b2f1fe6b7b1568ff159a4a948df10c6"
+    },
+    {
+      "path": "test/fixtures/parser_valid/race.ks",
+      "sha256": "eb24f9458dff33def4651a78077e7ecb5af15a9e58700c0c20f524f57395b6ce",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/race.ks",
+      "upstreamBlob": "bc227d0eaa457373c8a5ef414b084e0285e250f8"
+    },
+    {
+      "path": "test/fixtures/parser_valid/resource_transfer/testtransfer1.ks",
+      "sha256": "539f813bef5b59ceb4a88b87543da24e2169769d8349ad0c0c99a13fd6b6ba75",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/resource_transfer/testtransfer1.ks",
+      "upstreamBlob": "b861412f9d628b369346dfbf6641e11f5d88f0a6"
+    },
+    {
+      "path": "test/fixtures/parser_valid/resource_transfer/testtransfer2.ks",
+      "sha256": "e7fe2ffd2d387f18f0fccbac68ca7a3973e7b601326571179933130c50b3014f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/resource_transfer/testtransfer2.ks",
+      "upstreamBlob": "e276c13ca09d6ebb1756794ec89f3e76d4c17d85"
+    },
+    {
+      "path": "test/fixtures/parser_valid/resource_transfer/testtransfer3.ks",
+      "sha256": "65a50584b42a8022a219fec080196692d140940621bb6e1f7cd395c4abd5fed1",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/resource_transfer/testtransfer3.ks",
+      "upstreamBlob": "71364bea63d541888ceb85bcf82a63d98f06876b"
+    },
+    {
+      "path": "test/fixtures/parser_valid/rs.ks",
+      "sha256": "57eb3c9952ee978afa56bf75391f8b1382a1446eb149fa74977137d1f200c9cd",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/rs.ks",
+      "upstreamBlob": "a048fb434ee2c749ae136647e22050e25fa1cb34"
+    },
+    {
+      "path": "test/fixtures/parser_valid/serialization/lexicon.ks",
+      "sha256": "90ec804a9f875519c495633ee2acb3f092a789e625c4a0f340f786790e6fa662",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/serialization/lexicon.ks",
+      "upstreamBlob": "281321087b3429237a097aae66b5cc249a13356c"
+    },
+    {
+      "path": "test/fixtures/parser_valid/serialization/list.ks",
+      "sha256": "133801eb35e65d3be6d4b6e6ffb9940a9fd7ae41427e2a779b83a7e964e43863",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/serialization/list.ks",
+      "upstreamBlob": "9014a69db1ac773ffd4ef58424f1d2861a499f2a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/serialization/misc.ks",
+      "sha256": "2b2a1e792555a373a48ffa353649ee8ba6662c687d7c5ee9b65d5cf2643a2474",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/serialization/misc.ks",
+      "upstreamBlob": "9cad265dfedcb0f53fa54bb4f591023f4a04289f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/serialization/queue.ks",
+      "sha256": "91a97a34bd55d2aa440988d3d8dc5773cef03deb6eb30a0b63b7367ae87c579e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/serialization/queue.ks",
+      "upstreamBlob": "02e092d9c06da937447d9ba9a6fadfa1f77f179f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/serialization/range.ks",
+      "sha256": "bc465f18e49c1259d9526a6d877cb8c54226aae8de44d2141d79c06da52081cb",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/serialization/range.ks",
+      "upstreamBlob": "e101b0e183d703a9f90a5c37e76c08bb1ce5b138"
+    },
+    {
+      "path": "test/fixtures/parser_valid/serialization/stack.ks",
+      "sha256": "87bb8c5c7075de022e33683fc22066dcf9ea27f397fdaf2285520a4ef41cebc4",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/serialization/stack.ks",
+      "upstreamBlob": "4b459f53f580ed9afd0ddee905eb3c0731e9bae9"
+    },
+    {
+      "path": "test/fixtures/parser_valid/serialization/uniqueset.ks",
+      "sha256": "122aee76970ff0c67cf372e69daa240cff734af7c8534cda918ca2969c1909da",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/serialization/uniqueset.ks",
+      "upstreamBlob": "41ec4d5716bb35e4cdfa2ea423e030727ec30302"
+    },
+    {
+      "path": "test/fixtures/parser_valid/steeringeditor.ks",
+      "sha256": "79c4f83708c7c1e06ce0e30b371dd77916ba7d757fb5bd73201d4b10cf7155ad",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/steeringeditor.ks",
+      "upstreamBlob": "eac5b0fa81b5fa72c41f9741582dfe2edb46381b"
+    },
+    {
+      "path": "test/fixtures/parser_valid/steeringmanager.ks",
+      "sha256": "aabce7a113a1009c4555bab78f97211d8eebe869e7ef5ae5285ffde50b044538",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/steeringmanager.ks",
+      "upstreamBlob": "08e295d9982c6d1c1e696d8ac118367fd4dcd938"
+    },
+    {
+      "path": "test/fixtures/parser_valid/string/stringtester.ks",
+      "sha256": "ece3d79639dfe71cea6fa5e2e327b4f3988654f394f088295a1a1d42210dd83d",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/string/stringtester.ks",
+      "upstreamBlob": "f9626b970063abf9881a08db662da4d99329935b"
+    },
+    {
+      "path": "test/fixtures/parser_valid/test_error.ks",
+      "sha256": "07c7d1491a6bfd92fd6c182b304cb1beb01478b9b744d35816daf7628515fa93",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/test_error.ks",
+      "upstreamBlob": "87b07f13861b7da460ee8993ceab9604c2e2c2db"
+    },
+    {
+      "path": "test/fixtures/parser_valid/triggers/testtrigger1.ks",
+      "sha256": "7235b38617d9db9495a11fac0257927c8978777f3c0abfe3d6e3da31c0d129ff",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/triggers/testtrigger1.ks",
+      "upstreamBlob": "f00f0a798878f30ab4b20f9a175662fc12248132"
+    },
+    {
+      "path": "test/fixtures/parser_valid/triggers/testtrigger2.ks",
+      "sha256": "91c90bf560050b2775e281dbc609f428b83ec852609d841bbce3e6c9605cf629",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/triggers/testtrigger2.ks",
+      "upstreamBlob": "83de723f4fd31f3554fa9a54f36ee495f5afd542"
+    },
+    {
+      "path": "test/fixtures/parser_valid/triggers/testtrigger3.ks",
+      "sha256": "1598289dbed2258101036af026a77b056e8b3af55498dd80bb823e20fb6d1b9a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/triggers/testtrigger3.ks",
+      "upstreamBlob": "ef9b4fcfdaa770be99580e4345d60e60671cb2bd"
+    },
+    {
+      "path": "test/fixtures/parser_valid/triggers/testtrigger4.ks",
+      "sha256": "d7885a779d94074ac5db385b152b011e8d96ef02fc941d5fb787359fbec5e717",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/triggers/testtrigger4.ks",
+      "upstreamBlob": "3191c43e218ea029afbdea34e8d39b87552e8af7"
+    },
+    {
+      "path": "test/fixtures/parser_valid/triggers/testtrigger5.ks",
+      "sha256": "cc2a582ee953d94c6fd1fd062dfd8f1f19f8425f3fb63387502d9d43dc58e3c2",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/triggers/testtrigger5.ks",
+      "upstreamBlob": "807ee12a224265caeb58543b07d32770b7b45a71"
+    },
+    {
+      "path": "test/fixtures/parser_valid/triggers/testtrigger6.ks",
+      "sha256": "b99a2d99f192c9450a6d608e759b70f03a6a8bc8c2b79f3991545db9a319aff2",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/triggers/testtrigger6.ks",
+      "upstreamBlob": "cb5825752fbc7409c656e906cf9b28cd236eff34"
+    },
+    {
+      "path": "test/fixtures/parser_valid/triggers/testtrigger7.ks",
+      "sha256": "34a427439610f7040f2f9969fbc1eedf1cd11f2368e023049545b2b35ad673f2",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/triggers/testtrigger7.ks",
+      "upstreamBlob": "7583837fd02c1320e410610fa0977633d2be94d8"
+    },
+    {
+      "path": "test/fixtures/parser_valid/turret.ks",
+      "sha256": "399e0d861f86f7315c0ef432034a316df2355dc4e45149be473d8ac8bb24cdc9",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/turret.ks",
+      "upstreamBlob": "8fc4090599b9c6f92992d8199ab35713b2899450"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/allLanguage.ks",
+      "sha256": "f7d47d674b9b3af27a0afbf5f548fa064d47138179772f69fa8d8c3801ecf4a8",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/allLanguage.ks",
+      "upstreamBlob": "6828678bc3cf51d41e5998977d9cc446fd6faf09"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/analysis/test.ks",
+      "sha256": "e59a36db7f6a20548965bd3edc9d1cc93b9f7006a305f3cdc4024cd428d5ce4b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/analysis/test.ks",
+      "upstreamBlob": "03c838a58b30a8c8d2e844d02104e2527d7f1b29"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/breaktest.ks",
+      "sha256": "4cb558b271121cb0081250a86c0f7ebb32ccbe44c7706e034138d6d683eee952",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/breaktest.ks",
+      "upstreamBlob": "017d7fc2c094efc7669917e311020eeab782bda1"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/deferredtest.ks",
+      "sha256": "ef9ca589545f128b144d0058f67156e5ea43ac98db26de82e6ff48c9cbed04f2",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/deferredtest.ks",
+      "upstreamBlob": "b9553bf37578246bea96f81052c609145e3f89c8"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/definedtest.ks",
+      "sha256": "438d894d9700b3e7a6e5f82086a7115adf67ddc6b27f1499e708e8eb37d6ddc2",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/definedtest.ks",
+      "upstreamBlob": "0d62c23244e74612bbd12b34fdfd6f6c5be433db"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/dualTable.ks",
+      "sha256": "34aadcfd83f7ae8412ada12d18824192e658db632e7b7f35b197db98e95ae91b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/dualTable.ks",
+      "upstreamBlob": "b3b651ef2c32d00236372af53b1b6993da2abd5a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/loadFiles/empty/empty.ks",
+      "sha256": "881248f6c4f964d884d8b9628d21843be063ddc5dff3c4685b6629bcf25ca6ac",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/loadFiles/empty/empty.ks",
+      "upstreamBlob": "c6c8b61ab336b95d59252c851412f148c4bc373a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/loadFiles/example.ks",
+      "sha256": "881248f6c4f964d884d8b9628d21843be063ddc5dff3c4685b6629bcf25ca6ac",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/loadFiles/example.ks",
+      "upstreamBlob": "c6c8b61ab336b95d59252c851412f148c4bc373a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/loadFiles/ksconfig.json",
+      "sha256": "4b965faa5d31ec36a719bb1acbd658123434eeb2444cb44aeb1aed66e253f8f9",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/loadFiles/ksconfig.json",
+      "upstreamBlob": "c397c32aa2699941c31a6465bbbf3b2bf684455f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/loadFiles/other.js",
+      "sha256": "59af696e17754a1baee33a017d1f398af042504daff4dca9c13a02963d96da55",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/loadFiles/other.js",
+      "upstreamBlob": "6be02374db118b9fb99cd98c6b403e5a558d0d57"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/preservetest.ks",
+      "sha256": "06371c208dc86f2629f276f6c66649f8bc103d4bafa90fb51c2bed62bd399377",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/preservetest.ks",
+      "upstreamBlob": "d44d30239b720062a3b54bc535cc8fbbc0ccfd99"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/returntest.ks",
+      "sha256": "38abdab603f8b38f71d78168dd776e1fe5df2a1439b7a19d5b663ce2b315de5c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/returntest.ks",
+      "upstreamBlob": "390523a71244ce04ce921eeb69c671b311029955"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/scannertest.ks",
+      "sha256": "d26a87c5377510f4701104ecdcecb02b6fd16060a9db67632106a76ea83ad63f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/scannertest.ks",
+      "upstreamBlob": "d34fe6ac43a06710cfff62b8e2deb3371851e18d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/shadow/shadowLib.ks",
+      "sha256": "6316238689956b008d3006334639c256a296c7f88ed9f9f973def1df2889e98f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/shadow/shadowLib.ks",
+      "upstreamBlob": "cc17f4ba0868110dfb4cedf3ade8040260d77db5"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/shadow/shadowSrc.ks",
+      "sha256": "ec78914a336c590705b1b5c6fe31d5027601767ae7b5288298d49c8718417eac",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/shadow/shadowSrc.ks",
+      "upstreamBlob": "53e5d01ffcb82fe4265a1f3b3331e632bff20f5f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/shadow/shadowtest.ks",
+      "sha256": "6c2dbc347f11e0910cfa4e163f6c314b774683450e4fb1c058a931298982fba5",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/shadow/shadowtest.ks",
+      "upstreamBlob": "7f0f3bd68c96ba72886703e5e904c2425bbbfac0"
+    },
+    {
+      "path": "test/fixtures/parser_valid/unitTests/usedtest.ks",
+      "sha256": "3112751cf5fbed20772cb39790a33c2b1b4c7da932d9dde7e54dc46f5442c70f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/unitTests/usedtest.ks",
+      "upstreamBlob": "80ca7a52a8f1b2b665756831b4c39939f2dfcb79"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest1.ks",
+      "sha256": "83e04834d7f12459eae2f196f7c8fe4754e65a4ff681ae9902fc958d0728ab1a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest1.ks",
+      "upstreamBlob": "f9a547ff66e16ae145a31b135755244ec6a7c6f8"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest10.ks",
+      "sha256": "80ea3a7288f825cf95bb4a2a510e58f19c99386a19b7d185f232e292b4b1a91c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest10.ks",
+      "upstreamBlob": "abcd4b459a5e1c62f423a9a58f4310e10853149d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest10_inner.ks",
+      "sha256": "c250d6b9ccdd0d346a18457da6ebfafd8a9bc5ce19843787e6af63c4a31899f6",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest10_inner.ks",
+      "upstreamBlob": "73ae039e37fe05841b9aece2e7daa221faf426b4"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest11.ks",
+      "sha256": "3d03acfbd0695ff93aa3f4ac162b28782ca214a70e8f6a6e8f6ca0027fea5d86",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest11.ks",
+      "upstreamBlob": "c3be8b245bf04992d4f6f5a26aa0edb93b9b6d64"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest12.ks",
+      "sha256": "8ee9f223dbe7083f5b73348cf748aa359b2064812613fb651c34fb756e31a8f5",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest12.ks",
+      "upstreamBlob": "f37ce41b4a333a8cf5ceeacb28461af71bac3f88"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest13.ks",
+      "sha256": "e28cf0c7736771c916a0175213c3afcb21e3905f941fbd58ce6eab1ecf1589dc",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest13.ks",
+      "upstreamBlob": "ef89832b78b09fed1fb0ccc0604ec43cfb6b8b20"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest14.ks",
+      "sha256": "96a6b598d8f3576333056051b38a9a3dacfa6d166589dbc732389bc4ea0870fd",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest14.ks",
+      "upstreamBlob": "bca832653a52b5cd1f6cc22e0ef695b2d13b3adc"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest15.ks",
+      "sha256": "54f1e1190aaac9676a57a27bd0117bab669d8cddd2905efa8f71fe5eed54e6fb",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest15.ks",
+      "upstreamBlob": "5f14c5198725316d68b26717b957c56949d8cdd2"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest16.ks",
+      "sha256": "13bcc0a9e43400cbed8a6ce1fb1f2215f49c233625f0d249a6697e9917c4d335",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest16.ks",
+      "upstreamBlob": "7e2fe841f8a17829bf830facc7873b6ad3735e07"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest17.ks",
+      "sha256": "c6cbae9fc4d19b43b3eed7f903ea7647dc19815029912e26f877f4f469f5a004",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest17.ks",
+      "upstreamBlob": "dcc98f973840665cf32b8116052ded162db908c2"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest18.ks",
+      "sha256": "cceb9d113230b80eea3fe90008264826ff4406d636fdb8eb75a3c5d22c8d45bc",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest18.ks",
+      "upstreamBlob": "ea724dca3b878b5b409bbcfb7dd8a5fbcd47d66f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest19.ks",
+      "sha256": "bb0efc93f0d07eba9d69380589110a8f4e733619d8448551e8753f0fe0b30522",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest19.ks",
+      "upstreamBlob": "865b9412d3e0bc109a48865c5b382f539186bc9a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest2.ks",
+      "sha256": "696f606ebc6c40da88b805414c6285cca90344e1556195aaa549eb83b81d798a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest2.ks",
+      "upstreamBlob": "1d1cb5ced5e84ddb594af05ddbcf6895b09db113"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest20.ks",
+      "sha256": "ff4ff70a71ad7ab1e5ec18ee1bccdbe7012daffa76926ff3fa01706cb543754a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest20.ks",
+      "upstreamBlob": "e56b8f0aa496586723c85a56056945e4134aa0f9"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest21-inner.ks",
+      "sha256": "6b5c9045e69f4fe21cd2b3ae16c77984514d9c1de6e893451d0ae889300f1520",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest21-inner.ks",
+      "upstreamBlob": "aa11edba3fec883798ba2dd3be362c5a5c3f448a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest21.ks",
+      "sha256": "0a9c02ddf535e6f7cdffe3e796fef2affb6fd3882824e0f8509fd4d7fb3236b3",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest21.ks",
+      "upstreamBlob": "a709001e1ccc6aa2be536f0ce9ef7effe1ef8e77"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest21_inner.ks",
+      "sha256": "68b97438ed95c5d862359b4cfa7038344cfa8e6b2998821136f220718663b529",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest21_inner.ks",
+      "upstreamBlob": "b28896b569a1fac314eaa20c9b4c6dac0a0c2b48"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest22.ks",
+      "sha256": "f096cee490c135612eaec938544d6013d6ec43e14442fe3fe2d8fc04debbfb0a",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest22.ks",
+      "upstreamBlob": "84108a55614129e9931fa1409a8a94a07eeb102d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest23.ks",
+      "sha256": "c8b06a056f16962ef351b57d8dbf8d9aa60b1c07de46d4789e349d3ebb094f2b",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest23.ks",
+      "upstreamBlob": "c8f26777c8029453c1eee889dd718d5884b7dfd3"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest24.ks",
+      "sha256": "02256afcc2404db0eca963757748ab2b661bdbe62c07b1a9ddf219bde9a2afca",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest24.ks",
+      "upstreamBlob": "93d30abbb12dabcf1696c53b596ef90e4b7eef0e"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest25.ks",
+      "sha256": "9a25f049bb8eba03cd2a95773b31eab3490c5d2de7a31b32f6b250963ab46abb",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest25.ks",
+      "upstreamBlob": "d9650f6710915005f2623b83349d8a60c0c72da6"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest26.ks",
+      "sha256": "a6cb00225b220eb5068eba7d60a1b59b026f6eaca6315444e282918c7e4cc847",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest26.ks",
+      "upstreamBlob": "f0758262b2e09f528338e991dcad0d0b3681d8c0"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest27.ks",
+      "sha256": "63741455a7006d62ba73f5cabf94864660b3a4568c745c178bb98a53deab08dc",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest27.ks",
+      "upstreamBlob": "42c927c8b0f792a7b2fe6fc453b8acb25910aad6"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest27_b.ks",
+      "sha256": "1e8fd6c5a10092167c1a489c794b247815cb3d1455f30f027cde1729fe632a84",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest27_b.ks",
+      "upstreamBlob": "f7c94f8f219ba673cafc76ea275cdfc62bef8de7"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest28.ks",
+      "sha256": "15a0595e82aaa488b86d247e88843884f03877f4698b826b0bdf29b1cb233228",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest28.ks",
+      "upstreamBlob": "0d5363f01014e5efa4072b2fa835670a7321c34d"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest29.ks",
+      "sha256": "2bf06185d8f2325d0125631b610a504ea24b98636283ba26a4b0e819b4c46d1c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest29.ks",
+      "upstreamBlob": "af4c00fee5820e951b16c514c5044704ad6141ea"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest29_lib.ks",
+      "sha256": "cb1a8973bc540acde2e0c4fba5de0792cc83ceb5d9ddd0e97d8736db3eaaee37",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest29_lib.ks",
+      "upstreamBlob": "ad3354c3e66cf9dd7d046ed8f85223438aa826fe"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest3.ks",
+      "sha256": "5612f05f40e9223c9159671a5bebba3df70c2adc7efdf348f823b0b147909892",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest3.ks",
+      "upstreamBlob": "7ddca9c410ea371c44b498722920b5470fdada0a"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest30.ks",
+      "sha256": "d2d76eb70d78ba14e03a3c23f81521a9db3ee5df3da2ebf1b6c4876e91e07494",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest30.ks",
+      "upstreamBlob": "f34a8145db36644ba9519925669684f8eaf31178"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest30_lib.ks",
+      "sha256": "246d778422fba9cd76505ad027ab748d0a9268ed0a00ce6afe66c70cf12ce224",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest30_lib.ks",
+      "upstreamBlob": "78cbbfb7af1676ee3f8d68743e4118c06476ba50"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest32.ks",
+      "sha256": "0e75705c2dbeb9481c7532d99dfd40956e7d59bbc55d0d7477cbfb41c2345dc1",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest32.ks",
+      "upstreamBlob": "6b1bf7e8221ff57d1d1a147215d08c0ef37bd61f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest33.ks",
+      "sha256": "b71204b31600384b15f995a0a157a77997874e6e060df87724bbaabd837c57fe",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest33.ks",
+      "upstreamBlob": "2b6a7fcd430e5690c69d4cefa9a0efe0e3f245aa"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest4.ks",
+      "sha256": "d3c2361a2a5399b9b7040c61b1d2194572a260dfb16b43b4b3245bf027ead3a3",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest4.ks",
+      "upstreamBlob": "339fe77ad1fab6d4eb4152001502c4c9d1548770"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest5.ks",
+      "sha256": "74595caed56d1aea82a015597805510c42fd907c2f248e2f22498a783ef93ac3",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest5.ks",
+      "upstreamBlob": "4c81fe5181859c6e41b8552c1eda87cd50f249b9"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest6.ks",
+      "sha256": "a41a5f1796bf196b9e60085498bff1c3ba2f8d93733ce1b082fbd7af0be1a29e",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest6.ks",
+      "upstreamBlob": "7e4d44cfafe40effb6fed3a1a4a354956336b966"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest7.ks",
+      "sha256": "0957260f4b5d6fb4b4f6cec06da16b849d9673621c3d124d0de1985310ee36f6",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest7.ks",
+      "upstreamBlob": "01ed9f03f1197419950450484ff33d09ad6f608f"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest8.ks",
+      "sha256": "1068cf25771aad38fbb4bb3b5391208e674d15b77069bb792de227da1d2fc243",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest8.ks",
+      "upstreamBlob": "2a79dcf0999a8be9844e8eff435b0788582368b6"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/functest9.ks",
+      "sha256": "2376edda781fee5d1955bd986c0d3e32f0f8d8db76a0c4efdc75461a67da9a6c",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/functest9.ks",
+      "upstreamBlob": "86066327181a256224c9746256763328e4d89bf9"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/test1.ks",
+      "sha256": "348e276042615ad4b3ac4a48d9ec45bf02edffd1be67c5ed45a6a907db49bea5",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/test1.ks",
+      "upstreamBlob": "0351bb10a1970976b8d3ce70b1238c500ffda073"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/test2.ks",
+      "sha256": "0dc7df5411a253e52f759fc2e9f1105528955f17f7f5c0d04fdf97d1e8baa951",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/test2.ks",
+      "upstreamBlob": "17225110476fca55770f46267c1a5353a12af6c7"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/testanonymousfunc1.ks",
+      "sha256": "5c6467195b270116cec03bb9355c6013b7fd1cef6b890f3d583766222ced5611",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/testanonymousfunc1.ks",
+      "upstreamBlob": "f9e6430aee1b47aa1cb9989743068d6c8e5b16a6"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/testclosure1.ks",
+      "sha256": "15fc99deec484118fee10c0474cae55917d54913d9e6b67b016725225631cfaf",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/testclosure1.ks",
+      "upstreamBlob": "381b2d283c6a6128f13e7aa29ad946ed1c37177b"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/testclosure2.ks",
+      "sha256": "0e86199d46c274e0cfffe226c1a0af3d301fc0243d26df369ca5f383b5c56529",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/testclosure2.ks",
+      "upstreamBlob": "40c4e56a12bdc8faff9915f89d7554b6ecdd090b"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/testclosure3.ks",
+      "sha256": "b3d8a871bc741764e4c0ae32c16f87921d5f82063de621a1bcdc9515e1104e0f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/testclosure3.ks",
+      "upstreamBlob": "6517c9d728eeda772e5c2ce04e7d1a4791c0cc30"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/testreturn1.ks",
+      "sha256": "708758a496347a9812a54c2d7a13c3b4b88e9ed45a90776b9baf74902e8e5b2f",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/testreturn1.ks",
+      "upstreamBlob": "36c88cec17ef2c6214cb679841a6762595669f89"
+    },
+    {
+      "path": "test/fixtures/parser_valid/user_functions/testreturn2.ks",
+      "sha256": "4670ef5d55ba75fa121769dd13d8f082c0845906d660b998d0ff5d7e38a69c92",
+      "origin": "upstream-verbatim",
+      "upstreamPath": "kerboscripts/parser_valid/user_functions/testreturn2.ks",
+      "upstreamBlob": "b5421893042b0995ef463ce7428c95dc0181a4cf"
+    },
+    {
+      "path": "test/fixtures/workspaces/archive/bin/mission/hello.ks",
+      "sha256": "55f51e071de3c698ed377d38c103d1417fe6bb54078e11ae016f3fc5afdc348f",
+      "origin": "fork-created"
+    },
+    {
+      "path": "test/fixtures/workspaces/archive/ksconfig.json",
+      "sha256": "e07a73386190ea5b9393a28e0361700369b79399a432dbe3501fd803797329ad",
+      "origin": "fork-created"
+    },
+    {
+      "path": "test/fixtures/workspaces/archive/src/boot/main.ks",
+      "sha256": "0d8ff58d9a9e6b4a9b505d1665558f3be4d9a09e81b3de4edf5673cf1f10d403",
+      "origin": "fork-created"
+    },
+    {
+      "path": "test/fixtures/workspaces/archive/src/lib/state.ks",
+      "sha256": "37ec4e72aab3b0982091b70239014d6d3c01a523f72e34d508c21c1abedd441f",
+      "origin": "fork-created"
+    },
+    {
+      "path": "test/fixtures/workspaces/archive/src/lib/std.ks",
+      "sha256": "d30c202788bda4ed3e3415b54e5e34b6aa72c5ff5646d52f90f7621d5f2f4e21",
+      "origin": "fork-created"
+    },
+    {
+      "path": "test/fixtures/workspaces/archive/src/mission/hello.ks",
+      "sha256": "a80235b4c7e2a8a6249acfb47ef6bdc501e0b36ae7f08a713795ca16e5ffe916",
+      "origin": "fork-created"
+    }
+  ]
+}

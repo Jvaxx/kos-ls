@@ -1,11 +1,14 @@
 # Changelog
 
-This file records changes in the **kos-ls fork**. No stable fork release
-has been published. The original project's release notes are preserved in
+This file records changes in the **kos-ls fork**. Releases are hosted at
+[Jvaxx/kos-ls](https://github.com/Jvaxx/kos-ls/releases), currently private.
+The original project's release notes are preserved in
 [docs/UPSTREAM_CHANGELOG.md](docs/UPSTREAM_CHANGELOG.md); those versions and
 VS Code features are not releases of this fork.
 
-## Unreleased — 2.0.0-dev
+## [2.0.0](https://github.com/Jvaxx/kos-ls/releases/tag/v2.0.0) — 2026-10-21
+
+First stable release of this independent server-only fork.
 
 Based on upstream `aff3a4743f5492a878cbfb5d2938e2e90f83cb45`
 (source package 1.1.7). See [fork provenance and migration](docs/FORK.md).
@@ -16,7 +19,7 @@ Based on upstream `aff3a4743f5492a878cbfb5d2938e2e90f83cb45`
   remove the VS Code client, extension manifests and grammar submodule.
 - Rename the package, diagnostic source and server identity to `kos-ls`.
   Provide `kos-ls` and the compatibility alias `kls`.
-- Require Node.js 22 or later; modernize dependencies, linting, formatting
+- Require Node.js 22.13 or later; modernize dependencies, linting, formatting
   and CI. Remove the obsolete async-iteration runtime flag.
 - Read `kos-ls` client settings, with `kos-vscode` only as a fallback;
   remove settings that belonged to the old extension and were unused.
@@ -55,6 +58,9 @@ Based on upstream `aff3a4743f5492a878cbfb5d2938e2e90f83cb45`
 - Check `print at` coordinates and run-command arguments. Report wrong
   user-function argument counts as warnings, distinct from builtin hints.
 - Give runtime-computed run paths a dedicated hint and lint rule.
+- Check return expressions and preserve their complete ranges during
+  recovery, restoring suffix completion in direct, nested and unfinished
+  return values.
 
 ### Editing and command line
 
@@ -86,3 +92,9 @@ Based on upstream `aff3a4743f5492a878cbfb5d2938e2e90f83cb45`
 - Back up and sanitize private notes/results and local paths from fork
   history while preserving upstream commits and the chosen commit email;
   update provenance/blame references and record the review scope.
+- Include exact editable source archives for all ten runtime dependencies,
+  version/integrity/checksum manifests, an offline source verifier and a
+  complete fixture provenance inventory.
+- Add repository/issue/release links and private-release installation and
+  maintenance instructions; ship an installable source-inclusive package,
+  explicit source archive, SPDX runtime inventory and SHA-256 checksums.

@@ -109,8 +109,12 @@ that tip and inspect the final package/source artifacts.
   cleaning and rebuilding an extracted source package with its included
   shrinkwrap lockfile. Build, bundle, lint and formatting checks passed.
 
-Repeat the checks after committing the remaining changes; these results
-cover the reviewed working tree, not an as-yet-uncreated final release.
+These results describe the pre-release privacy-cleanup checkpoint. Release
+preparation repeats the scans against the committed candidate and exact
+artifacts as described in [RELEASING.md](RELEASING.md).
 
-No remote was pushed, no repository visibility was changed, and no
-credentials or public keys were revoked as part of this operation.
+During this history-cleanup operation, no remote was pushed, repository
+visibility was not changed, and no credentials/public keys were revoked.
+The later 2.0.0 release is hosted in the private
+[Jvaxx/kos-ls repository](https://github.com/Jvaxx/kos-ls); see
+[its release notes](releases/v2.0.0.md).

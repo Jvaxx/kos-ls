@@ -1,7 +1,7 @@
 {
   "name": "kos-ls",
   "description": "Language server for Kerboscript, the language of the kOS mod for Kerbal Space Program. Maintained fork of kos-language-server.",
-  "version": "2.0.0-dev",
+  "version": "2.0.0",
   "main": "dist/server.js",
   "bin": {
     "kos-ls": "./bin/kos-ls",
@@ -29,10 +29,18 @@
     "zakzak.config.json",
     ".prettierrc"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jvaxx/kos-ls.git"
+  },
+  "homepage": "https://github.com/Jvaxx/kos-ls#readme",
+  "bugs": {
+    "url": "https://github.com/Jvaxx/kos-ls/issues"
+  },
   "author": "Jvaxx",
   "license": "GPL-3.0-only",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13.0"
   },
   "dependencies": {
     "commander": "^15.0.0",
@@ -65,8 +73,9 @@
     "bench": "zakzak -c ./zakzak.config.json",
     "probe": "node tools/lsp-probe.js",
     "kos-db": "node out/tools/kos-db/generate.js",
+    "verify:sources": "node tools/check-sources.js",
     "prepare:package": "node tools/prepare-package.js",
-    "prepack": "npm run build && npm run bundle && npm test && npm run prepare:package"
+    "prepack": "npm run verify:sources && npm run build && npm run bundle && npm test && npm run prepare:package"
   },
   "devDependencies": {
     "@dynatrace/zakzak": "^0.6.6",
