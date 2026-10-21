@@ -6,6 +6,9 @@ import { TestClient } from './harness';
 // scripts of many authors: runs through .ksm names and cycles of scripts
 // sharing globals (q.ks, quad.ks, quad_loop.ks, turret.ks, lib_quad.ks)
 const parserValid = join(__dirname, '../fixtures/parser_valid');
+// These two tests repeatedly analyse the entire corpus under coverage.
+// Shared CI runners need more than Jest's default five-second budget.
+const fullWorkspaceTimeout = 30_000;
 
 const scripts = (dir: string): string[] =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
@@ -25,29 +28,37 @@ describe('analysis order', () => {
 
   // the diagnostics are a function of the files, not of the order in
   // which the client opened them
-  test('opening an unchanged file changes nothing', async () => {
-    client = await TestClient.start(parserValid);
-    const loaded = await client.allMessages();
-    expect(loaded.length).toBeGreaterThan(1000);
+  test(
+    'opening an unchanged file changes nothing',
+    async () => {
+      client = await TestClient.start(parserValid);
+      const loaded = await client.allMessages();
+      expect(loaded.length).toBeGreaterThan(1000);
 
-    client.open('turret.ks');
-    expect(await client.allMessages()).toEqual(loaded);
-    client.open('quad.ks');
-    client.open('Good Files/Errors and UI/lib_menulist1.ks');
-    expect(await client.allMessages()).toEqual(loaded);
-  });
+      client.open('turret.ks');
+      expect(await client.allMessages()).toEqual(loaded);
+      client.open('quad.ks');
+      client.open('Good Files/Errors and UI/lib_menulist1.ks');
+      expect(await client.allMessages()).toEqual(loaded);
+    },
+    fullWorkspaceTimeout,
+  );
 
-  test('opening every file before the load gives the same result', async () => {
-    client = await TestClient.start(parserValid);
-    const loaded = await client.allMessages();
-    await client.stop();
+  test(
+    'opening every file before the load gives the same result',
+    async () => {
+      client = await TestClient.start(parserValid);
+      const loaded = await client.allMessages();
+      await client.stop();
 
-    client = await TestClient.start(parserValid);
-    for (const path of scripts(parserValid)) {
-      client.open(path);
-    }
-    expect(await client.allMessages()).toEqual(loaded);
-  });
+      client = await TestClient.start(parserValid);
+      for (const path of scripts(parserValid)) {
+        client.open(path);
+      }
+      expect(await client.allMessages()).toEqual(loaded);
+    },
+    fullWorkspaceTimeout,
+  );
 });
 
 describe('globals of other files', () => {

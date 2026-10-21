@@ -80,6 +80,8 @@ Based on upstream `aff3a4743f5492a878cbfb5d2938e2e90f83cb45`
   tests and fixture-based formatter equivalence/idempotence checks.
 - Retain a headless LSP probe and the active benchmark suites; repair
   benchmark fixture paths for the server-only repository layout.
+- Give the two corpus-wide analysis-order integration tests an explicit
+  bounded timeout for slower, shared CI runners without changing assertions.
 - Document fork provenance, migration, development, limitations and
   publication requirements; replace upstream placeholder templates.
 - Separate historical upstream release notes, remove private handoff
