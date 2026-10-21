@@ -22,8 +22,8 @@ The historical changelog and inherited parser fixtures come from that
 repository too. Preserve author/license notices in individual fixtures.
 The [fixture inventory and review](docs/FIXTURES.md) trace all 278 inherited
 files byte-for-byte to upstream and distinguish six fork-created files.
-Independent original-author permissions remain a separate consideration
-before changing this currently private repository's visibility.
+They are redistributed under upstream's MIT grant; see the fixture review
+for the basis of that decision.
 
 ## kOS-derived database
 

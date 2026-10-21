@@ -34,17 +34,16 @@ compatibility changes and scope; [CHANGELOG.md](CHANGELOG.md) for fork
 changes; and [the roadmap](docs/ROADMAP.md) for limitations and future work.
 Please report fork issues in [Jvaxx/kos-ls](https://github.com/Jvaxx/kos-ls/issues),
 not upstream. [CI](https://github.com/Jvaxx/kos-ls/actions/workflows/node.js.yml)
-tests Node.js 22 and 24. The repository currently remains private;
-repository, issue and release links require access.
+tests Node.js 22 and 24.
 
 ## Install the release
 
-Requires **Node.js 22.13 or later** and npm. With authenticated
-[GitHub CLI](https://cli.github.com/) access to this private repository:
+Requires **Node.js 22.13 or later** and npm. Download the package and
+checksums from the [2.0.0 release](https://github.com/Jvaxx/kos-ls/releases/tag/v2.0.0):
 
 ```sh
-gh release download v2.0.0 --repo Jvaxx/kos-ls \
-  --pattern kos-ls-2.0.0.tgz --pattern SHA256SUMS
+curl -fLO https://github.com/Jvaxx/kos-ls/releases/download/v2.0.0/kos-ls-2.0.0.tgz
+curl -fLO https://github.com/Jvaxx/kos-ls/releases/download/v2.0.0/SHA256SUMS
 sha256sum --check --ignore-missing SHA256SUMS
 npm install --global ./kos-ls-2.0.0.tgz
 kos-ls --version
@@ -60,7 +59,7 @@ for assets, migration and limitations.
 Requires **Node.js 22.13 or later** and npm. Clone this fork, then:
 
 ```sh
-gh repo clone Jvaxx/kos-ls
+git clone https://github.com/Jvaxx/kos-ls.git
 cd kos-ls
 npm ci            # install the locked development dependencies
 npm run build     # TypeScript, tests and tools to out/

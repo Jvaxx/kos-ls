@@ -62,12 +62,10 @@ not a release commitment. See [fork history and migration](FORK.md) and
 
 ## Next priorities
 
-1. **Before making the currently private repository public:** complete the
-   remaining independent fixture-rights and visibility checks in
-   [the publication checklist](PUBLISHING.md). Repeat source/security checks
-   for every release; see [releasing](RELEASING.md).
-   The [GPLv3 distribution decision](LICENSING.md) and
-   [fork-history privacy cleanup](HISTORY_REVIEW.md) are complete.
+1. Repeat source/security checks for every release; see
+   [releasing](RELEASING.md). The [GPLv3 distribution decision](LICENSING.md),
+   [fork-history privacy cleanup](HISTORY_REVIEW.md) and
+   [public visibility checks](PUBLISHING.md) are complete.
 2. Keep dependencies, supported Node.js versions and LSP compatibility
    tested; add regression cases with each analysis or parser fix.
 3. Improve database coverage by reviewing generation warnings against

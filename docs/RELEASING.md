@@ -2,9 +2,9 @@
 
 Repository: [Jvaxx/kos-ls](https://github.com/Jvaxx/kos-ls).
 Releases: [GitHub releases](https://github.com/Jvaxx/kos-ls/releases).
-The repository is currently private; release downloads require access.
-A stable GitHub release does **not** publish a package to npm or change
-repository visibility.
+The repository is public; published releases and their assets are
+publicly downloadable. A GitHub release does **not** publish a package
+to npm.
 
 ## Prepare and commit
 
@@ -75,6 +75,6 @@ versions and review it for local paths or private metadata.
 - Publish the draft only after those checks. Confirm the final release
   URL, tag target and asset set; leave the working tree clean.
 
-Publishing a GitHub release does not authorize a later visibility change
-or npm publication. Recheck the outstanding items in [PUBLISHING.md](PUBLISHING.md)
-before either action.
+A published release is immediately public. Publishing a GitHub release
+does not authorize npm publication; recheck [PUBLISHING.md](PUBLISHING.md)
+before that.

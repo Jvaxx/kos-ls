@@ -20,8 +20,8 @@ does not claim upstream or kOS endorsement, and makes no promise about
 upstream's current maintenance status.
 
 The first stable fork release is [2.0.0](https://github.com/Jvaxx/kos-ls/releases/tag/v2.0.0).
-The repository/release currently remain private; this is not an npm
-registry release or a change to the original project's release line.
+It is a public GitHub release, not an npm registry release or a change
+to the original project's release line.
 Upstream's recorded releases are preserved separately in
 [the upstream changelog](UPSTREAM_CHANGELOG.md). Their VS Code instructions
 and version numbers describe that project, not this fork.

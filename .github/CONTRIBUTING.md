@@ -15,7 +15,8 @@ upstream base information are in [fork history](../docs/FORK.md).
 - Reproduce with `kos-ls check`, `kos-ls format` or the headless probe when
   possible; see [development](../docs/DEVELOPMENT.md).
 - Redact tokens, private paths and unrelated scripts from logs and samples.
-  Do not put credentials or sensitive reports in public issues.
+  Do not put credentials in public issues; report vulnerabilities as
+  described in [the security policy](SECURITY.md).
 
 Feature requests should explain the workflow, a concrete example and why
 existing configuration or LSP features are insufficient. Editor-specific

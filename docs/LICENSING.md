@@ -114,6 +114,6 @@ The kOS database licensing choice does not establish redistribution rights
 for every inherited third-party script fixture. The
 [fixture inventory/review](FIXTURES.md) documents the upstream license
 chain without claiming independently verified rights from every original
-script author. The repository/release remain private by choice; public
-visibility, hosting settings and future artifacts require the checks in
-[the publication checklist](PUBLISHING.md).
+script author; it records the maintainer's decision to redistribute them
+under that chain publicly. Future artifacts and hosting changes require
+the checks in [the publication checklist](PUBLISHING.md).

@@ -1,10 +1,19 @@
 # Changelog
 
 This file records changes in the **kos-ls fork**. Releases are hosted at
-[Jvaxx/kos-ls](https://github.com/Jvaxx/kos-ls/releases), currently private.
+[Jvaxx/kos-ls](https://github.com/Jvaxx/kos-ls/releases).
 The original project's release notes are preserved in
 [docs/UPSTREAM_CHANGELOG.md](docs/UPSTREAM_CHANGELOG.md); those versions and
 VS Code features are not releases of this fork.
+
+## Unreleased
+
+### Development and repository hygiene
+
+- Make the repository public: install from public release URLs and
+  clone over HTTPS without GitHub CLI access, record the inherited
+  fixture-rights decision, add a security policy and update the
+  publication checklist.
 
 ## [2.0.0](https://github.com/Jvaxx/kos-ls/releases/tag/v2.0.0) — 2026-10-21
 

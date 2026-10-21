@@ -115,6 +115,7 @@ artifacts as described in [RELEASING.md](RELEASING.md).
 
 During this history-cleanup operation, no remote was pushed, repository
 visibility was not changed, and no credentials/public keys were revoked.
-The later 2.0.0 release is hosted in the private
-[Jvaxx/kos-ls repository](https://github.com/Jvaxx/kos-ls); see
+The later 2.0.0 release is hosted in the
+[Jvaxx/kos-ls repository](https://github.com/Jvaxx/kos-ls), since made
+public after the checks in [the publication checklist](PUBLISHING.md); see
 [its release notes](releases/v2.0.0.md).

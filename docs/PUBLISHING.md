@@ -1,10 +1,9 @@
 # Publication and release checks
 
 Repository: [Jvaxx/kos-ls](https://github.com/Jvaxx/kos-ls).
-The maintainer chose to keep it **private** and make **2.0.0 a stable
-GitHub release**. Publishing a private release does not change repository
-visibility or publish to npm. See [RELEASING.md](RELEASING.md) for the
-repeatable release procedure and [2.0.0 notes](releases/v2.0.0.md).
+The repository is **public**; **2.0.0** is its first stable GitHub
+release. Neither publishes to npm. See [RELEASING.md](RELEASING.md) for
+the repeatable release procedure and [2.0.0 notes](releases/v2.0.0.md).
 
 ## Completed preparation
 
@@ -24,9 +23,10 @@ repeatable release procedure and [2.0.0 notes](releases/v2.0.0.md).
   history, scan for secrets, and keep private recovery backups outside the
   repository. Retain the commit email as explicitly requested; see
   [privacy review](HISTORY_REVIEW.md).
-- [x] Create `Jvaxx/kos-ls` as private and configure repository/homepage/issue
-  links. Keep `origin` separate from `upstream`, enable issues/security
-  alerts, disable the unused wiki and use read-only Actions permissions.
+- [x] Create `Jvaxx/kos-ls` (initially private) and configure
+  repository/homepage/issue links. Keep `origin` separate from `upstream`,
+  enable issues/security alerts, disable the unused wiki and use read-only
+  Actions permissions.
 
 ## For every release
 
@@ -49,20 +49,31 @@ repeatable release procedure and [2.0.0 notes](releases/v2.0.0.md).
 - [ ] Keep tracked build artifacts/reports out of Git and leave a clean
   working tree. Source snapshots and inventories remain versioned inputs.
 
-## Before making the repository public
+## Making the repository public
 
-- [ ] Revisit the independent fixture-author permission question in
-  [FIXTURES.md](FIXTURES.md). Upstream repository provenance is established;
-  changing the combined license does not itself establish each original
-  author's permissions.
-- [ ] Review all hosted Actions logs/artifacts, releases, attachments and
-  repository settings. A clean local tree does not audit hosted material.
-- [ ] Repeat history/source/artifact scanning against all refs to publish
-  and explicitly approve any retained personal metadata. The previously
-  accepted commit email will become publicly visible too.
-- [ ] Review branch protection, contribution channels and security settings
-  for public operation. Do not assume a private stable release authorizes
-  a later visibility change.
+Completed on 21 October 2026, before the visibility change:
+
+- [x] Decide the independent fixture-author permission question: rely on
+  upstream's MIT grant and replace any fixture on request; see
+  [FIXTURES.md](FIXTURES.md).
+- [x] Review hosted material: all four Actions run logs contain no
+  credentials, personal paths or addresses; there are no Actions
+  artifacts; the 2.0.0 release has exactly its four checksummed assets.
+- [x] Gitleaks 8.30.1 found no credentials in the published refs (`main`
+  and `v2.0.0`, 686 commits) or the clean source tree. In the extracted
+  release assets, it reported only the three known minified
+  `TokenType.global` false positives described in
+  [the history review](HISTORY_REVIEW.md). Only `main` and `v2.0.0` are
+  pushed to `origin`. The commit email is retained as accepted.
+- [x] Update documentation and release notes for public installation and
+  add a [security policy](../.github/SECURITY.md).
+
+After the visibility change:
+
+- [ ] Enable private vulnerability reporting, which the security policy
+  relies on, and Dependabot alerts.
+- [ ] Protect `main` against force pushes and deletion. Branch protection
+  is unavailable for private repositories on the current plan.
 
 There is no automatic npm publish workflow. Review npm ownership, naming,
 credentials, registry visibility and source-delivery requirements separately

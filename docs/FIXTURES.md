@@ -26,15 +26,19 @@ The six fork-created files are supplied under this fork's distribution
 terms, with existing earlier MIT grants unaffected. See
 [licensing](LICENSING.md).
 
-## Before changing repository visibility
+## Public redistribution decision
 
-The repository and its first release remain **private by the maintainer's
-choice**. Before public redistribution, review whether relying on the
-upstream repository's license is sufficient for these third-party examples,
-and seek clarification or replace any fixture whose original rights are
-uncertain. This inventory does not manufacture permissions or relicense
-someone else's work. A private stable release is not a claim that the
-independent fixture-author rights review has been completed.
+Before making the repository public, the maintainer reviewed whether the
+upstream license is a sufficient basis for redistributing the inherited
+examples and **decided to rely on it**. The same files are already
+publicly distributed by upstream under MIT, are retained byte for byte
+with their notices and are used only as test inputs. No fixture carries
+a conflicting license statement.
+
+This decision does not manufacture permissions or relicense anyone else's
+work. If an original script author raises a concern, please open an
+issue; the affected fixture will be clarified or replaced with an
+original regression example.
 
 New fixtures should be minimal, original regression examples where
 possible; record any copied material's source and compatible terms.
