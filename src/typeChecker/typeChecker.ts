@@ -699,12 +699,8 @@ export class TypeChecker
 
   // visit return
   public visitReturn(stmt: Stmt.Return): Diagnostics {
-    const errors: Diagnostics = [];
-    if (!empty(stmt.value)) {
-      // TODO maybe update function type?
-    }
-
-    return errors;
+    // TODO maybe update function type?
+    return empty(stmt.value) ? [] : this.checkExpr(stmt.value).errors;
   }
 
   // visit break

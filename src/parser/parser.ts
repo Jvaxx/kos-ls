@@ -921,16 +921,12 @@ export class Parser {
     const valueResult = !this.check(TokenType.period)
       ? this.expression()
       : undefined;
-    let errors: ParseError[] = [];
 
+    // set before the terminal so a missing period keeps the value
+    builder.value = valueResult?.value;
     this.terminal(Stmt.Return, builder);
 
-    if (!empty(valueResult)) {
-      builder.value = valueResult.value;
-      errors = valueResult.errors;
-    }
-
-    return nodeResult(new Stmt.Return(builder), errors);
+    return nodeResult(new Stmt.Return(builder), valueResult?.errors ?? []);
   }
 
   /**

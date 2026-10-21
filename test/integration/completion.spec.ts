@@ -87,3 +87,31 @@ describe('suffix completion', () => {
     ).toContain('height');
   });
 });
+
+describe('suffix completion in a return', () => {
+  let client: TestClient;
+
+  beforeEach(async () => {
+    client = await TestClient.start(root);
+  });
+
+  afterEach(async () => {
+    await client?.stop();
+  });
+
+  // the value is the suffix itself, nested, typed, or without a period yet
+  test.each([
+    'return ship:body:mu.',
+    'return sqrt(ship:body:mu).',
+    'return 1 + ship:body:mu.',
+    'return ship:body:mu',
+    'return sqrt(ship:body:mu)',
+  ])('the suffixes in `%s`', async (line) => {
+    client.open('src/scratch.ks', `function f {\n  ${line}\n}\n`);
+
+    const end = line.indexOf('mu') + 2 + 2;
+    expect(await client.completionLabels('src/scratch.ks', 1, end)).toContain(
+      'mu',
+    );
+  });
+});

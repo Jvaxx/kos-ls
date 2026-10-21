@@ -837,12 +837,9 @@ export class Return extends Stmt {
   }
 
   public get ranges(): Range[] {
-    let ranges: Range[] = [this.returnToken];
-    if (!empty(this.value)) {
-      ranges = ranges.concat(this.value.ranges);
-    }
-
-    return ranges;
+    return empty(this.value)
+      ? [this.returnToken]
+      : [this.returnToken, this.value];
   }
 
   public accept<P extends unknown[], R>(
